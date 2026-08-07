@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тендерный сервис — Атвинта</title>
+<style>
+  :root{
+    --bg:#faf8f9;--surface:#ffffff;--surface-2:#f4eef1;--ink:#1c1720;--ink-muted:#6b6270;
+    --border:#e6dfe3;--border-strong:#d8cfd4;--accent:#c41e52;--accent-ink:#ffffff;--accent-wash:#fbe8ee;
+    --radius-sm:7px;--radius-md:12px;
+    --shadow-sm:0 1px 2px rgba(28,23,32,.07), 0 1px 1px rgba(28,23,32,.04);
+    --shadow-md:0 8px 24px rgba(28,23,32,.14);
+    --font-display:Georgia,"Noto Serif","PT Serif","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#18131b;--surface:#201a24;--surface-2:#271f2b;--ink:#f3eef1;--ink-muted:#a99fac;
+      --border:#382e3d;--border-strong:#463a4c;--accent:#ff7196;--accent-ink:#1c1720;--accent-wash:#3a1f29;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.5);--shadow-md:0 12px 32px rgba(0,0,0,.55);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:860px;margin:0 auto;padding:56px 24px 80px;}
+  .brand{font-family:var(--font-display);font-weight:700;font-size:20px;margin-bottom:2px;}
+  .brand-sub{font-size:11px;color:var(--ink-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:28px;}
+  h1{font-family:var(--font-display);font-weight:600;font-size:32px;margin:0 0 8px;}
+  .lead{color:var(--ink-muted);font-size:14.5px;line-height:1.6;margin:0 0 40px;max-width:560px;}
+  .lead b{color:var(--ink);}
+  h2.group{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-muted);
+    font-weight:700;margin:36px 0 12px;}
+  h2.group:first-of-type{margin-top:0;}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:12px;}
+  a.card{display:block;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:16px 18px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow-sm);transition:border-color .12s;}
+  a.card:hover{border-color:var(--accent);}
+  .card-title{font-weight:600;font-size:14.5px;margin-bottom:4px;}
+  .card-hint{font-size:12px;color:var(--ink-muted);line-height:1.5;}
+  .foot{margin-top:48px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--ink-muted);
+    line-height:1.6;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">Тендеры</div>
+    <div class="brand-sub">Атвинта</div>
+    <h1>Тендерный сервис</h1>
+    <p class="lead">Кликабельные HTML-макеты прототипа сервиса для автоматизации тендерной работы Атвинты. Все страницы связаны сквозным меню и общим локальным хранилищем — переходы и правки внутри одной страницы отражаются на других (<b>только в вашем браузере</b>, не для других зрителей).</p>
+
+    <h2 class="group">Тендеры</h2>
+    <div class="cards">
+      <a class="card" href="Макеты/все-тендеры.html">
+        <div class="card-title">Сводная таблица</div>
+        <div class="card-hint">Самый доработанный экран — фильтры, редактируемые столбцы, добавление тендера</div>
+      </a>
+      <a class="card" href="Макеты/новые-тендеры.html">
+        <div class="card-title">Новые</div>
+        <div class="card-hint">Первое решение, назначение направлений и ответственного</div>
+      </a>
+      <a class="card" href="Макеты/ожидают-решения.html">
+        <div class="card-title">Ожидают решения</div>
+        <div class="card-hint">Второе решение: участвуем или отказ</div>
+      </a>
+      <a class="card" href="Макеты/в-работе.html">
+        <div class="card-title">В работе</div>
+        <div class="card-hint">Карточный список, быстрые фильтры, смена статуса</div>
+      </a>
+      <a class="card" href="Макеты/архив.html">
+        <div class="card-title">Архив</div>
+        <div class="card-hint">Закрытые тендеры, возврат на выбранный этап (админ)</div>
+      </a>
+      <a class="card" href="Макеты/избранное.html">
+        <div class="card-title">Избранное</div>
+        <div class="card-hint">Отмеченные тендеры со всех этапов</div>
+      </a>
+      <a class="card" href="Макеты/карточка-тендера.html">
+        <div class="card-title">Карточка тендера</div>
+        <div class="card-hint">Обзор, этапы и заявки, документы, чек-лист, события, логи</div>
+      </a>
+    </div>
+
+    <h2 class="group">Копилка</h2>
+    <div class="cards">
+      <a class="card" href="Макеты/копилка.html">
+        <div class="card-title">Копилка</div>
+        <div class="card-hint">Учредительные документы, Опыт, Штат</div>
+      </a>
+    </div>
+
+    <h2 class="group">Пользователи и настройки</h2>
+    <div class="cards">
+      <a class="card" href="Макеты/пользователи.html">
+        <div class="card-title">Пользователи</div>
+        <div class="card-hint">Список сотрудников с доступом к сервису (Админ/Суперадмин)</div>
+      </a>
+      <a class="card" href="Макеты/настройки-справочники.html">
+        <div class="card-title">Настройки → Справочники</div>
+        <div class="card-hint">Направления, причины отказа, статусы, роли и доступы (Суперадмин)</div>
+      </a>
+    </div>
+
+    <p class="foot">
+      Требования и решения по проекту — в папке <code>Требования/</code> этого репозитория.
+      Дашборд, Календарь, Профиль, Финансы и карточные виды «Заявки» ещё не спроектированы.
+    </p>
+  </div>
+</body>
+</html>
