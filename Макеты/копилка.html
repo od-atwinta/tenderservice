@@ -318,19 +318,19 @@
         <span class="nav-label">Дашборд</span>
       </a></li>
       <li>
-        <a href="все-тендеры.html" title="Тендеры">
+        <a href="#" title="Тендеры">
           <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
           <span class="nav-label">Тендеры</span>
         </a>
         <ul class="nav-sub">
-          <li><a href="все-тендеры.html"><span class="nav-label">Сводная таблица</span></a></li>
+          <li data-admin-observer-only="1"><a href="все-тендеры.html"><span class="nav-label">Сводная таблица</span></a></li>
           <li><a href="новые-тендеры.html"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
           <li><a href="ожидают-решения.html"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
           <li><a href="в-работе.html"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
           <li><a href="архив.html"><span class="nav-label">Архив</span></a></li>
         </ul>
       </li>
-      <li><a href="#" title="Заявки">
+      <li><a href="заявки.html" title="Заявки">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         <span class="nav-label">Заявки</span>
       </a></li>
@@ -347,7 +347,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="nav-label">Копилка</span>
       </a></li>
-      <li><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
+      <li data-admin-only="1"><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span class="nav-label">Пользователи</span>
       </a></li>
@@ -359,7 +359,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
         <span class="nav-label">Финансы</span>
       </a></li>
-      <li><a href="настройки-справочники.html" title="Настройки (доступно суперадмину)">
+      <li data-admin-only="1"><a href="настройки-справочники.html" title="Настройки (доступно суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
         <span class="nav-label">Настройки</span>
       </a></li>
@@ -684,6 +684,7 @@
 <script src="справочники.js"></script>
 <script>
 (function(){
+  TenderReferences.applyAdminOnlyNav();
   var SECTIONS = [
     {key:'Учредительные документы', label:'Учредительные'},
     {key:'Опыт', label:'Опыт'},
@@ -1080,6 +1081,7 @@
     var typeHtml = (s.employmentType||'штат') === 'гпх'
       ? '<span class="status-tag" style="background:var(--warning-bg);color:var(--warning);border-color:transparent;">ГПХ</span>'
       : '<span class="status-tag" style="background:var(--success-bg);color:var(--success);border-color:transparent;">Штат</span>';
+    var canManageStaff = TenderReferences.isAdminUser(current);
     return '<tr data-id="'+esc(s.id)+'">'
       + '<td class="row-title">'+esc(s.name)+'</td>'
       + '<td>'+esc(s.department||'—')+'</td>'
@@ -1089,8 +1091,8 @@
       + '<td>'+(s.experienceYears ? esc(s.experienceYears)+' '+pluralRu(Number(s.experienceYears)||0,'год','года','лет') : '<span class="empty-cell">—</span>')+'</td>'
       + '<td style="max-width:280px;">'+eduHtml+'</td>'
       + '<td class="row-icon-actions">'
-        + '<button class="icon-btn-xs" data-action="edit-staff" data-id="'+esc(s.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>'
-        + '<button class="icon-btn-xs icon-danger" data-action="delete-staff" data-id="'+esc(s.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>'
+        + (canManageStaff ? '<button class="icon-btn-xs" data-action="edit-staff" data-id="'+esc(s.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>' : '')
+        + (canManageStaff ? '<button class="icon-btn-xs icon-danger" data-action="delete-staff" data-id="'+esc(s.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>' : '')
       + '</td>'
       + '</tr>';
   }
@@ -1108,7 +1110,7 @@
       ? '<span class="file-actions"><button type="button" class="icon-btn-xs" data-action="preview-exp" data-id="'+esc(x.id)+'" title="Предпросмотр" aria-label="Предпросмотр">'+EYE_SVG+'</button>'
         + '<a href="'+x.dataUrl+'" download="'+esc(x.fileName||'Документ')+'" class="icon-btn-xs" title="Скачать" aria-label="Скачать">'+DOWNLOAD_SVG+'</a></span>'
       : '<span class="empty-cell">файл не прикреплён</span>';
-    var canDelete = TenderReferences.isAdminUser(current);
+    var canManageExp = TenderReferences.isAdminUser(current);
     return '<tr data-id="'+esc(x.id)+'">'
       + '<td class="row-title">'+esc(x.contractor)+'</td>'
       + '<td>'+esc(x.contractNumber||'—')+'</td>'
@@ -1119,8 +1121,8 @@
       + '<td>'+smetaHtml+'</td>'
       + '<td>'+fileHtml+'</td>'
       + '<td class="row-icon-actions">'
-        + '<button class="icon-btn-xs" data-action="edit-exp" data-id="'+esc(x.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>'
-        + (canDelete ? '<button class="icon-btn-xs icon-danger" data-action="delete-exp" data-id="'+esc(x.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>' : '')
+        + (canManageExp ? '<button class="icon-btn-xs" data-action="edit-exp" data-id="'+esc(x.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>' : '')
+        + (canManageExp ? '<button class="icon-btn-xs icon-danger" data-action="delete-exp" data-id="'+esc(x.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>' : '')
       + '</td>'
       + '</tr>';
   }
@@ -1139,13 +1141,14 @@
     var metaHtml = d.uploadedBy
       ? '<span class="meta-muted">'+esc(d.uploadedBy)+'<br>'+fmtDate(d.uploadedAt)+'</span>'
       : '<span class="empty-cell">—</span>';
+    var canEditDoc = TenderReferences.isAdminUser(current);
     return '<tr data-id="'+esc(d.id)+'">'
       + '<td class="row-title">'+esc(d.name)+'</td>'
       + '<td style="max-width:220px;">'+keysHtml+'</td>'
       + '<td>'+dateHtml+'</td>'
       + '<td>'+fileHtml+'</td>'
       + '<td>'+metaHtml+'</td>'
-      + '<td><button class="link-btn" data-action="edit" data-id="'+esc(d.id)+'">Изменить</button></td>'
+      + '<td>'+(canEditDoc ? '<button class="link-btn" data-action="edit" data-id="'+esc(d.id)+'">Изменить</button>' : '<span class="empty-cell">—</span>')+'</td>'
       + '</tr>';
   }
 
@@ -1158,13 +1161,14 @@
       ? '<div class="cmt-text" data-id="'+esc(t.id)+'">'+esc(t.comment)+'</div>'
         + '<button type="button" class="link-btn cmt-more" data-action="view-comment-template" data-id="'+esc(t.id)+'" hidden>Показать</button>'
       : '<span class="empty-cell">—</span>';
+    var canEditTemplate = TenderReferences.isAdminUser(current);
     return '<tr data-id="'+esc(t.id)+'">'
       + '<td class="row-title">'+esc(t.name)+'</td>'
       + '<td>'+previewBtn+'</td>'
       + '<td>'+(t.dataUrl ? esc(t.format||'—') : '<span class="empty-cell">не прикреплён</span>')+'</td>'
       + '<td>'+downloadHtml+'</td>'
       + '<td class="cmt-cell">'+commentHtml+'</td>'
-      + '<td><button type="button" class="icon-btn-xs" data-action="edit-template" data-id="'+esc(t.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button></td>'
+      + '<td>'+(canEditTemplate ? '<button type="button" class="icon-btn-xs" data-action="edit-template" data-id="'+esc(t.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>' : '<span class="empty-cell">—</span>')+'</td>'
       + '</tr>';
   }
 
@@ -1316,6 +1320,7 @@
     var el = e.target.closest('[data-action]');
     if(!el) return;
     if(el.dataset.action === 'edit'){
+      if(!TenderReferences.isAdminUser(current)) return;
       var doc = library.find(function(d){ return d.id === el.dataset.id; });
       if(doc) openModal(doc);
     }
@@ -1328,10 +1333,12 @@
       if(expPreview) openTemplatePreview({name:expPreview.fileName || expPreview.contractor, format:formatFromFilename(expPreview.fileName||''), dataUrl:expPreview.dataUrl, type:expPreview.fileType});
     }
     if(el.dataset.action === 'edit-staff'){
+      if(!TenderReferences.isAdminUser(current)) return;
       var person = staff.find(function(s){ return s.id === el.dataset.id; });
       if(person) openStaffModal(person);
     }
     if(el.dataset.action === 'delete-staff'){
+      if(!TenderReferences.isAdminUser(current)) return;
       var toDelete = staff.find(function(s){ return s.id === el.dataset.id; });
       if(toDelete && confirm('Удалить сотрудника «'+toDelete.name+'» из справочника? Это действие нельзя отменить.')){
         staff = staff.filter(function(s){ return s.id !== el.dataset.id; });
@@ -1341,6 +1348,7 @@
       }
     }
     if(el.dataset.action === 'edit-exp'){
+      if(!TenderReferences.isAdminUser(current)) return;
       var record = experience.find(function(x){ return x.id === el.dataset.id; });
       if(record) openExpModal(record);
     }
@@ -1359,6 +1367,7 @@
       if(forSmeta) openSmetaModal(forSmeta);
     }
     if(el.dataset.action === 'edit-template'){
+      if(!TenderReferences.isAdminUser(current)) return;
       var tpl = templates.find(function(t){ return t.id === el.dataset.id; });
       if(tpl) openTemplateModal(tpl);
     }

@@ -374,6 +374,7 @@
       active.completed = true;
       active.completedAt = new Date().toISOString();
       active.snapshot = sectionSnapshot(active);
+      tender.archivedAt = tender.archivedAt || new Date().toISOString().slice(0,10);
     }
     return active;
   }
@@ -481,6 +482,12 @@
         || value === 'суперадмин' || value === 'суперадминистратор';
     });
   }
+  function isObserverUser(user){
+    var roles = user && Array.isArray(user.roles) ? user.roles : [];
+    return roles.some(function(role){
+      return String(role).toLocaleLowerCase('ru-RU') === 'наблюдатель';
+    });
+  }
   function availableStatuses(section, user, statuses){
     var values = Array.isArray(statuses) ? statuses : load().applicationStatuses;
     if(isAdminUser(user || currentUser())) return sortOptions(values);
@@ -497,6 +504,17 @@
     var rule = statusRule(status);
     currentSection = displaySection(currentSection);
     return rule.type === 'through' ? currentSection : (rule.sections[0] || currentSection);
+  }
+  // скрывает пункты меню: data-admin-only — для всех кроме Админа/Суперадмина;
+  // data-admin-observer-only — для всех кроме Админа/Суперадмина/Наблюдателя
+  function applyAdminOnlyNav(){
+    if(typeof document === 'undefined') return;
+    var user = currentUser();
+    var admin = isAdminUser(user);
+    if(!admin) document.querySelectorAll('[data-admin-only]').forEach(function(el){ el.remove(); });
+    if(!admin && !isObserverUser(user)){
+      document.querySelectorAll('[data-admin-observer-only]').forEach(function(el){ el.remove(); });
+    }
   }
 
   syncTenderHierarchy();
@@ -525,6 +543,8 @@
     displaySection: displaySection,
     currentUser: currentUser,
     isAdminUser: isAdminUser,
+    isObserverUser: isObserverUser,
+    applyAdminOnlyNav: applyAdminOnlyNav,
     usersKey: USERS_KEY,
     systemRoles: SYSTEM_ROLES.slice(),
     getUsers: loadUsers,

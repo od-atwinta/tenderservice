@@ -366,6 +366,8 @@
   .report-section h5{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.03em;
     color:var(--ink-muted);font-weight:700;}
   .report-section p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink);}
+  .access-denied{max-width:460px;margin:60px auto;text-align:center;color:var(--ink-muted);
+    font-size:14px;line-height:1.6;}
 
   /* ---------- toast ---------- */
   .toast{position:fixed;top:20px;right:20px;max-width:340px;background:var(--surface);
@@ -481,14 +483,14 @@
           <span class="nav-label">Тендеры</span>
         </a>
         <ul class="nav-sub">
-          <li><a href="все-тендеры.html"><span class="nav-label">Сводная таблица</span></a></li>
+          <li data-admin-observer-only="1"><a href="все-тендеры.html"><span class="nav-label">Сводная таблица</span></a></li>
           <li><a href="#" class="is-active"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
           <li><a href="ожидают-решения.html"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
           <li><a href="в-работе.html"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
           <li><a href="архив.html"><span class="nav-label">Архив</span></a></li>
         </ul>
       </li>
-      <li><a href="#" title="Заявки">
+      <li><a href="заявки.html" title="Заявки">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         <span class="nav-label">Заявки</span>
       </a></li>
@@ -505,7 +507,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="nav-label">Копилка</span>
       </a></li>
-      <li><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
+      <li data-admin-only="1"><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span class="nav-label">Пользователи</span>
       </a></li>
@@ -517,7 +519,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
         <span class="nav-label">Финансы</span>
       </a></li>
-      <li><a href="настройки-справочники.html" class="is-active" title="Настройки (доступно суперадмину)">
+      <li data-admin-only="1"><a href="настройки-справочники.html" class="is-active" title="Настройки (доступно суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
         <span class="nav-label">Настройки</span>
       </a></li>
@@ -532,7 +534,7 @@
     </div>
   </aside>
 
-  <div class="app">
+  <div class="app" id="appRoot">
     <div class="page-head">
       <h1 class="page-title">Настройки</h1>
       <div class="page-actions">
@@ -723,6 +725,12 @@
 <script src="справочники.js"></script>
 <script>
 (function(){
+  TenderReferences.applyAdminOnlyNav();
+  if(!TenderReferences.isAdminUser(TenderReferences.currentUser())){
+    document.getElementById('appRoot').innerHTML =
+      '<div class="access-denied"><p>Доступ ограничен, обратитесь к администратору.</p></div>';
+    return;
+  }
   var TODAY = '2026-07-17';
   var DEPTS = TenderReferences.get('departments');
   var REASONS = TenderReferences.get('rejectionReasons');
@@ -1859,6 +1867,7 @@
 </script>
 <script>
 (function(){
+  if(!TenderReferences.isAdminUser(TenderReferences.currentUser())) return;
   var META = [
     {key:'departments', title:'Направления'},
     {key:'rejectionReasons', title:'Причины отказа'},
@@ -2047,12 +2056,18 @@
 </script>
 <script>
 (function(){
+  if(!TenderReferences.isAdminUser(TenderReferences.currentUser())) return;
   var ACCESS_KEY = 'atvinta_role_access_v1';
   var roles = ['superadmin','admin','observer','manager','head','employee'];
   var rows = [
     {group:'Тендеры'},
     {key:'viewTenders', label:'Просматривать доступные тендеры',
       states:['allow','allow','mixed','allow','allow','allow']},
+    {key:'viewSummaryTable', label:'Просматривать сводную таблицу тендеров',
+      states:['allow','allow','allow','deny','deny','deny']},
+    {key:'editSummaryTable', label:'Редактировать строки сводной таблицы',
+      note:'Наблюдатель видит таблицу, но ответственный/решение/причина отказа, избранное и добавление тендера ему недоступны.',
+      states:['allow','allow','deny','deny','deny','deny']},
     {key:'createTender', label:'Создавать тендер',
       states:['allow','allow','mixed','mixed','mixed','mixed']},
     {key:'editTender', label:'Редактировать карточку тендера',
@@ -2060,9 +2075,11 @@
     {key:'changeStatus', label:'Изменять статус',
       states:['allow','allow','deny','allow','mixed','mixed']},
     {key:'assignManager', label:'Назначать ответственного менеджера',
-      states:['allow','allow','deny','mixed','mixed','mixed']},
+      note:'Совпадает с правом редактировать карточку «Ответственные».',
+      states:['allow','allow','deny','deny','deny','deny']},
     {key:'manageParticipants', label:'Добавлять и исключать участников',
-      states:['allow','mixed','deny','mixed','mixed','mixed']},
+      note:'Совпадает с правом редактировать карточку «Ответственные».',
+      states:['allow','allow','deny','deny','deny','deny']},
     {key:'manageTenderSections', label:'Управлять секциями и заявками',
       states:['allow','allow','deny','allow','deny','deny']},
     {key:'editDeadline', label:'Изменять срок подачи',
@@ -2084,13 +2101,31 @@
       states:['allow','allow','allow','mixed','mixed','mixed']},
     {group:'Администрирование'},
     {key:'references', label:'Управлять справочниками',
-      states:['allow','deny','deny','deny','deny','deny']},
+      note:'Админу физически доступно, если Суперадмин открыл ему раздел «Настройки».',
+      states:['allow','allow','deny','deny','deny','deny']},
     {key:'users', label:'Управлять пользователями и назначать роли',
       states:['allow','allow','deny','deny','deny','deny']},
     {key:'roles', label:'Управлять ролями и доступами',
       states:['allow','deny','deny','deny','deny','deny']},
     {key:'prompts', label:'Управлять промптами ИИ',
-      states:['allow','deny','deny','deny','deny','deny']}
+      states:['allow','deny','deny','deny','deny','deny']},
+    {group:'Копилка'},
+    {key:'kopilkaUpload', label:'Загружать документы и шаблоны',
+      states:['allow','allow','allow','allow','allow','allow']},
+    {key:'kopilkaDeleteExp', label:'Удалять запись в разделе «Опыт»',
+      states:['allow','allow','deny','deny','deny','deny']},
+    {key:'kopilkaDeleteStaff', label:'Удалять сотрудника в разделе «Штат»',
+      states:['allow','allow','deny','deny','deny','deny']},
+    {group:'Дашборд'},
+    {key:'viewDashboard', label:'Просматривать Дашборд',
+      states:['allow','allow','allow','allow','allow','allow']},
+    {key:'editDashboard', label:'Настраивать Дашборд (виджеты, период)',
+      states:['allow','allow','allow','allow','allow','allow']},
+    {group:'Финансы'},
+    {key:'viewFinance', label:'Просматривать раздел «Финансы»',
+      states:['allow','allow','allow','allow','allow','allow']},
+    {key:'editFinance', label:'Добавлять/изменять/удалять площадку в «Финансах»',
+      states:['allow','allow','deny','deny','deny','deny']}
   ];
   var stored = {};
   try{ stored = JSON.parse(localStorage.getItem(ACCESS_KEY) || '{}'); }catch(error){}

@@ -407,14 +407,14 @@
           <span class="nav-label">Тендеры</span>
         </a>
         <ul class="nav-sub">
-          <li><a href="все-тендеры.html"><span class="nav-label">Сводная таблица</span></a></li>
+          <li data-admin-observer-only="1"><a href="все-тендеры.html"><span class="nav-label">Сводная таблица</span></a></li>
           <li><a href="новые-тендеры.html"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
           <li><a href="ожидают-решения.html"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
           <li><a href="#" class="is-active"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
           <li><a href="архив.html"><span class="nav-label">Архив</span></a></li>
         </ul>
       </li>
-      <li><a href="#" title="Заявки">
+      <li><a href="заявки.html" title="Заявки">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         <span class="nav-label">Заявки</span>
       </a></li>
@@ -431,7 +431,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="nav-label">Копилка</span>
       </a></li>
-      <li><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
+      <li data-admin-only="1"><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span class="nav-label">Пользователи</span>
       </a></li>
@@ -443,7 +443,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
         <span class="nav-label">Финансы</span>
       </a></li>
-      <li><a href="настройки-справочники.html" title="Настройки (доступно суперадмину)">
+      <li data-admin-only="1"><a href="настройки-справочники.html" title="Настройки (доступно суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
         <span class="nav-label">Настройки</span>
       </a></li>
@@ -620,6 +620,7 @@
 <script src="справочники.js"></script>
 <script>
 (function(){
+  TenderReferences.applyAdminOnlyNav();
   var TODAY = '2026-07-17';
   var DEPTS = TenderReferences.get('departments');
   var REASONS = TenderReferences.get('rejectionReasons');

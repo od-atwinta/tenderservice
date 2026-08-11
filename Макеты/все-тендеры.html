@@ -38,6 +38,7 @@
     --shadow-md:0 8px 24px rgba(28,23,32,.14);
   }
 
+  [hidden]{display:none !important;}
   *{box-sizing:border-box;}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);
     -webkit-font-smoothing:antialiased;}
@@ -266,6 +267,8 @@
   .report-section h5{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.03em;
     color:var(--ink-muted);font-weight:700;}
   .report-section p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink);}
+  .access-denied{max-width:460px;margin:60px auto;text-align:center;color:var(--ink-muted);
+    font-size:14px;line-height:1.6;}
 
   /* ---------- toast ---------- */
   .toast{position:fixed;top:20px;right:20px;max-width:340px;background:var(--surface);
@@ -308,14 +311,14 @@
           <span class="nav-label">Тендеры</span>
         </a>
         <ul class="nav-sub">
-          <li><a href="#" class="is-active"><span class="nav-label">Сводная таблица</span></a></li>
+          <li data-admin-observer-only="1"><a href="#" class="is-active"><span class="nav-label">Сводная таблица</span></a></li>
           <li><a href="новые-тендеры.html"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
           <li><a href="ожидают-решения.html"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
           <li><a href="в-работе.html"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
           <li><a href="архив.html"><span class="nav-label">Архив</span></a></li>
         </ul>
       </li>
-      <li><a href="#" title="Заявки">
+      <li><a href="заявки.html" title="Заявки">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         <span class="nav-label">Заявки</span>
       </a></li>
@@ -332,7 +335,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="nav-label">Копилка</span>
       </a></li>
-      <li><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
+      <li data-admin-only="1"><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span class="nav-label">Пользователи</span>
       </a></li>
@@ -344,7 +347,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
         <span class="nav-label">Финансы</span>
       </a></li>
-      <li><a href="настройки-справочники.html" title="Настройки (доступно суперадмину)">
+      <li data-admin-only="1"><a href="настройки-справочники.html" title="Настройки (доступно суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
         <span class="nav-label">Настройки</span>
       </a></li>
@@ -359,7 +362,7 @@
     </div>
   </aside>
 
-  <div class="app">
+  <div class="app" id="appRoot">
     <div class="page-head">
       <h1 class="page-title">Сводная таблица</h1>
       <div class="page-actions">
@@ -547,6 +550,17 @@
 <script src="справочники.js"></script>
 <script>
 (function(){
+  TenderReferences.applyAdminOnlyNav();
+  var current = TenderReferences.currentUser();
+  // страницу видят Админ, Суперадмин и Наблюдатель; редактировать (ответственный, решение, причина
+  // отказа, избранное, добавление тендера) может только Админ и Суперадмин — Наблюдатель только смотрит
+  var canEdit = TenderReferences.isAdminUser(current);
+  var canView = canEdit || TenderReferences.isObserverUser(current);
+  if(!canView){
+    document.getElementById('appRoot').innerHTML =
+      '<div class="access-denied"><p>Доступ ограничен, обратитесь к администратору.</p></div>';
+    return;
+  }
   var DEPTS = TenderReferences.get('departments');
   var DECISIONS = ['Участвуем','Отказ','На рассмотрении'];
   var REASONS = TenderReferences.get('rejectionReasons');
@@ -984,8 +998,12 @@
     var b = bucket(t);
     var nameHref = t.cardUrl || '#';
     return '<tr data-id="'+t.id+'">'
-      + '<td><button class="fav-star'+(t.fav?' is-fav':'')+'" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button></td>'
-      + '<td><select class="cell-select" data-field="manager" data-id="'+t.id+'"><option value="">—</option>'+optionsHtml(MANAGERS, t.manager)+'</select></td>'
+      + '<td>'+(canEdit
+            ? '<button class="fav-star'+(t.fav?' is-fav':'')+'" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button>'
+            : '<span class="fav-star'+(t.fav?' is-fav':'')+'" aria-hidden="true" style="cursor:default">'+(t.fav?'★':'☆')+'</span>')+'</td>'
+      + '<td>'+(canEdit
+            ? '<select class="cell-select" data-field="manager" data-id="'+t.id+'"><option value="">—</option>'+optionsHtml(MANAGERS, t.manager)+'</select>'
+            : esc(t.manager || '—'))+'</td>'
       + '<td class="name-cell">'+riskIco+'<a class="'+titleClass+'" href="'+nameHref+'" target="_blank" rel="noopener">'+esc(t.name)+'</a>'+dupIco+'</td>'
       + '<td><span class="status-tag '+bucketClass(b)+'"><span class="dot"></span>'+b+'</span></td>'
       + '<td>'+esc(t.customer)+'</td>'
@@ -997,8 +1015,12 @@
             : '<span style="color:var(--ink-muted)">—</span>')+'</td>'
       + '<td>'+deadlineHtml(t.deadline)+'</td>'
       + '<td>'+esc((t.depts && t.depts.length) ? t.depts.join(', ') : '—')+'</td>'
-      + '<td><select class="cell-select" data-field="decision" data-id="'+t.id+'"><option value="">—</option>'+optionsHtml(DECISIONS, t.decision)+'</select></td>'
-      + '<td><select class="cell-select" data-field="rejectReason" data-id="'+t.id+'"'+(t.decision!=='Отказ'?' disabled':'')+'><option value="">—</option>'+optionsHtml(REASONS, t.rejectReason)+'</select></td>'
+      + '<td>'+(canEdit
+            ? '<select class="cell-select" data-field="decision" data-id="'+t.id+'"><option value="">—</option>'+optionsHtml(DECISIONS, t.decision)+'</select>'
+            : esc(t.decision || '—'))+'</td>'
+      + '<td>'+(canEdit
+            ? '<select class="cell-select" data-field="rejectReason" data-id="'+t.id+'"'+(t.decision!=='Отказ'?' disabled':'')+'><option value="">—</option>'+optionsHtml(REASONS, t.rejectReason)+'</select>'
+            : esc(t.rejectReason || '—'))+'</td>'
       + '<td class="num">'+fmtDate(t.rowCreated)+'</td>'
       + '</tr>';
   }
@@ -1118,7 +1140,8 @@
     atName.focus();
   }
   function closeAddTender(){ addOverlay.classList.remove('is-open'); }
-  document.getElementById('addTenderBtn').addEventListener('click', openAddTender);
+  document.getElementById('addTenderBtn').hidden = !canEdit;
+  document.getElementById('addTenderBtn').addEventListener('click', function(){ if(canEdit) openAddTender(); });
   document.getElementById('atCancel').addEventListener('click', closeAddTender);
   addOverlay.addEventListener('click', function(e){ if(e.target === addOverlay) closeAddTender(); });
 
