@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Тендеры — сводная таблица</title>
 <style>
   :root{
@@ -177,6 +178,8 @@
   .data-table th.sortable{cursor:pointer;user-select:none;}
   .data-table th.sortable:hover{color:var(--ink);}
   .sort-arrow{margin-left:3px;opacity:.55;font-size:10px;}
+  .sort-arrow:empty::after{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
+    background:currentColor;opacity:.55;vertical-align:middle;}
   .data-table tbody tr:last-child td{border-bottom:none;}
   .data-table tbody tr:hover{background:var(--surface-2);}
   td.name-cell{white-space:normal;min-width:240px;max-width:320px;}
@@ -295,7 +298,7 @@
       </button>
     </div>
     <ul class="nav-list">
-      <li><a href="#" title="Дашборд">
+      <li><a href="дашборд.html" title="Дашборд">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
         <span class="nav-label">Дашборд</span>
       </a></li>
@@ -337,7 +340,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="nav-label">Профиль</span>
       </a></li>
-      <li><a href="#" title="Финансы">
+      <li><a href="финансы.html" title="Финансы">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
         <span class="nav-label">Финансы</span>
       </a></li>

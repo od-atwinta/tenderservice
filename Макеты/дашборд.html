@@ -1,0 +1,1134 @@
+<meta charset="utf-8">
+<title>Дашборд</title>
+<style>
+  [hidden]{display:none !important;}
+  :root{
+    --bg:#faf8f9;--surface:#ffffff;--surface-2:#f4eef1;--ink:#1c1720;--ink-muted:#6b6270;
+    --border:#e6dfe3;--border-strong:#d8cfd4;--accent:#c41e52;--accent-ink:#ffffff;--accent-wash:#fbe8ee;
+    --success:#1b7a4d;--success-bg:#e6f4ec;--warning:#a3690a;--warning-bg:#faf0dd;
+    --danger:#b23a1e;--danger-bg:#fbe8e2;--inline-action:#606F7D;--verified-bg:#C8E6C9;
+    --deadline-bg:#FAFAFA;--radius-sm:7px;--radius-md:12px;
+    --shadow-sm:0 1px 2px rgba(28,23,32,.07), 0 1px 1px rgba(28,23,32,.04);
+    --shadow-md:0 8px 24px rgba(28,23,32,.14);
+    --font-display:Georgia,"Noto Serif","PT Serif","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Cascadia Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#18131b;--surface:#201a24;--surface-2:#271f2b;--ink:#f3eef1;--ink-muted:#a99fac;
+      --border:#382e3d;--border-strong:#463a4c;--accent:#ff7196;--accent-ink:#1c1720;
+      --accent-wash:#3a1f29;--success:#4bc491;--success-bg:#153327;--warning:#e3a848;
+      --warning-bg:#382a0f;--danger:#ff8562;--danger-bg:#3c1e15;
+      --shadow-sm:0 1px 2px rgba(0,0,0,.5);--shadow-md:0 12px 32px rgba(0,0,0,.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#18131b;--surface:#201a24;--surface-2:#271f2b;--ink:#f3eef1;--ink-muted:#a99fac;
+    --border:#382e3d;--border-strong:#463a4c;--accent:#ff7196;--accent-ink:#1c1720;
+    --accent-wash:#3a1f29;--success:#4bc491;--success-bg:#153327;--warning:#e3a848;
+    --warning-bg:#382a0f;--danger:#ff8562;--danger-bg:#3c1e15;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.5);--shadow-md:0 12px 32px rgba(0,0,0,.55);
+  }
+  :root[data-theme="light"]{
+    --bg:#faf8f9;--surface:#ffffff;--surface-2:#f4eef1;--ink:#1c1720;--ink-muted:#6b6270;
+    --border:#e6dfe3;--border-strong:#d8cfd4;--accent:#c41e52;--accent-ink:#ffffff;
+    --accent-wash:#fbe8ee;--success:#1b7a4d;--success-bg:#e6f4ec;--warning:#a3690a;
+    --warning-bg:#faf0dd;--danger:#b23a1e;--danger-bg:#fbe8e2;
+    --shadow-sm:0 1px 2px rgba(28,23,32,.07), 0 1px 1px rgba(28,23,32,.04);
+    --shadow-md:0 8px 24px rgba(28,23,32,.14);
+  }
+
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;}
+
+  .shell{display:flex;align-items:flex-start;}
+
+  /* ---------- sidebar ---------- */
+  .portal-nav{position:fixed;top:0;left:0;bottom:0;width:224px;border-right:1px solid var(--border);
+    background:var(--surface);padding:20px 14px;display:flex;flex-direction:column;
+    transition:width .18s ease;overflow-x:hidden;overflow-y:auto;z-index:10;}
+  .portal-nav.is-collapsed{width:68px;padding-left:10px;padding-right:10px;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 18px 4px;}
+  .portal-nav.is-collapsed .brand-row{justify-content:center;padding:6px 0 18px;}
+  .brand-title{font-family:var(--font-display);font-weight:700;font-size:17px;line-height:1.2;white-space:nowrap;}
+  .brand-sub{font-size:10.5px;color:var(--ink-muted);letter-spacing:.05em;text-transform:uppercase;
+    margin-top:1px;white-space:nowrap;}
+  .portal-nav.is-collapsed .brand{display:none;}
+  .icon-btn-sm{width:34px;height:34px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);
+    background:var(--surface);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;flex:none;}
+  .icon-btn-sm:hover{background:var(--surface-2);color:var(--ink);}
+  .icon-btn-sm svg{width:16px;height:16px;}
+  .nav-toggle svg{transition:transform .15s ease;}
+  .portal-nav.is-collapsed .nav-toggle svg{transform:rotate(180deg);}
+  .nav-list{list-style:none;margin:0;padding:0;flex:1;}
+  .nav-list li + li{margin-top:2px;}
+  .nav-list a{display:flex;align-items:center;gap:10px;padding:9px 10px;
+    border-radius:8px;color:var(--ink-muted);text-decoration:none;font-size:13.5px;font-weight:600;
+    white-space:nowrap;}
+  .nav-list a:hover{background:var(--surface-2);color:var(--ink);}
+  .nav-list a.is-active{background:var(--ink);color:var(--surface);}
+  .nav-ico{width:18px;height:18px;flex:none;}
+  .nav-label{flex:1;overflow:hidden;text-overflow:ellipsis;}
+  .portal-nav.is-collapsed .nav-list a{justify-content:center;padding:10px 0;}
+  .portal-nav.is-collapsed .nav-label,.portal-nav.is-collapsed .nav-badge,
+  .portal-nav.is-collapsed .nav-sub,.portal-nav.is-collapsed .nav-datetime{display:none;}
+  .nav-sub{list-style:none;margin:2px 0 6px 12px;padding:0;border-left:1px solid var(--border);}
+  .nav-sub a{padding:6px 10px;font-size:12.5px;font-weight:600;}
+  .nav-badge{background:var(--accent);color:var(--accent-ink);font-size:10.5px;font-weight:700;
+    border-radius:999px;padding:1px 7px;flex:none;margin-left:auto;}
+  .nav-badge.muted{background:var(--border-strong);color:var(--ink-muted);}
+  .nav-datetime{padding:16px 10px 14px;border-top:1px solid var(--border);margin-top:10px;}
+  .nav-datetime .nd-date{font-size:11.5px;color:var(--ink-muted);margin-bottom:3px;}
+  .nav-datetime .nd-time{font-family:var(--font-mono);font-size:22px;font-weight:600;color:var(--ink);
+    font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+  .nav-user{display:flex;align-items:center;gap:9px;padding:12px 10px 4px;border-top:1px solid var(--border);
+    font-size:13px;}
+  .portal-nav.is-collapsed .nav-user{justify-content:center;padding:12px 0 4px;}
+  .nav-user span{font-size:11.5px;color:var(--ink-muted);}
+  .portal-nav.is-collapsed .nav-user-text{display:none;}
+  .avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-ink);
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;}
+
+  /* ---------- main ---------- */
+  .app{flex:1;min-width:0;margin-left:224px;padding:32px 32px 80px;transition:margin-left .18s ease;}
+  .app.nav-collapsed{margin-left:68px;}
+  .icon-popover-wrap{position:relative;}
+  .icon-btn{width:38px;height:38px;border-radius:9px;border:1px solid var(--border-strong);
+    background:var(--surface);color:var(--ink-muted);display:flex;align-items:center;
+    justify-content:center;cursor:pointer;flex:none;position:relative;}
+  .icon-btn svg{width:18px;height:18px;}
+  .icon-btn:hover{background:var(--surface-2);color:var(--ink);}
+  .icon-btn .ping{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;
+    background:var(--accent);border:2px solid var(--surface);}
+  .popover{position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--surface);
+    border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);
+    padding:14px;display:none;z-index:30;}
+  .popover.is-open{display:block;}
+  .popover h4{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.03em;
+    color:var(--ink-muted);font-weight:700;}
+  .popover-item{padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.5;}
+  .popover-item:last-child{border-bottom:none;padding-bottom:0;}
+  .popover-item .p-meta{font-size:11.5px;color:var(--ink-muted);margin-top:2px;}
+  .popover-foot{margin-top:10px;text-align:right;}
+
+  .btn{font-family:var(--font-body);font-size:13.5px;font-weight:600;border-radius:var(--radius-sm);
+    height:32px;min-height:32px;padding:0 16px;border:1px solid var(--border-strong);
+    background:var(--surface);color:var(--ink);cursor:pointer;line-height:1;white-space:nowrap;
+    display:inline-flex;align-items:center;justify-content:center;}
+  .btn:hover{border-color:var(--ink-muted);}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-sm{padding:0 10px;font-size:12.5px;height:28px;min-height:28px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .page-head{display:flex;justify-content:space-between;align-items:center;gap:20px;
+    flex-wrap:wrap;margin-bottom:16px;}
+  h1.page-title{font-family:var(--font-display);font-weight:600;font-size:28px;margin:0;}
+  .page-actions{display:flex;align-items:center;gap:16px;flex:none;}
+
+  .toolbar-row{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-bottom:20px;}
+  .toolbar-actions{display:flex;gap:12px;margin-left:auto;}
+  .seg-toggle{display:flex;gap:8px;}
+
+  /* ---------- modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(20,15,22,.45);display:none;align-items:center;
+    justify-content:center;z-index:40;padding:20px;}
+  .overlay.is-open{display:flex;}
+  .modal{background:var(--surface);border-radius:var(--radius-md);box-shadow:var(--shadow-md);
+    width:100%;max-width:420px;padding:22px;max-height:90vh;overflow-y:auto;}
+  .modal h4{margin:0 0 4px;font-size:16px;}
+  .modal p.hint{margin:0 0 16px;font-size:13px;color:var(--ink-muted);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    color:var(--ink-muted);margin-bottom:6px;}
+  .field input[type="date"]{width:100%;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+    padding:9px 10px;font-family:var(--font-body);font-size:14px;background:var(--surface);color:var(--ink);
+    height:32px;}
+  .check-row{display:flex;align-items:center;gap:8px;}
+  .check-row input{width:15px;height:15px;accent-color:var(--accent);}
+  .check-row span{font-size:13.5px;color:var(--ink);text-transform:none;font-weight:500;
+    letter-spacing:normal;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;}
+  @media (prefers-reduced-motion:no-preference){.overlay.is-open .modal{animation:pop .16s ease-out;}}
+  @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98);}to{opacity:1;transform:none;}}
+
+  /* ---------- toast ---------- */
+  .toast{position:fixed;top:20px;right:20px;max-width:340px;background:var(--surface);
+    border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);
+    padding:14px 16px;z-index:45;transform:translateX(130%);transition:transform .25s ease;}
+  .toast.is-open{transform:translateX(0);}
+  .toast-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .toast-head p{margin:0;font-size:13.5px;line-height:1.5;}
+  .toast-close{background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:16px;
+    line-height:1;padding:0;flex:none;}
+
+  @media (max-width:860px){
+    .portal-nav{position:static;width:100%;border-right:none;border-bottom:1px solid var(--border);}
+    .app,.app.nav-collapsed{margin-left:0;}
+  }
+
+  .empty-cell{color:var(--ink-muted);}
+
+  /* ---------- dashboard widgets ---------- */
+  .dash-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));gap:16px;}
+  .dash-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
+    box-shadow:var(--shadow-sm);padding:20px;}
+  .dash-card.is-wide,.is-wide{grid-column:1 / -1;}
+  .dash-card-fixed{height:320px;display:flex;flex-direction:column;}
+  .dash-card-fixed .dash-card-title,.dash-card-fixed .dash-card-head{flex:none;}
+  .dash-card-body{flex:1;min-height:0;overflow-y:auto;}
+  .dash-card-head{display:flex;justify-content:space-between;align-items:center;gap:16px;
+    flex-wrap:wrap;margin-bottom:16px;}
+  .dash-card-title{font-family:var(--font-display);font-weight:600;font-size:16px;margin:0 0 16px;}
+  .dash-card-title-period{font-family:var(--font-display);font-weight:400;font-size:16px;color:var(--ink-muted);}
+  .icon-btn-xs{width:26px;height:26px;border:none;background:none;color:var(--ink-muted);cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;padding:0;flex:none;border-radius:6px;}
+  .icon-btn-xs svg{width:15px;height:15px;}
+  .icon-btn-xs:hover{background:var(--surface-2);color:var(--ink);}
+  .dash-card-head .dash-card-title{margin-bottom:0;}
+
+  .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;}
+  .stat-tile{padding-bottom:14px;}
+  .stat-tile:nth-child(-n+2){border-bottom:1px solid var(--border);}
+  .stat-value{font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--ink);
+    font-variant-numeric:tabular-nums;line-height:1.1;}
+  .stat-label{font-size:12px;color:var(--ink-muted);margin-top:6px;}
+  .stat-sub{font-size:12px;color:var(--success);margin-top:3px;font-family:var(--font-mono);
+    font-variant-numeric:tabular-nums;font-weight:600;}
+
+  .donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+  .donut-chart{position:relative;width:140px;height:140px;flex:none;}
+  .donut-chart svg{display:block;}
+  .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;pointer-events:none;}
+  .donut-center .n{font-family:var(--font-mono);font-size:22px;font-weight:600;color:var(--ink);
+    font-variant-numeric:tabular-nums;}
+  .donut-center .t{font-size:10px;color:var(--ink-muted);}
+  .donut-legend{list-style:none;margin:0;padding:0;flex:1;min-width:200px;}
+  .donut-legend-item{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;
+    border-bottom:1px solid var(--border);}
+  .donut-legend-item:last-child{border-bottom:none;}
+  .donut-swatch{width:10px;height:10px;border-radius:3px;flex:none;}
+  .donut-legend-name{flex:1;color:var(--ink);}
+  .donut-legend-value{color:var(--ink-muted);font-family:var(--font-mono);font-size:11.5px;
+    font-variant-numeric:tabular-nums;white-space:nowrap;}
+
+  .funnel-row{display:flex;gap:16px;align-items:stretch;flex-wrap:wrap;}
+  .funnel-chart-card{flex:1.5 1 380px;min-width:0;}
+  .funnel-legend-card{flex:1 1 260px;min-width:260px;}
+  .funnel-toggles{margin-bottom:14px;}
+  .funnel-key{display:flex;gap:20px;margin-bottom:10px;flex-wrap:wrap;}
+  .funnel-key-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-muted);}
+  .funnel-key-swatch{width:16px;height:0;border-top:2.5px solid;flex:none;}
+  .funnel-chart-wrap{position:relative;}
+  .funnel-tooltip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);
+    font-size:11.5px;font-family:var(--font-mono);font-variant-numeric:tabular-nums;padding:5px 9px;
+    border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%);opacity:0;
+    transition:opacity .1s ease;z-index:5;box-shadow:var(--shadow-md);}
+  .funnel-tooltip.is-visible{opacity:1;}
+  .funnel-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .funnel-table th{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted);
+    font-weight:700;text-align:right;padding:0 0 8px;}
+  .funnel-table th:first-child,.funnel-table td:first-child{text-align:left;}
+  .funnel-table td{padding:10px 0;border-top:1px solid var(--border);text-align:right;vertical-align:middle;}
+  .funnel-table .stage-name{display:flex;align-items:center;gap:8px;white-space:nowrap;}
+  .funnel-table .stage-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .funnel-table .num-cell{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink);
+    white-space:nowrap;}
+  .pct-help{position:relative;display:inline-flex;align-items:center;justify-content:center;
+    width:14px;height:14px;border-radius:50%;border:1.5px solid var(--ink-muted);color:var(--ink-muted);
+    font-size:9.5px;font-weight:700;font-family:var(--font-body);cursor:help;flex:none;margin-left:5px;
+    vertical-align:middle;}
+  .pct-help .tip{display:none;position:absolute;top:calc(100% + 6px);right:0;width:200px;
+    background:var(--ink);color:var(--bg);font-size:11.5px;font-weight:400;line-height:1.5;
+    padding:8px 10px;border-radius:6px;box-shadow:var(--shadow-md);z-index:6;white-space:normal;text-align:left;}
+  .pct-help:hover .tip{display:block;}
+
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .bar-row:last-child{margin-bottom:0;}
+  .bar-label{width:130px;font-size:12.5px;color:var(--ink-muted);flex:none;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;}
+  .bar-wrap{flex:1;background:var(--surface-2);border-radius:6px;height:20px;position:relative;
+    overflow:hidden;}
+  .bar-fill{height:100%;border-radius:6px;background:var(--ink-muted);}
+  .bar-fill.is-warning{background:var(--warning);}
+  .bar-value{width:36px;text-align:right;font-family:var(--font-mono);font-size:12.5px;color:var(--ink);
+    flex:none;font-variant-numeric:tabular-nums;}
+</style>
+
+<div class="shell">
+  <aside class="portal-nav" id="portalNav">
+    <div class="brand-row">
+      <div class="brand">
+        <div class="brand-title">Тендеры</div>
+        <div class="brand-sub">Атвинта</div>
+      </div>
+      <button class="icon-btn-sm nav-toggle" id="navToggle" aria-label="Свернуть меню" title="Свернуть меню">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    </div>
+    <ul class="nav-list">
+      <li><a href="дашборд.html" class="is-active" title="Дашборд">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        <span class="nav-label">Дашборд</span>
+      </a></li>
+      <li>
+        <a href="все-тендеры.html" title="Тендеры">
+          <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          <span class="nav-label">Тендеры</span>
+        </a>
+        <ul class="nav-sub">
+          <li><a href="все-тендеры.html"><span class="nav-label">Сводная таблица</span></a></li>
+          <li><a href="новые-тендеры.html"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
+          <li><a href="ожидают-решения.html"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
+          <li><a href="в-работе.html"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
+          <li><a href="архив.html"><span class="nav-label">Архив</span></a></li>
+        </ul>
+      </li>
+      <li><a href="#" title="Заявки">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <span class="nav-label">Заявки</span>
+      </a></li>
+      <li><a href="избранное.html" title="Избранное">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span class="nav-label">Избранное</span>
+      </a></li>
+      <li><a href="#" title="Календарь">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span class="nav-label">Календарь</span>
+        <span class="nav-badge">2</span>
+      </a></li>
+      <li><a href="копилка.html" title="Копилка">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span class="nav-label">Копилка</span>
+      </a></li>
+      <li><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span class="nav-label">Пользователи</span>
+      </a></li>
+      <li><a href="#" title="Профиль">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-label">Профиль</span>
+      </a></li>
+      <li><a href="финансы.html" title="Финансы">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
+        <span class="nav-label">Финансы</span>
+      </a></li>
+      <li><a href="настройки-справочники.html" title="Настройки (доступно суперадмину)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
+        <span class="nav-label">Настройки</span>
+      </a></li>
+    </ul>
+    <div class="nav-datetime">
+      <div class="nd-date" id="navDate"></div>
+      <div class="nd-time" id="navTime"></div>
+    </div>
+    <div class="nav-user" title="Оксана Д. · суперадмин">
+      <span class="avatar">ОД</span>
+      <span class="nav-user-text"><b style="display:block;font-size:13px;color:var(--ink)">Оксана Д.</b><span>суперадмин</span></span>
+    </div>
+  </aside>
+
+  <div class="app">
+    <div class="page-head">
+      <h1 class="page-title">Дашборд</h1>
+      <div class="page-actions">
+        <div class="icon-popover-wrap">
+          <button class="icon-btn" id="bellBtn" aria-label="Уведомления">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="ping" id="bellPing"></span>
+          </button>
+          <div class="popover" id="bellPopover">
+            <h4>Новое</h4>
+            <div class="popover-item">Обновление сервиса запланировано на выходные.<div class="p-meta">Системное уведомление · сегодня</div></div>
+            <div class="popover-item">5 новых тендеров выгрузилось из Тендерплана.<div class="p-meta">10 мин назад</div></div>
+          </div>
+        </div>
+        <div class="icon-popover-wrap">
+          <button class="icon-btn" id="calBtn" aria-label="Задачи на сегодня">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span class="ping" id="calPing"></span>
+          </button>
+          <div class="popover" id="calPopover">
+            <h4>Задачи на сегодня</h4>
+            <div class="popover-item">Разобрать новые тендеры до конца дня.<div class="p-meta">Без времени</div></div>
+            <div class="popover-foot"><a class="link-ico" href="#">Все задачи ↗</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-row">
+      <div class="seg-toggle" id="periodToggle">
+        <button type="button" class="btn btn-primary" data-period="year">С начала года</button>
+        <button type="button" class="btn" data-period="month">С начала месяца</button>
+      </div>
+      <button type="button" class="btn" id="customPeriodBtn">Настроить период</button>
+      <div class="toolbar-actions">
+        <button type="button" class="icon-btn-sm" id="reportDownloadBtn" title="Скачать отчёт по дашборду" aria-label="Скачать отчёт по дашборду"></button>
+        <button type="button" class="btn" id="configureBtn">Настроить</button>
+      </div>
+    </div>
+
+    <div class="dash-grid" id="dashGrid">
+      <div class="dash-card dash-card-fixed" data-widget="period" id="widgetPeriod">
+        <h3 class="dash-card-title">Итоги периода</h3>
+        <div class="dash-card-body">
+          <div class="stat-row">
+            <div class="stat-tile">
+              <div class="stat-value" id="statNew">0</div>
+              <div class="stat-label">Новых получено</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-value" id="statInWork">0</div>
+              <div class="stat-label">В работе сейчас</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-value" id="statSubmitted">0</div>
+              <div class="stat-label">Подано всего</div>
+            </div>
+            <div class="stat-tile">
+              <div class="stat-value" id="statWon">0</div>
+              <div class="stat-label">Выиграно</div>
+              <div class="stat-sub" id="statWonSum"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-card dash-card-fixed" data-widget="directions" id="widgetDirections">
+        <div class="dash-card-head">
+          <h3 class="dash-card-title">По направлениям</h3>
+          <div class="seg-toggle" id="dirModeToggle">
+            <button type="button" class="btn btn-sm" data-mode="processed">Изучили</button>
+            <button type="button" class="btn btn-sm btn-primary" data-mode="submitted">Подали</button>
+            <button type="button" class="btn btn-sm" data-mode="won">Выиграли</button>
+          </div>
+        </div>
+        <div class="dash-card-body">
+          <div class="donut-wrap">
+            <div class="donut-chart" id="donutChart"></div>
+            <ul class="donut-legend" id="donutLegend"></ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-card dash-card-fixed" data-widget="rejections" id="widgetRejections">
+        <h3 class="dash-card-title">Причины отказов</h3>
+        <div class="dash-card-body">
+          <div id="rejectChart"></div>
+        </div>
+      </div>
+
+      <div class="funnel-row is-wide" id="widgetFunnel">
+        <div class="dash-card funnel-chart-card">
+          <div class="dash-card-head">
+            <h3 class="dash-card-title">Воронка <span class="dash-card-title-period" id="funnelPeriodLabel"></span></h3>
+            <button type="button" class="icon-btn-xs" id="funnelEditBtn" title="Настроить график" aria-label="Настроить график"></button>
+          </div>
+          <div class="funnel-toggles">
+            <div class="seg-toggle" id="funnelMetricToggle">
+              <button type="button" class="btn btn-sm btn-primary" data-metric="count">Количество</button>
+              <button type="button" class="btn btn-sm" data-metric="sum">Сумма</button>
+              <button type="button" class="btn btn-sm" data-metric="pct">Конверсия</button>
+            </div>
+          </div>
+          <div class="funnel-key" id="funnelKey"></div>
+          <div class="funnel-chart-wrap">
+            <div id="funnelChart"></div>
+            <div class="funnel-tooltip" id="funnelTooltip"></div>
+          </div>
+        </div>
+        <div class="dash-card funnel-legend-card">
+          <div class="dash-card-head">
+            <h3 class="dash-card-title">Итоги по этапам <span class="dash-card-title-period" id="legendPeriodLabel"></span></h3>
+            <button type="button" class="icon-btn-xs" id="legendEditBtn" title="Настроить таблицу" aria-label="Настроить таблицу"></button>
+          </div>
+          <table class="funnel-table">
+            <thead><tr><th>Этап</th><th>Кол-во</th><th>Сумма</th><th>Конверсия</th></tr></thead>
+            <tbody id="funnelLegend"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STAGE VISIBILITY MODAL (Воронка / Конверсия по этапам) -->
+<div class="overlay" id="stageVisibilityOverlay">
+  <div class="modal">
+    <h4>Настроить график</h4>
+    <p class="hint">Выберите этапы, которые нужно показывать на графике.</p>
+    <div class="field"><label class="check-row"><input type="checkbox" class="stage-check" value="new"><span>Новых получено</span></label></div>
+    <div class="field"><label class="check-row"><input type="checkbox" class="stage-check" value="work"><span>Взято в работу</span></label></div>
+    <div class="field"><label class="check-row"><input type="checkbox" class="stage-check" value="submitted"><span>Подано</span></label></div>
+    <div class="field"><label class="check-row"><input type="checkbox" class="stage-check" value="won"><span>Выиграно</span></label></div>
+    <div class="modal-actions">
+      <button class="btn" id="stageVisibilityCancel">Отмена</button>
+      <button class="btn btn-primary" id="stageVisibilitySave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM PERIOD MODAL -->
+<div class="overlay" id="periodOverlay">
+  <div class="modal">
+    <h4>Настроить период</h4>
+    <div class="field">
+      <label for="periodStartInput">Начало периода</label>
+      <input type="date" id="periodStartInput">
+    </div>
+    <div class="field">
+      <label for="periodEndInput">Окончание периода</label>
+      <input type="date" id="periodEndInput">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="periodCancel">Отмена</button>
+      <button class="btn btn-primary" id="periodApply">Применить</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIGURE WIDGETS MODAL -->
+<div class="overlay" id="configureOverlay">
+  <div class="modal">
+    <h4>Настроить дашборд</h4>
+    <p class="hint">Выберите виджеты, которые хотите видеть на своей странице.</p>
+    <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="period"><span>Итоги периода</span></label></div>
+    <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="directions"><span>По направлениям</span></label></div>
+    <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="funnel"><span>Воронка</span></label></div>
+    <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="rejections"><span>Причины отказов</span></label></div>
+    <div class="modal-actions">
+      <button class="btn" id="configureCancel">Отмена</button>
+      <button class="btn btn-primary" id="configureSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="addToast">
+  <div class="toast-head">
+    <p id="toastText"></p>
+    <button class="toast-close" id="toastClose" aria-label="Закрыть">✕</button>
+  </div>
+</div>
+
+<script src="справочники.js"></script>
+<script>
+(function(){
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function fmtMoney(v){
+    var n = Number(v);
+    if(!v || isNaN(n)) return '0 ₽';
+    return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
+  }
+  function pad2(n){ return n < 10 ? '0'+n : ''+n; }
+
+  var TODAY = '2026-07-17';
+  var DIRECTION_COLORS = {
+    'Продвижение':'#FCE4EC','Техническая поддержка':'#E3F2FD','Разработка':'#E8EAF6',
+    'Аналитика':'#E8F5E9','Дизайн':'#F3E5F5','Аутстафф':'#FFF3E0'
+  };
+  var DIRECTION_FALLBACK = '#ECEFF1';
+
+  function loadTenders(){
+    try{ var list = JSON.parse(localStorage.getItem('atvinta_tenders_v2') || '[]'); return Array.isArray(list) ? list : []; }
+    catch(e){ return []; }
+  }
+  var tenders = loadTenders();
+
+  var SUBMITTED_OUTCOME_STATUSES = ['Выиграли','Отклонено','Без выбора победителя','Не допущены'];
+
+  function fmtDate(iso){ if(!iso) return '—'; var d = String(iso).slice(0,10); var p = d.split('-'); return p.length===3 ? p[2]+'.'+p[1]+'.'+p[0] : iso; }
+  function createdDate(t){ return String(t.rowCreated || '').slice(0,10); }
+  function periodStart(mode){
+    var d = new Date(TODAY+'T00:00:00');
+    return mode === 'month' ? (d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-01') : (d.getFullYear()+'-01-01');
+  }
+  function inPeriod(t, range){
+    var d = createdDate(t);
+    if(!d || d < range.start) return false;
+    if(range.end && d > range.end) return false;
+    return true;
+  }
+  function isSubmitted(t){
+    if(t.decision === 'Отказ') return false;
+    if(TenderReferences.resolveSection(t) === 'Заявки') return true;
+    return SUBMITTED_OUTCOME_STATUSES.indexOf(t.appStatus) !== -1;
+  }
+  function isWon(t){ return t.decision !== 'Отказ' && t.appStatus === 'Выиграли'; }
+  function isProcessed(t){ return !!t.decision; }
+  function isTakenToWork(t){ return t.decision === 'Участвуем'; }
+
+  function tendersInPeriod(range){ return tenders.filter(function(t){ return inPeriod(t, range); }); }
+
+  function statsForPeriod(range){
+    var inP = tendersInPeriod(range);
+    var won = inP.filter(isWon);
+    var wonSum = 0;
+    won.forEach(function(t){ wonSum += Number(t.nmc) || 0; });
+    return {
+      newCount: inP.length,
+      inWorkNow: tenders.filter(function(t){ return TenderReferences.resolveSection(t) === 'В работе'; }).length,
+      submittedCount: inP.filter(isSubmitted).length,
+      wonCount: won.length,
+      wonSum: wonSum
+    };
+  }
+
+  function directionBreakdown(mode, range){
+    var inP = tendersInPeriod(range);
+    var filtered = inP.filter(function(t){
+      if(mode === 'processed') return isProcessed(t);
+      if(mode === 'won') return isWon(t);
+      return isSubmitted(t);
+    });
+    var counts = {}, sums = {}, total = 0;
+    filtered.forEach(function(t){
+      var depts = (t.depts && t.depts.length) ? t.depts : ['Без направления'];
+      depts.forEach(function(d){
+        counts[d] = (counts[d] || 0) + 1;
+        sums[d] = (sums[d] || 0) + (Number(t.nmc) || 0);
+        total++;
+      });
+    });
+    return {counts:counts, sums:sums, total:total};
+  }
+
+  function sumNmc(list){ var s = 0; list.forEach(function(t){ s += Number(t.nmc) || 0; }); return s; }
+
+  function funnelForPeriod(range){
+    var inP = tendersInPeriod(range);
+    var stages = [
+      {label:'Новых получено', shortLabel:'Новые', list: inP},
+      {label:'Взято в работу', shortLabel:'В работу', list: inP.filter(isTakenToWork)},
+      {label:'Подано', shortLabel:'Подано', list: inP.filter(isSubmitted)},
+      {label:'Выиграно', shortLabel:'Выиграно', list: inP.filter(isWon)}
+    ];
+    return stages.map(function(s){
+      return {label:s.label, shortLabel:s.shortLabel, value:s.list.length, sum:sumNmc(s.list)};
+    });
+  }
+
+  function rejectionBreakdown(range){
+    var inP = tendersInPeriod(range).filter(function(t){ return t.decision === 'Отказ'; });
+    var counts = {};
+    inP.forEach(function(t){
+      var r = t.rejectReason || 'Без причины';
+      counts[r] = (counts[r] || 0) + 1;
+    });
+    var rows = [];
+    Object.keys(counts).forEach(function(k){ rows.push({label:k, value:counts[k]}); });
+    rows.sort(function(a,b){ return b.value - a.value; });
+    return rows;
+  }
+
+  function renderBarRows(rows, warn){
+    if(!rows.length) return '<p class="empty-cell" style="margin:0;font-size:13px;">Нет данных за выбранный период.</p>';
+    var max = 0;
+    rows.forEach(function(r){ if(r.value > max) max = r.value; });
+    if(!max) max = 1;
+    return rows.map(function(r){
+      var pct = Math.round(r.value / max * 100);
+      return '<div class="bar-row"><span class="bar-label" title="'+esc(r.label)+'">'+esc(r.label)+'</span>'
+        + '<span class="bar-wrap"><span class="bar-fill'+(warn?' is-warning':'')+'" style="width:'+pct+'%"></span></span>'
+        + '<span class="bar-value">'+r.value+'</span></div>';
+    }).join('');
+  }
+
+  function fmtMoneyCompact(v){
+    var n = Number(v) || 0;
+    if(n >= 1000000) return (Math.round(n/100000)/10) + ' млн ₽';
+    if(n >= 1000) return Math.round(n/1000) + ' тыс ₽';
+    return Math.round(n) + ' ₽';
+  }
+
+  var FUNNEL_STAGES = [
+    {key:'new', label:'Новых получено', color:'var(--accent)', match:function(){ return true; }},
+    {key:'work', label:'Взято в работу', color:'var(--warning)', match:isTakenToWork},
+    {key:'submitted', label:'Подано', color:'var(--ink-muted)', match:isSubmitted},
+    {key:'won', label:'Выиграно', color:'var(--success)', match:isWon}
+  ];
+
+  function periodBuckets(range){
+    var start = range.start, end = range.end || TODAY;
+    var startD = new Date(start+'T00:00:00'), endD = new Date(end+'T00:00:00');
+    if(endD < startD) endD = startD;
+    var spanDays = Math.round((endD-startD)/86400000);
+    var buckets = [];
+    if(spanDays > 31){
+      var cur = new Date(startD.getFullYear(), startD.getMonth(), 1);
+      while(cur <= endD){
+        var y = cur.getFullYear(), m = cur.getMonth();
+        var bStart = y+'-'+pad2(m+1)+'-01';
+        var lastDay = new Date(y, m+1, 0).getDate();
+        var bEnd = y+'-'+pad2(m+1)+'-'+pad2(lastDay);
+        buckets.push({
+          start: bStart > start ? bStart : start,
+          end: bEnd < end ? bEnd : end,
+          label: cur.toLocaleDateString('ru-RU', {month:'short'}).replace('.', '')
+        });
+        cur = new Date(y, m+1, 1);
+      }
+    } else {
+      var cur2 = new Date(startD);
+      while(cur2 <= endD){
+        var key = cur2.getFullYear()+'-'+pad2(cur2.getMonth()+1)+'-'+pad2(cur2.getDate());
+        buckets.push({start:key, end:key, label:String(cur2.getDate())});
+        cur2.setDate(cur2.getDate()+1);
+      }
+    }
+    return buckets;
+  }
+
+  function seriesForPeriod(range){
+    var buckets = periodBuckets(range);
+    return FUNNEL_STAGES.map(function(stage){
+      var points = buckets.map(function(b){
+        var allInBucket = tenders.filter(function(t){ var d = createdDate(t); return d && d >= b.start && d <= b.end; });
+        var list = allInBucket.filter(stage.match);
+        var pct = allInBucket.length ? Math.round(list.length / allInBucket.length * 100) : 0;
+        return {count:list.length, sum:sumNmc(list), pct:pct, label:b.label};
+      });
+      return {key:stage.key, label:stage.label, color:stage.color, points:points};
+    });
+  }
+
+  var PENCIL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>';
+  var DOWNLOAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  function safeFilename(name){ return String(name || 'Документ').replace(/[\\/:*?"<>|]+/g, '_'); }
+  var funnelVisibleStages = FUNNEL_STAGES.map(function(s){ return s.key; });
+  var legendVisibleStages = FUNNEL_STAGES.map(function(s){ return s.key; });
+
+  var funnelState = {metric:'count'};
+
+  function fmtAxisValue(v, metric){
+    if(metric === 'sum') return fmtMoneyCompact(v);
+    if(metric === 'pct') return Math.round(v)+'%';
+    return String(Math.round(v));
+  }
+
+  function renderFunnelWidget(range){
+    var allSeries = seriesForPeriod(range);
+    var metric = funnelState.metric;
+    var series = allSeries.filter(function(s){
+      if(metric === 'pct' && s.key === 'new') return false;
+      return funnelVisibleStages.indexOf(s.key) !== -1;
+    });
+    var buckets = allSeries[0].points;
+    var n = buckets.length;
+
+    var w = 640, h = 200, padL = 44, padR = 12, padT = 16, padB = 30;
+    var plotW = w - padL - padR, plotH = h - padT - padB;
+    var max = metric === 'pct' ? 100 : 0;
+    if(metric !== 'pct'){
+      series.forEach(function(s){ s.points.forEach(function(p){ if(p[metric] > max) max = p[metric]; }); });
+      if(!max) max = 1;
+    }
+
+    function xAt(i){ return padL + (n > 1 ? (i/(n-1)) * plotW : plotW/2); }
+    function yAt(v){ return padT + plotH - (v/max)*plotH; }
+    var labelStep = Math.ceil(n / 8);
+
+    var tickCount = 4;
+    var gridHtml = '';
+    for(var t=0; t<=tickCount; t++){
+      var val = max * t / tickCount;
+      var y = yAt(val);
+      gridHtml += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(padL+plotW)+'" y2="'+y.toFixed(1)+'" stroke="var(--border)" stroke-width="1"></line>'
+        + '<text x="'+(padL-8)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end" font-size="10" font-family="var(--font-mono)" fill="var(--ink-muted)">'+esc(fmtAxisValue(val, metric))+'</text>';
+    }
+
+    var linesHtml = series.map(function(s){
+      var pts = s.points.map(function(p,i){
+        var tipVal = metric === 'sum' ? fmtMoney(p.sum) : (metric === 'pct' ? p.pct+'%' : p.count);
+        return {x:xAt(i), y: yAt(p[metric]), tip:s.label+': '+tipVal};
+      });
+      var pathD = pts.map(function(p,i){ return (i===0?'M':'L')+p.x.toFixed(1)+' '+p.y.toFixed(1); }).join(' ');
+      var dots = pts.map(function(p){
+        return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="'+s.color+'" stroke="var(--surface)" stroke-width="1.5" data-tip="'+esc(p.tip)+'"></circle>';
+      }).join('');
+      return '<path d="'+pathD+'" fill="none" stroke="'+s.color+'" stroke-width="2"></path>' + dots;
+    }).join('');
+
+    var xLabels = buckets.map(function(b,i){
+      if(i % labelStep !== 0 && i !== n-1) return '';
+      var anchor = i === 0 ? 'start' : (i === n-1 ? 'end' : 'middle');
+      return '<text x="'+xAt(i).toFixed(1)+'" y="'+(h-8)+'" text-anchor="'+anchor+'" font-size="10" fill="var(--ink-muted)">'+esc(b.label)+'</text>';
+    }).join('');
+
+    document.getElementById('funnelChart').innerHTML =
+      '<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block;">'
+      + gridHtml + linesHtml + xLabels
+      + '</svg>';
+
+    document.getElementById('funnelKey').innerHTML = series.map(function(s){
+      return '<span class="funnel-key-item"><span class="funnel-key-swatch" style="border-color:'+s.color+'"></span>'+esc(s.label)+'</span>';
+    }).join('');
+  }
+
+  function renderLegendTable(range){
+    var allSeries = seriesForPeriod(range);
+    var totals = funnelForPeriod(range);
+    var rowsHtml = totals.map(function(r,i){
+      if(legendVisibleStages.indexOf(allSeries[i].key) === -1) return '';
+      var pctCell = '—';
+      if(i > 0){
+        var prev = totals[i-1];
+        var pct = prev.value ? Math.round(r.value / prev.value * 100) : 0;
+        pctCell = pct+'%<span class="pct-help">?<span class="tip">«'+esc(r.label)+'» относительно «'+esc(prev.label)+'»: '+r.value+' из '+prev.value+'</span></span>';
+      }
+      return '<tr>'
+        + '<td class="stage-name"><span class="stage-dot" style="background:'+allSeries[i].color+'"></span>'+esc(r.label)+'</td>'
+        + '<td class="num-cell">'+r.value+'</td>'
+        + '<td class="num-cell">'+fmtMoney(r.sum)+'</td>'
+        + '<td class="num-cell">'+pctCell+'</td>'
+        + '</tr>';
+    }).join('');
+    document.getElementById('funnelLegend').innerHTML = rowsHtml || '<tr><td colspan="4" class="empty-cell" style="text-align:center;padding:16px;">Все этапы скрыты.</td></tr>';
+  }
+
+  function renderDonut(b){
+    var r = 48, cx = 64, cy = 64, sw = 20;
+    var circumference = 2 * Math.PI * r;
+    var keys = Object.keys(b.counts);
+    keys.sort(function(a,z){ return b.counts[z] - b.counts[a]; });
+    var svgParts = '';
+    if(!b.total){
+      svgParts = '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--border)" stroke-width="'+sw+'"></circle>';
+    } else {
+      var offset = 0;
+      keys.forEach(function(k){
+        var len = b.counts[k] / b.total * circumference;
+        svgParts += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+(DIRECTION_COLORS[k] || DIRECTION_FALLBACK)+'" '
+          + 'stroke-width="'+sw+'" stroke-dasharray="'+len+' '+(circumference-len)+'" stroke-dashoffset="'+(-offset)+'" '
+          + 'transform="rotate(-90 '+cx+' '+cy+')"></circle>';
+        offset += len;
+      });
+    }
+    document.getElementById('donutChart').innerHTML =
+      '<svg viewBox="0 0 128 128" width="140" height="140">'+svgParts+'</svg>'
+      + '<div class="donut-center"><span class="n">'+b.total+'</span><span class="t">попаданий</span></div>';
+  }
+
+  function renderLegend(b, mode){
+    var keys = Object.keys(b.counts);
+    if(!keys.length){
+      document.getElementById('donutLegend').innerHTML = '<li class="empty-cell" style="border:none;padding:0;">Нет данных за выбранный период.</li>';
+      return;
+    }
+    keys.sort(function(a,z){ return b.counts[z] - b.counts[a]; });
+    document.getElementById('donutLegend').innerHTML = keys.map(function(k){
+      var pct = b.total ? Math.round(b.counts[k] / b.total * 100) : 0;
+      var sumHtml = mode === 'won' ? ' · '+fmtMoney(b.sums[k]) : '';
+      return '<li class="donut-legend-item"><span class="donut-swatch" style="background:'+(DIRECTION_COLORS[k] || DIRECTION_FALLBACK)+'"></span>'
+        + '<span class="donut-legend-name">'+esc(k)+'</span>'
+        + '<span class="donut-legend-value">'+b.counts[k]+' · '+pct+'%'+sumHtml+'</span></li>';
+    }).join('');
+  }
+
+  var state = { period:'year', dirMode:'submitted', customStart:null, customEnd:null };
+
+  function currentRange(){
+    if(state.period === 'custom' && state.customStart){
+      return {start: state.customStart, end: state.customEnd || null};
+    }
+    return {start: periodStart(state.period), end: null};
+  }
+
+  var MONTH_NAMES_NOM = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+  function periodLabelText(){
+    if(state.period === 'custom' && state.customStart){
+      return 'за ' + fmtDate(state.customStart) + '–' + (state.customEnd ? fmtDate(state.customEnd) : '…');
+    }
+    var d = new Date(TODAY+'T00:00:00');
+    if(state.period === 'month') return 'за ' + MONTH_NAMES_NOM[d.getMonth()];
+    return 'за ' + d.getFullYear() + ' год';
+  }
+  function renderPeriodLabels(){
+    var text = periodLabelText();
+    document.getElementById('funnelPeriodLabel').textContent = text;
+    document.getElementById('legendPeriodLabel').textContent = text;
+  }
+
+  function renderStats(range){
+    var s = statsForPeriod(range);
+    document.getElementById('statNew').textContent = s.newCount;
+    document.getElementById('statInWork').textContent = s.inWorkNow;
+    document.getElementById('statSubmitted').textContent = s.submittedCount;
+    document.getElementById('statWon').textContent = s.wonCount;
+    document.getElementById('statWonSum').textContent = s.wonCount ? fmtMoney(s.wonSum) : '';
+  }
+  function renderDirections(range){
+    var b = directionBreakdown(state.dirMode, range);
+    renderDonut(b);
+    renderLegend(b, state.dirMode);
+  }
+  function renderFunnel(range){
+    renderFunnelWidget(range);
+    renderLegendTable(range);
+    renderPeriodLabels();
+  }
+  function renderRejections(range){
+    document.getElementById('rejectChart').innerHTML = renderBarRows(rejectionBreakdown(range), true);
+  }
+  function renderAll(){
+    var range = currentRange();
+    renderStats(range);
+    renderDirections(range);
+    renderFunnel(range);
+    renderRejections(range);
+  }
+
+  function downloadDashboardReport(){
+    var range = currentRange();
+    var periodText = periodLabelText();
+    var stats = statsForPeriod(range);
+    var dirs = directionBreakdown(state.dirMode, range);
+    var funnelTotals = funnelForPeriod(range);
+    var rejections = rejectionBreakdown(range);
+
+    var dirKeys = Object.keys(dirs.counts).sort(function(a,b){ return dirs.counts[b] - dirs.counts[a]; });
+    var dirRows = dirKeys.length ? dirKeys.map(function(k){
+      var pct = dirs.total ? Math.round(dirs.counts[k] / dirs.total * 100) : 0;
+      return '<tr><td>'+esc(k)+'</td><td>'+dirs.counts[k]+'</td><td>'+pct+'%</td></tr>';
+    }).join('') : '<tr><td colspan="3">Нет данных за период.</td></tr>';
+
+    var funnelRows = funnelTotals.map(function(r, i){
+      var pctCell = '—';
+      if(i > 0){
+        var prev = funnelTotals[i-1];
+        pctCell = (prev.value ? Math.round(r.value / prev.value * 100) : 0) + '%';
+      }
+      return '<tr><td>'+esc(r.label)+'</td><td>'+r.value+'</td><td>'+fmtMoney(r.sum)+'</td><td>'+pctCell+'</td></tr>';
+    }).join('');
+
+    var rejRows = rejections.length
+      ? rejections.map(function(r){ return '<tr><td>'+esc(r.label)+'</td><td>'+r.value+'</td></tr>'; }).join('')
+      : '<tr><td colspan="2">Отказов за период нет.</td></tr>';
+
+    var html = '<html><head><meta charset="utf-8"><title>Отчёт по дашборду</title></head><body>'
+      + '<h1>Отчёт по дашборду — '+esc(periodText)+'</h1>'
+      + '<p><b>Сформирован:</b> '+fmtDate(TODAY)+'</p>'
+      + '<h2>Итоги периода</h2>'
+      + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Показатель</th><th>Значение</th></tr>'
+      + '<tr><td>Новых получено</td><td>'+stats.newCount+'</td></tr>'
+      + '<tr><td>В работе сейчас</td><td>'+stats.inWorkNow+'</td></tr>'
+      + '<tr><td>Подано всего</td><td>'+stats.submittedCount+'</td></tr>'
+      + '<tr><td>Выиграно</td><td>'+stats.wonCount+' · '+fmtMoney(stats.wonSum)+'</td></tr>'
+      + '</table>'
+      + '<h2>По направлениям</h2>'
+      + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Направление</th><th>Кол-во</th><th>%</th></tr>'+dirRows+'</table>'
+      + '<h2>Воронка</h2>'
+      + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Этап</th><th>Кол-во</th><th>Сумма</th><th>Конверсия</th></tr>'+funnelRows+'</table>'
+      + '<h2>Причины отказов</h2>'
+      + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Причина</th><th>Кол-во</th></tr>'+rejRows+'</table>'
+      + '</body></html>';
+
+    var href = URL.createObjectURL(new Blob(['﻿'+html], {type:'application/msword;charset=utf-8'}));
+    var link = document.createElement('a');
+    link.href = href;
+    link.download = safeFilename('Отчёт по дашборду — '+periodText)+'.doc';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(href);
+  }
+
+  var customPeriodBtn = document.getElementById('customPeriodBtn');
+  document.getElementById('periodToggle').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-period]');
+    if(!btn) return;
+    state.period = btn.dataset.period;
+    state.customStart = null;
+    state.customEnd = null;
+    customPeriodBtn.classList.remove('btn-primary');
+    customPeriodBtn.textContent = 'Настроить период';
+    var all = this.querySelectorAll('[data-period]');
+    for(var i=0;i<all.length;i++){ all[i].classList.toggle('btn-primary', all[i] === btn); }
+    renderAll();
+  });
+  document.getElementById('dirModeToggle').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-mode]');
+    if(!btn) return;
+    state.dirMode = btn.dataset.mode;
+    var all = this.querySelectorAll('[data-mode]');
+    for(var i=0;i<all.length;i++){ all[i].classList.toggle('btn-primary', all[i] === btn); }
+    renderDirections(currentRange());
+  });
+
+  document.getElementById('funnelMetricToggle').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-metric]');
+    if(!btn) return;
+    funnelState.metric = btn.dataset.metric;
+    var all = this.querySelectorAll('[data-metric]');
+    for(var i=0;i<all.length;i++){ all[i].classList.toggle('btn-primary', all[i] === btn); }
+    renderFunnel(currentRange());
+  });
+
+  function setupChartTooltip(chartId, tooltipId){
+    var chartEl = document.getElementById(chartId);
+    var tooltipEl = document.getElementById(tooltipId);
+    chartEl.addEventListener('mousemove', function(e){
+      var circle = e.target.closest('circle');
+      if(!circle){ tooltipEl.classList.remove('is-visible'); return; }
+      var wrapRect = chartEl.getBoundingClientRect();
+      var cRect = circle.getBoundingClientRect();
+      tooltipEl.textContent = circle.getAttribute('data-tip') || '';
+      tooltipEl.style.left = (cRect.left + cRect.width/2 - wrapRect.left) + 'px';
+      tooltipEl.style.top = (cRect.top - wrapRect.top - 8) + 'px';
+      tooltipEl.classList.add('is-visible');
+    });
+    chartEl.addEventListener('mouseleave', function(){ tooltipEl.classList.remove('is-visible'); });
+  }
+  setupChartTooltip('funnelChart', 'funnelTooltip');
+
+  document.getElementById('funnelEditBtn').innerHTML = PENCIL_SVG;
+  document.getElementById('legendEditBtn').innerHTML = PENCIL_SVG;
+
+  var stageVisibilityOverlay = document.getElementById('stageVisibilityOverlay');
+  var stageVisibilityTarget = null;
+  function openStageVisibility(target){
+    stageVisibilityTarget = target;
+    var current = target === 'funnel' ? funnelVisibleStages : legendVisibleStages;
+    document.querySelectorAll('.stage-check').forEach(function(cb){ cb.checked = current.indexOf(cb.value) !== -1; });
+    stageVisibilityOverlay.classList.add('is-open');
+  }
+  document.getElementById('funnelEditBtn').addEventListener('click', function(){ openStageVisibility('funnel'); });
+  document.getElementById('legendEditBtn').addEventListener('click', function(){ openStageVisibility('legend'); });
+  document.getElementById('stageVisibilityCancel').addEventListener('click', function(){ stageVisibilityOverlay.classList.remove('is-open'); });
+  stageVisibilityOverlay.addEventListener('click', function(e){ if(e.target === stageVisibilityOverlay) stageVisibilityOverlay.classList.remove('is-open'); });
+  document.getElementById('stageVisibilitySave').addEventListener('click', function(){
+    var checked = Array.prototype.slice.call(document.querySelectorAll('.stage-check:checked')).map(function(cb){ return cb.value; });
+    if(!checked.length){ return; }
+    if(stageVisibilityTarget === 'funnel'){ funnelVisibleStages = checked; renderFunnelWidget(currentRange()); }
+    else { legendVisibleStages = checked; renderLegendTable(currentRange()); }
+    stageVisibilityOverlay.classList.remove('is-open');
+  });
+
+  var periodOverlay = document.getElementById('periodOverlay');
+  customPeriodBtn.addEventListener('click', function(){
+    document.getElementById('periodStartInput').value = state.customStart || periodStart('year');
+    document.getElementById('periodEndInput').value = state.customEnd || TODAY;
+    periodOverlay.classList.add('is-open');
+  });
+  document.getElementById('periodCancel').addEventListener('click', function(){ periodOverlay.classList.remove('is-open'); });
+  periodOverlay.addEventListener('click', function(e){ if(e.target === periodOverlay) periodOverlay.classList.remove('is-open'); });
+  document.getElementById('periodApply').addEventListener('click', function(){
+    var start = document.getElementById('periodStartInput').value;
+    var end = document.getElementById('periodEndInput').value;
+    if(!start){ document.getElementById('periodStartInput').focus(); return; }
+    state.period = 'custom';
+    state.customStart = start;
+    state.customEnd = end || null;
+    var yearBtns = document.getElementById('periodToggle').querySelectorAll('[data-period]');
+    for(var i=0;i<yearBtns.length;i++){ yearBtns[i].classList.remove('btn-primary'); }
+    customPeriodBtn.classList.add('btn-primary');
+    customPeriodBtn.textContent = fmtDate(start) + '–' + (end ? fmtDate(end) : '…');
+    periodOverlay.classList.remove('is-open');
+    renderAll();
+  });
+
+  // ---- настройка видимости виджетов (своя для каждого браузера/пользователя) ----
+  var WIDGETS_KEY = 'atvinta_dashboard_widgets_v1';
+  var ALL_WIDGETS = ['period','directions','funnel','rejections'];
+  function loadWidgetSettings(){
+    var stored = null;
+    try{ stored = JSON.parse(localStorage.getItem(WIDGETS_KEY)); }catch(e){}
+    if(!Array.isArray(stored) || !stored.length) return ALL_WIDGETS.slice();
+    var result = stored.filter(function(w){ return ALL_WIDGETS.indexOf(w) !== -1; });
+    ALL_WIDGETS.forEach(function(w){ if(result.indexOf(w) === -1) result.push(w); });
+    return result;
+  }
+  function saveWidgetSettings(list){ localStorage.setItem(WIDGETS_KEY, JSON.stringify(list)); }
+  var enabledWidgets = loadWidgetSettings();
+  function applyWidgetVisibility(){
+    document.getElementById('widgetPeriod').hidden = enabledWidgets.indexOf('period') === -1;
+    document.getElementById('widgetDirections').hidden = enabledWidgets.indexOf('directions') === -1;
+    document.getElementById('widgetFunnel').hidden = enabledWidgets.indexOf('funnel') === -1;
+    document.getElementById('widgetRejections').hidden = enabledWidgets.indexOf('rejections') === -1;
+  }
+
+  document.getElementById('reportDownloadBtn').innerHTML = DOWNLOAD_SVG;
+  document.getElementById('reportDownloadBtn').addEventListener('click', downloadDashboardReport);
+
+  var configureOverlay = document.getElementById('configureOverlay');
+  document.getElementById('configureBtn').addEventListener('click', function(){
+    document.querySelectorAll('.widget-check').forEach(function(cb){ cb.checked = enabledWidgets.indexOf(cb.value) !== -1; });
+    configureOverlay.classList.add('is-open');
+  });
+  document.getElementById('configureCancel').addEventListener('click', function(){ configureOverlay.classList.remove('is-open'); });
+  configureOverlay.addEventListener('click', function(e){ if(e.target === configureOverlay) configureOverlay.classList.remove('is-open'); });
+
+  var toast = document.getElementById('addToast');
+  var toastTimer = null;
+  function showToast(text){
+    document.getElementById('toastText').textContent = text;
+    toast.classList.add('is-open');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('is-open'); }, 6000);
+  }
+  document.getElementById('toastClose').addEventListener('click', function(){
+    toast.classList.remove('is-open');
+    clearTimeout(toastTimer);
+  });
+  document.getElementById('configureSave').addEventListener('click', function(){
+    var checked = Array.prototype.slice.call(document.querySelectorAll('.widget-check:checked')).map(function(cb){ return cb.value; });
+    enabledWidgets = checked;
+    saveWidgetSettings(enabledWidgets);
+    applyWidgetVisibility();
+    configureOverlay.classList.remove('is-open');
+    showToast('Настройки дашборда сохранены.');
+  });
+
+  window.addEventListener('storage', function(e){
+    if(e.key === 'atvinta_tenders_v2'){ tenders = loadTenders(); renderAll(); }
+    if(e.key === WIDGETS_KEY){ enabledWidgets = loadWidgetSettings(); applyWidgetVisibility(); }
+  });
+
+  function togglePopover(btn, pop, other){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      other.classList.remove('is-open');
+      pop.classList.toggle('is-open');
+    });
+  }
+  var bellPop = document.getElementById('bellPopover'), calPop = document.getElementById('calPopover');
+  togglePopover(document.getElementById('bellBtn'), bellPop, calPop);
+  togglePopover(document.getElementById('calBtn'), calPop, bellPop);
+  document.addEventListener('click', function(){ bellPop.classList.remove('is-open'); calPop.classList.remove('is-open'); });
+
+  function updateNavDate(){
+    var d = new Date(TODAY + 'T00:00:00');
+    var str = d.toLocaleDateString('ru-RU', {weekday:'long', day:'numeric', month:'long'});
+    document.getElementById('navDate').textContent = str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  function updateNavTime(){
+    document.getElementById('navTime').textContent = new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+  }
+  updateNavDate();
+  updateNavTime();
+  setInterval(updateNavTime, 30000);
+
+  function refreshNavCounts(){
+    var bucket = function(t){ return TenderReferences.resolveSection(t); };
+    var newCount = tenders.filter(function(t){ return bucket(t) === 'Новый'; }).length;
+    document.getElementById('navNew').textContent = newCount;
+    document.getElementById('navNew').hidden = newCount === 0;
+    document.getElementById('navWaiting').textContent = tenders.filter(function(t){ return bucket(t) === 'Ожидают решения'; }).length;
+    document.getElementById('navProgress').textContent = tenders.filter(function(t){ return bucket(t) === 'В работе'; }).length;
+  }
+  refreshNavCounts();
+
+  document.getElementById('navToggle').addEventListener('click', function(){
+    document.getElementById('portalNav').classList.toggle('is-collapsed');
+    document.querySelector('.app').classList.toggle('nav-collapsed');
+  });
+
+  applyWidgetVisibility();
+  renderAll();
+})();
+</script>

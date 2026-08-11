@@ -1,5 +1,8 @@
+<meta charset="utf-8">
 <title>Копилка</title>
 <style>
+  /* атрибут hidden должен всегда побеждать display, заданный классами (.btn, .filter-bar и т.д.) */
+  [hidden]{display:none !important;}
   :root{
     --bg:#faf8f9;--surface:#ffffff;--surface-2:#f4eef1;--ink:#1c1720;--ink-muted:#6b6270;
     --border:#e6dfe3;--border-strong:#d8cfd4;--accent:#c41e52;--accent-ink:#ffffff;--accent-wash:#fbe8ee;
@@ -54,6 +57,11 @@
   .brand-sub{font-size:10.5px;color:var(--ink-muted);letter-spacing:.05em;text-transform:uppercase;
     margin-top:1px;white-space:nowrap;}
   .portal-nav.is-collapsed .brand{display:none;}
+  .icon-btn-sm{width:34px;height:34px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);
+    background:var(--surface);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;flex:none;}
+  .icon-btn-sm:hover{background:var(--surface-2);color:var(--ink);}
+  .icon-btn-sm svg{width:16px;height:16px;}
   .nav-toggle svg{transition:transform .15s ease;}
   .portal-nav.is-collapsed .nav-toggle svg{transform:rotate(180deg);}
   .nav-list{list-style:none;margin:0;padding:0;flex:1;}
@@ -96,7 +104,6 @@
   .icon-btn:hover{background:var(--surface-2);color:var(--ink);}
   .icon-btn .ping{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;
     background:var(--accent);border:2px solid var(--surface);}
-  .actions-divider{width:1px;align-self:stretch;background:var(--border);margin:0 4px;}
   .popover{position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--surface);
     border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-md);
     padding:14px;display:none;z-index:30;}
@@ -121,7 +128,6 @@
   .page-head{display:flex;justify-content:space-between;align-items:center;gap:20px;
     flex-wrap:wrap;margin-bottom:4px;}
   h1.page-title{font-family:var(--font-display);font-weight:600;font-size:28px;margin:0;}
-  .page-sub{color:var(--ink-muted);font-size:13.5px;margin:0 0 16px;}
   .section-tabs{display:flex;gap:6px;margin-bottom:20px;border-bottom:1px solid var(--border);}
   .section-tab{font-family:var(--font-body);font-size:13.5px;font-weight:600;color:var(--ink-muted);
     background:none;border:none;padding:9px 4px;cursor:pointer;border-bottom:2px solid transparent;
@@ -131,12 +137,20 @@
   .section-tabs .section-tab + .section-tab{margin-left:14px;}
   .page-actions{display:flex;align-items:center;gap:16px;flex:none;}
 
-  .filter-bar{display:flex;flex-wrap:wrap;align-items:end;gap:18px;margin-bottom:16px;}
+  .toolbar-row{display:flex;flex-wrap:wrap;align-items:end;gap:16px;margin-bottom:16px;}
+  .toolbar-actions{display:flex;gap:12px;margin-left:auto;}
+  .filter-bar{display:flex;flex-wrap:wrap;align-items:end;gap:18px;margin-bottom:0;}
   .filter-field{display:flex;flex-direction:column;gap:6px;}
   .filter-field label{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted);
     font-weight:700;}
   .filter-field select{border:1px solid var(--border-strong);border-radius:6px;padding:7px 26px 7px 10px;
     font-family:var(--font-body);font-size:12.5px;background:var(--surface);color:var(--ink);min-width:160px;}
+  .search-field .search{position:relative;}
+  .search-field input{width:220px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+    height:32px;padding:0 12px 0 32px;font-family:var(--font-body);font-size:13px;background:var(--surface);
+    color:var(--ink);}
+  .search-field .ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-muted);
+    font-size:13px;}
   .staff-summary{font-size:13px;color:var(--ink-muted);margin:0 0 16px;}
   .staff-summary b{color:var(--ink);font-weight:700;}
   .field select{width:100%;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
@@ -151,6 +165,11 @@
     vertical-align:middle;}
   .data-table thead th{background:var(--surface-2);font-size:10.5px;text-transform:uppercase;
     letter-spacing:.03em;color:var(--ink-muted);font-weight:700;white-space:nowrap;}
+  .data-table th.sortable{cursor:pointer;user-select:none;}
+  .data-table th.sortable:hover{color:var(--ink);}
+  .sort-arrow{margin-left:3px;opacity:.55;font-size:10px;}
+  .sort-arrow:empty::after{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;
+    background:currentColor;opacity:.55;vertical-align:middle;}
   .data-table tbody tr:last-child td{border-bottom:none;}
   .data-table tbody tr:hover{background:var(--surface-2);}
   .row-title{font-size:13.5px;font-weight:600;color:var(--ink);}
@@ -177,6 +196,22 @@
     width:100%;max-width:460px;padding:22px;max-height:90vh;overflow-y:auto;}
   .modal h4{margin:0 0 4px;font-size:16px;}
   .modal p.hint{margin:0 0 16px;font-size:13px;color:var(--ink-muted);}
+  .modal-wide{max-width:640px;}
+  .report-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .report-modal-head .r-subtitle{margin:0;font-size:13px;color:var(--ink-muted);}
+  .report-modal-actions{display:flex;gap:8px;align-items:center;flex:none;}
+  .report-body{max-height:60vh;overflow-y:auto;margin-top:16px;padding-right:6px;}
+  .doc-thumb-wrap{display:flex;justify-content:center;padding:24px 0;}
+  .doc-thumb{width:160px;display:flex;flex-direction:column;align-items:center;gap:10px;
+    padding:24px 16px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-2);}
+  .doc-thumb-icon{color:var(--ink-muted);}
+  .doc-thumb-icon svg{width:48px;height:48px;}
+  .doc-thumb-format{font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-muted);}
+  .doc-thumb-image{max-width:260px;max-height:60vh;border:1px solid var(--border);border-radius:var(--radius-md);object-fit:contain;display:block;}
+  .cmt-cell{width:200px;max-width:200px;}
+  .cmt-text{font-size:13px;color:var(--ink);line-height:1.4;white-space:normal;word-break:break-word;}
+  .cmt-text.is-clamped{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .cmt-more{display:block;margin-top:2px;}
   .field{margin-bottom:20px;}
   .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
     color:var(--ink-muted);margin-bottom:6px;}
@@ -278,7 +313,7 @@
       </button>
     </div>
     <ul class="nav-list">
-      <li><a href="#" title="Дашборд">
+      <li><a href="дашборд.html" title="Дашборд">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
         <span class="nav-label">Дашборд</span>
       </a></li>
@@ -320,7 +355,7 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="nav-label">Профиль</span>
       </a></li>
-      <li><a href="#" title="Финансы">
+      <li><a href="финансы.html" title="Финансы">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
         <span class="nav-label">Финансы</span>
       </a></li>
@@ -365,29 +400,65 @@
             <div class="popover-foot"><a class="link-ico" href="#">Все задачи ↗</a></div>
           </div>
         </div>
-        <span class="actions-divider"></span>
-        <button class="btn btn-primary" id="addDocBtn">Загрузить документ</button>
-        <button class="btn btn-primary" id="addStaffBtn" hidden>Добавить сотрудника</button>
-        <button class="btn btn-primary" id="addExpBtn" hidden>Добавить контракт</button>
       </div>
     </div>
-    <p class="page-sub">Разделы Копилки: Учредительные, Опыт, Штат. Остальные (архив поданных предложений и другие) добавим следующими шагами.</p>
     <div class="section-tabs" id="sectionTabs"></div>
 
-    <div class="filter-bar" id="staffFilterBar" hidden>
-      <div class="filter-field">
-        <label for="fStaffDept">Отдел</label>
-        <select id="fStaffDept"></select>
+    <div class="toolbar-row">
+      <div class="filter-bar" id="docFilterBar" hidden>
+        <div class="filter-field search-field">
+          <label for="fDocSearch">Поиск</label>
+          <div class="search">
+            <span class="ico">🔍</span>
+            <input type="text" id="fDocSearch" placeholder="Наименование или ключ…">
+          </div>
+        </div>
       </div>
-      <div class="filter-field">
-        <label for="fStaffTenure">Стаж работы</label>
-        <select id="fStaffTenure">
+      <div class="filter-bar" id="staffFilterBar" hidden>
+        <div class="filter-field">
+          <label for="fStaffDept">Отдел</label>
+          <select id="fStaffDept"></select>
+        </div>
+        <div class="filter-field">
+          <label for="fStaffTenure">Стаж работы</label>
+          <select id="fStaffTenure">
           <option value="all">Все</option>
           <option value="0-1">До 1 года</option>
           <option value="1-3">1–3 года</option>
           <option value="3-5">3–5 лет</option>
           <option value="5-999">Более 5 лет</option>
         </select>
+        </div>
+        <div class="filter-field search-field">
+          <label for="fStaffSearch">Поиск</label>
+          <div class="search">
+            <span class="ico">🔍</span>
+            <input type="text" id="fStaffSearch" placeholder="ФИО…">
+          </div>
+        </div>
+      </div>
+      <div class="filter-bar" id="expFilterBar" hidden>
+        <div class="filter-field">
+          <label for="fExpDirection">Вид работ</label>
+          <select id="fExpDirection"></select>
+        </div>
+        <div class="filter-field">
+          <label for="fExpDetail">Детализация</label>
+          <select id="fExpDetail"></select>
+        </div>
+        <div class="filter-field search-field">
+          <label for="fExpSearch">Поиск</label>
+          <div class="search">
+            <span class="ico">🔍</span>
+            <input type="text" id="fExpSearch" placeholder="Контрагент или № договора…">
+          </div>
+        </div>
+      </div>
+      <div class="toolbar-actions">
+        <button class="btn btn-primary" id="addDocBtn">Загрузить документ</button>
+        <button class="btn btn-primary" id="addStaffBtn" hidden>Добавить сотрудника</button>
+        <button class="btn btn-primary" id="addExpBtn" hidden>Добавить контракт</button>
+        <button class="btn btn-primary" id="addTemplateBtn" hidden>Добавить шаблон</button>
       </div>
     </div>
     <p class="staff-summary" id="staffSummary" hidden></p>
@@ -541,6 +612,67 @@
   </div>
 </div>
 
+<!-- ADD/EDIT TEMPLATE MODAL -->
+<div class="overlay" id="templateOverlay">
+  <div class="modal">
+    <h4 id="templateModalTitle">Добавить шаблон</h4>
+    <div class="field">
+      <label for="tplFile">Файл</label>
+      <input type="file" id="tplFile">
+      <p class="field-hint" id="tplFileHint"></p>
+    </div>
+    <div class="field">
+      <label for="tplName">Наименование</label>
+      <input type="text" id="tplName" placeholder="Например: Анкета участника закупки">
+    </div>
+    <div class="field">
+      <label for="tplFormat">Формат документа</label>
+      <select id="tplFormat">
+        <option value="DOCX">DOCX</option>
+        <option value="XLSX">XLSX</option>
+        <option value="PDF">PDF</option>
+        <option value="PPTX">PPTX</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="tplComment">Комментарий</label>
+      <input type="text" id="tplComment" placeholder="Необязательно">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="templateCancel">Отмена</button>
+      <button class="btn btn-primary" id="templateSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEMPLATE PREVIEW MODAL -->
+<div class="overlay" id="templatePreviewOverlay">
+  <div class="modal modal-wide">
+    <div class="report-modal-head">
+      <div>
+        <h4 id="templatePreviewTitle">Предпросмотр</h4>
+        <p class="r-subtitle" id="templatePreviewFormat"></p>
+      </div>
+      <div class="report-modal-actions">
+        <button class="icon-btn-sm" id="templateDownloadBtn" title="Скачать шаблон" aria-label="Скачать шаблон"></button>
+        <button class="icon-btn-sm" id="templatePreviewClose" aria-label="Закрыть">✕</button>
+      </div>
+    </div>
+    <div class="report-body" id="templatePreviewBody"></div>
+  </div>
+</div>
+
+<!-- FULL COMMENT MODAL (Шаблоны) -->
+<div class="overlay" id="commentOverlay">
+  <div class="modal">
+    <h4 id="commentModalTitle">Комментарий</h4>
+    <p class="hint" id="commentModalText" style="color:var(--ink);margin-bottom:0;"></p>
+    <div class="modal-actions">
+      <button class="btn" id="commentClose">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="addToast">
   <div class="toast-head">
@@ -555,7 +687,8 @@
   var SECTIONS = [
     {key:'Учредительные документы', label:'Учредительные'},
     {key:'Опыт', label:'Опыт'},
-    {key:'Штат', label:'Штат'}
+    {key:'Штат', label:'Штат'},
+    {key:'Шаблоны', label:'Шаблоны'}
   ];
   var state = { folder: SECTIONS[0].key };
   var current = TenderReferences.currentUser();
@@ -664,6 +797,31 @@
   }
   function saveExperience(items){ localStorage.setItem(EXPERIENCE_KEY, JSON.stringify(items)); }
   var experience = loadExperience();
+
+  // ---- Шаблоны: справочник типовых документов для заполнения ----
+  var TEMPLATES_KEY = 'atvinta_templates_v1';
+  function templatesSeed(){
+    return [
+      {id:'tpl-1', name:'Анкета участника закупки', format:'DOCX', type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        dataUrl:'', comment:'Базовая форма анкеты — используется почти во всех закупках по 44-ФЗ и 223-ФЗ, перед подачей сверяйте с требованиями конкретной документации.'},
+      {id:'tpl-2', name:'Декларация о соответствии СМП', format:'DOCX', type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        dataUrl:'', comment:''},
+      {id:'tpl-3', name:'Форма расчёта цены контракта', format:'XLSX', type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        dataUrl:'', comment:''}
+    ];
+  }
+  function loadTemplates(){
+    var stored = [];
+    try{ stored = JSON.parse(localStorage.getItem(TEMPLATES_KEY) || '[]'); }catch(e){}
+    if(!Array.isArray(stored) || !stored.length){
+      stored = templatesSeed();
+      localStorage.setItem(TEMPLATES_KEY, JSON.stringify(stored));
+    }
+    return stored;
+  }
+  function saveTemplates(items){ localStorage.setItem(TEMPLATES_KEY, JSON.stringify(items)); }
+  var templates = loadTemplates();
+
   function fmtMoney(v){
     var n = Number(v);
     if(!v || isNaN(n)) return '—';
@@ -707,11 +865,16 @@
     render();
   });
 
-  var DOC_HEAD = '<tr><th>Наименование</th><th>Ключи</th><th>Дата</th><th>Файл</th><th>Загрузил</th><th>Действия</th></tr>';
-  var STAFF_HEAD = '<tr><th>ФИО</th><th>Отдел</th><th>Должность</th><th>Вид работы</th><th>Срок работы</th><th>Стаж по профилю</th><th>Образование</th><th>Действия</th></tr>';
-  var EXP_HEAD = '<tr><th>Контрагент</th><th>№ договора</th><th>Дата</th><th>Тип</th><th>Сумма</th><th>Вид работ</th><th>Подробнее</th><th>Файл</th><th>Действия</th></tr>';
+  var DOC_HEAD = '<tr><th class="sortable" data-sort="name">Наименование<span class="sort-arrow"></span></th><th>Ключи</th><th>Дата</th><th>Файл</th><th>Загрузил</th><th>Действия</th></tr>';
+  var STAFF_HEAD = '<tr><th>ФИО</th><th class="sortable" data-sort="department">Отдел<span class="sort-arrow"></span></th><th>Должность</th><th>Вид работы</th><th class="sortable" data-sort="tenure">Срок работы<span class="sort-arrow"></span></th><th class="sortable" data-sort="experience">Стаж по профилю<span class="sort-arrow"></span></th><th>Образование</th><th>Действия</th></tr>';
+  var EXP_HEAD = '<tr><th class="sortable" data-sort="contractor">Контрагент<span class="sort-arrow"></span></th><th>№ договора</th><th class="sortable" data-sort="date">Дата<span class="sort-arrow"></span></th><th>Тип</th><th class="sortable" data-sort="amount">Сумма<span class="sort-arrow"></span></th><th>Вид работ</th><th>Подробнее</th><th>Файл</th><th>Действия</th></tr>';
+  var TEMPLATES_HEAD = '<tr><th>Наименование</th><th>Предпросмотр</th><th>Формат</th><th>Скачать</th><th>Комментарий</th><th>Действия</th></tr>';
 
   var staffFilters = { dept:'all', tenure:'all' };
+  var expFilters = { direction:'all', detail:'all' };
+  var searchState = { doc:'', staff:'', exp:'' };
+  var sortState = { doc:{key:null,dir:'asc'}, staff:{key:null,dir:'asc'}, exp:{key:null,dir:'asc'} };
+  function activeSortTab(){ return state.folder === 'Штат' ? 'staff' : (state.folder === 'Опыт' ? 'exp' : 'doc'); }
 
   function tenureMonths(hiredAt){
     if(!hiredAt) return null;
@@ -741,6 +904,24 @@
     staffFilters.dept = sel.value;
   }
 
+  function populateExpFilters(){
+    var directions = TenderReferences.sortOptions(TenderReferences.get('departments'));
+    var dirSel = document.getElementById('fExpDirection');
+    var curDir = dirSel.value || 'all';
+    dirSel.innerHTML = '<option value="all">Все</option>' + directions.map(function(d){ return '<option value="'+esc(d)+'">'+esc(d)+'</option>'; }).join('');
+    dirSel.value = directions.indexOf(curDir) !== -1 ? curDir : 'all';
+    expFilters.direction = dirSel.value;
+
+    var details = [];
+    experience.forEach(function(x){ (x.workItems||[]).forEach(function(item){ if(item && details.indexOf(item) === -1) details.push(item); }); });
+    details = TenderReferences.sortOptions(details);
+    var detailSel = document.getElementById('fExpDetail');
+    var curDetail = detailSel.value || 'all';
+    detailSel.innerHTML = '<option value="all">Все</option>' + details.map(function(d){ return '<option value="'+esc(d)+'">'+esc(d)+'</option>'; }).join('');
+    detailSel.value = details.indexOf(curDetail) !== -1 ? curDetail : 'all';
+    expFilters.detail = detailSel.value;
+  }
+
   function renderStaffSummary(){
     var total = staff.length;
     var staffCount = staff.filter(function(s){ return (s.employmentType||'штат') !== 'гпх'; }).length;
@@ -749,46 +930,141 @@
       'Всего сотрудников: <b>'+total+'</b> · в штате: <b>'+staffCount+'</b> · ГПХ: <b>'+gphCount+'</b>';
   }
 
+  function applySortArrow(){
+    var tab = activeSortTab();
+    var s = sortState[tab];
+    if(!s.key) return;
+    var th = document.querySelector('#tableHead th[data-sort="'+s.key+'"]');
+    if(th){ var arrow = th.querySelector('.sort-arrow'); if(arrow) arrow.textContent = s.dir === 'asc' ? '▲' : '▼'; }
+  }
+  function sortDocs(list){
+    var s = sortState.doc;
+    if(!s.key) return list;
+    var dir = s.dir === 'asc' ? 1 : -1;
+    return list.slice().sort(function(a,b){ return (a.name||'').localeCompare(b.name||'', 'ru') * dir; });
+  }
+  function sortStaffList(list){
+    var s = sortState.staff;
+    if(!s.key) return list;
+    var dir = s.dir === 'asc' ? 1 : -1;
+    return list.slice().sort(function(a,b){
+      if(s.key === 'department') return (a.department||'').localeCompare(b.department||'', 'ru') * dir;
+      if(s.key === 'tenure') return ((tenureMonths(a.hiredAt) || 0) - (tenureMonths(b.hiredAt) || 0)) * dir;
+      if(s.key === 'experience') return ((Number(a.experienceYears)||0) - (Number(b.experienceYears)||0)) * dir;
+      return 0;
+    });
+  }
+  function sortExpList(list){
+    var s = sortState.exp;
+    if(!s.key) return list;
+    var dir = s.dir === 'asc' ? 1 : -1;
+    return list.slice().sort(function(a,b){
+      if(s.key === 'contractor') return (a.contractor||'').localeCompare(b.contractor||'', 'ru') * dir;
+      if(s.key === 'date') return String(a.contractDate||'').localeCompare(String(b.contractDate||'')) * dir;
+      if(s.key === 'amount') return ((Number(a.amount)||0) - (Number(b.amount)||0)) * dir;
+      return 0;
+    });
+  }
+
   function render(){
     var isStaff = state.folder === 'Штат';
     var isExp = state.folder === 'Опыт';
-    document.getElementById('addDocBtn').hidden = isStaff || isExp;
+    var isTemplates = state.folder === 'Шаблоны';
+    var isDoc = !isStaff && !isExp && !isTemplates;
+    document.getElementById('addDocBtn').hidden = isStaff || isExp || isTemplates;
     document.getElementById('addStaffBtn').hidden = !isStaff;
     document.getElementById('addExpBtn').hidden = !isExp;
+    document.getElementById('addTemplateBtn').hidden = !isTemplates;
+    document.getElementById('docFilterBar').hidden = !isDoc;
     document.getElementById('staffFilterBar').hidden = !isStaff;
+    document.getElementById('expFilterBar').hidden = !isExp;
     document.getElementById('staffSummary').hidden = !isStaff;
-    document.getElementById('tableHead').innerHTML = isStaff ? STAFF_HEAD : (isExp ? EXP_HEAD : DOC_HEAD);
+    document.getElementById('tableHead').innerHTML = isStaff ? STAFF_HEAD : (isExp ? EXP_HEAD : (isTemplates ? TEMPLATES_HEAD : DOC_HEAD));
+    applySortArrow();
+    if(isTemplates){
+      document.getElementById('tableBody').innerHTML = templates.length
+        ? templates.map(templateRowHtml).join('')
+        : '<tr><td colspan="6" style="text-align:center;color:var(--ink-muted);padding:24px">Шаблонов пока нет — добавьте первый.</td></tr>';
+      applyCommentClamping();
+      return;
+    }
     if(isStaff){
       populateStaffDeptFilter();
       renderStaffSummary();
+      var staffSearch = searchState.staff.trim().toLowerCase();
       var filtered = staff.filter(function(s){
         if(staffFilters.dept !== 'all' && s.department !== staffFilters.dept) return false;
         if(!matchesTenureBucket(s.hiredAt, staffFilters.tenure)) return false;
+        if(staffSearch && (s.name||'').toLowerCase().indexOf(staffSearch) === -1) return false;
         return true;
       });
+      filtered = sortStaffList(filtered);
       document.getElementById('tableBody').innerHTML = filtered.length
         ? filtered.map(staffRowHtml).join('')
         : '<tr><td colspan="8" style="text-align:center;color:var(--ink-muted);padding:24px">Никого не найдено по этим фильтрам.</td></tr>';
       return;
     }
     if(isExp){
-      document.getElementById('tableBody').innerHTML = experience.length
-        ? experience.map(expRowHtml).join('')
+      populateExpFilters();
+      var expSearch = searchState.exp.trim().toLowerCase();
+      var filteredExp = experience.filter(function(x){
+        if(expFilters.direction !== 'all' && (x.directions||[]).indexOf(expFilters.direction) === -1) return false;
+        if(expFilters.detail !== 'all' && (x.workItems||[]).indexOf(expFilters.detail) === -1) return false;
+        if(expSearch){
+          var hay = ((x.contractor||'')+' '+(x.contractNumber||'')).toLowerCase();
+          if(hay.indexOf(expSearch) === -1) return false;
+        }
+        return true;
+      });
+      filteredExp = sortExpList(filteredExp);
+      document.getElementById('tableBody').innerHTML = filteredExp.length
+        ? filteredExp.map(expRowHtml).join('')
         : '<tr><td colspan="9" style="text-align:center;color:var(--ink-muted);padding:24px">Контрактов пока нет — добавьте первый.</td></tr>';
       return;
     }
-    var rows = library.filter(function(d){ return d.folder === state.folder; });
+    var docSearch = searchState.doc.trim().toLowerCase();
+    var rows = library.filter(function(d){
+      if(d.folder !== state.folder) return false;
+      if(docSearch){
+        var nameMatch = (d.name||'').toLowerCase().indexOf(docSearch) !== -1;
+        var keyMatch = (d.keys||[]).some(function(k){ return k.toLowerCase().indexOf(docSearch) !== -1; });
+        if(!nameMatch && !keyMatch) return false;
+      }
+      return true;
+    });
+    rows = sortDocs(rows);
     document.getElementById('tableBody').innerHTML = rows.length
       ? rows.map(rowHtml).join('')
       : '<tr><td colspan="6" style="text-align:center;color:var(--ink-muted);padding:24px">Документов пока нет — загрузите первый.</td></tr>';
   }
   document.getElementById('fStaffDept').addEventListener('change', function(e){ staffFilters.dept = e.target.value; render(); });
   document.getElementById('fStaffTenure').addEventListener('change', function(e){ staffFilters.tenure = e.target.value; render(); });
+  document.getElementById('fStaffSearch').addEventListener('input', function(e){ searchState.staff = e.target.value; render(); });
+  document.getElementById('fDocSearch').addEventListener('input', function(e){ searchState.doc = e.target.value; render(); });
+  document.getElementById('fExpSearch').addEventListener('input', function(e){ searchState.exp = e.target.value; render(); });
+  document.getElementById('fExpDirection').addEventListener('change', function(e){ expFilters.direction = e.target.value; render(); });
+  document.getElementById('fExpDetail').addEventListener('change', function(e){ expFilters.detail = e.target.value; render(); });
+  document.getElementById('tableHead').addEventListener('click', function(e){
+    var th = e.target.closest('th.sortable');
+    if(!th) return;
+    var tab = activeSortTab();
+    var s = sortState[tab];
+    var key = th.dataset.sort;
+    if(s.key === key){ s.dir = s.dir === 'asc' ? 'desc' : 'asc'; }
+    else { s.key = key; s.dir = 'asc'; }
+    render();
+  });
 
   var PENCIL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>';
   var TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>';
   var EYE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
   var DOWNLOAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  var DOC_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>';
+
+  function formatFromFilename(name){
+    var m = /\.([a-zA-Z0-9]+)$/.exec(name || '');
+    return m ? m[1].toUpperCase() : '';
+  }
 
   function staffRowHtml(s){
     var eduHtml = (s.education && s.education.length)
@@ -829,7 +1105,7 @@
     var itemCount = (x.workItems || []).length;
     var smetaHtml = '<button class="link-btn" data-action="view-smeta" data-id="'+esc(x.id)+'">Подробнее'+(itemCount ? ' ('+itemCount+')' : '')+'</button>';
     var fileHtml = x.dataUrl
-      ? '<span class="file-actions"><a href="'+x.dataUrl+'" target="_blank" rel="noopener" class="icon-btn-xs" title="Просмотр" aria-label="Просмотр">'+EYE_SVG+'</a>'
+      ? '<span class="file-actions"><button type="button" class="icon-btn-xs" data-action="preview-exp" data-id="'+esc(x.id)+'" title="Предпросмотр" aria-label="Предпросмотр">'+EYE_SVG+'</button>'
         + '<a href="'+x.dataUrl+'" download="'+esc(x.fileName||'Документ')+'" class="icon-btn-xs" title="Скачать" aria-label="Скачать">'+DOWNLOAD_SVG+'</a></span>'
       : '<span class="empty-cell">файл не прикреплён</span>';
     var canDelete = TenderReferences.isAdminUser(current);
@@ -857,7 +1133,8 @@
       ? (d.updatedDate ? '<span class="upd-badge"><span class="dot"></span>Обновлён '+fmtDate(d.updatedDate)+'</span>' : '<span class="upd-badge"><span class="dot"></span>Обновляемый, дата не указана</span>')
       : (d.issueDate ? 'Выдан '+fmtDate(d.issueDate) : '<span class="empty-cell">—</span>');
     var fileHtml = d.dataUrl
-      ? '<a class="link-ico" href="'+d.dataUrl+'" download="'+esc(d.name)+'">Скачать ↗</a>'
+      ? '<span class="file-actions"><button type="button" class="icon-btn-xs" data-action="preview-doc" data-id="'+esc(d.id)+'" title="Предпросмотр" aria-label="Предпросмотр">'+EYE_SVG+'</button>'
+        + '<a href="'+d.dataUrl+'" download="'+esc(d.name)+'" class="icon-btn-xs" title="Скачать" aria-label="Скачать">'+DOWNLOAD_SVG+'</a></span>'
       : '<span class="empty-cell">файл не прикреплён</span>';
     var metaHtml = d.uploadedBy
       ? '<span class="meta-muted">'+esc(d.uploadedBy)+'<br>'+fmtDate(d.uploadedAt)+'</span>'
@@ -870,6 +1147,40 @@
       + '<td>'+metaHtml+'</td>'
       + '<td><button class="link-btn" data-action="edit" data-id="'+esc(d.id)+'">Изменить</button></td>'
       + '</tr>';
+  }
+
+  function templateRowHtml(t){
+    var previewBtn = '<button type="button" class="icon-btn-xs" data-action="preview-template" data-id="'+esc(t.id)+'" title="Предпросмотр" aria-label="Предпросмотр">'+EYE_SVG+'</button>';
+    var downloadHtml = t.dataUrl
+      ? '<a href="'+t.dataUrl+'" download="'+esc(t.name)+'" class="icon-btn-xs" title="Скачать" aria-label="Скачать">'+DOWNLOAD_SVG+'</a>'
+      : '<span class="empty-cell">—</span>';
+    var commentHtml = t.comment
+      ? '<div class="cmt-text" data-id="'+esc(t.id)+'">'+esc(t.comment)+'</div>'
+        + '<button type="button" class="link-btn cmt-more" data-action="view-comment-template" data-id="'+esc(t.id)+'" hidden>Показать</button>'
+      : '<span class="empty-cell">—</span>';
+    return '<tr data-id="'+esc(t.id)+'">'
+      + '<td class="row-title">'+esc(t.name)+'</td>'
+      + '<td>'+previewBtn+'</td>'
+      + '<td>'+(t.dataUrl ? esc(t.format||'—') : '<span class="empty-cell">не прикреплён</span>')+'</td>'
+      + '<td>'+downloadHtml+'</td>'
+      + '<td class="cmt-cell">'+commentHtml+'</td>'
+      + '<td><button type="button" class="icon-btn-xs" data-action="edit-template" data-id="'+esc(t.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button></td>'
+      + '</tr>';
+  }
+
+  function applyCommentClamping(){
+    document.querySelectorAll('.cmt-text').forEach(function(el){
+      el.classList.remove('is-clamped');
+      var lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 18;
+      var lines = Math.round(el.scrollHeight / lineHeight);
+      var moreBtn = el.nextElementSibling;
+      if(lines > 3){
+        el.classList.add('is-clamped');
+        if(moreBtn) moreBtn.hidden = false;
+      } else if(moreBtn){
+        moreBtn.hidden = true;
+      }
+    });
   }
 
   // ---- chip input для «Ключи» ----
@@ -1008,6 +1319,14 @@
       var doc = library.find(function(d){ return d.id === el.dataset.id; });
       if(doc) openModal(doc);
     }
+    if(el.dataset.action === 'preview-doc'){
+      var docPreview = library.find(function(d){ return d.id === el.dataset.id; });
+      if(docPreview) openTemplatePreview({name:docPreview.name, format:formatFromFilename(docPreview.name), dataUrl:docPreview.dataUrl, type:docPreview.type});
+    }
+    if(el.dataset.action === 'preview-exp'){
+      var expPreview = experience.find(function(x){ return x.id === el.dataset.id; });
+      if(expPreview) openTemplatePreview({name:expPreview.fileName || expPreview.contractor, format:formatFromFilename(expPreview.fileName||''), dataUrl:expPreview.dataUrl, type:expPreview.fileType});
+    }
     if(el.dataset.action === 'edit-staff'){
       var person = staff.find(function(s){ return s.id === el.dataset.id; });
       if(person) openStaffModal(person);
@@ -1038,6 +1357,22 @@
     if(el.dataset.action === 'view-smeta'){
       var forSmeta = experience.find(function(x){ return x.id === el.dataset.id; });
       if(forSmeta) openSmetaModal(forSmeta);
+    }
+    if(el.dataset.action === 'edit-template'){
+      var tpl = templates.find(function(t){ return t.id === el.dataset.id; });
+      if(tpl) openTemplateModal(tpl);
+    }
+    if(el.dataset.action === 'preview-template'){
+      var tplPreview = templates.find(function(t){ return t.id === el.dataset.id; });
+      if(tplPreview) openTemplatePreview(tplPreview);
+    }
+    if(el.dataset.action === 'view-comment-template'){
+      var tplComment = templates.find(function(t){ return t.id === el.dataset.id; });
+      if(tplComment){
+        document.getElementById('commentModalTitle').textContent = tplComment.name + ' — комментарий';
+        document.getElementById('commentModalText').textContent = tplComment.comment;
+        document.getElementById('commentOverlay').classList.add('is-open');
+      }
     }
   });
 
@@ -1322,10 +1657,110 @@
     showToast('Список работ сохранён.');
   });
 
+  // ---- модалка добавления/редактирования шаблона ----
+  var templateOverlay = document.getElementById('templateOverlay');
+  var templateEditingId = null;
+  var tplPendingFile = null;
+
+  function openTemplateModal(t){
+    templateEditingId = t ? t.id : null;
+    tplPendingFile = null;
+    document.getElementById('templateModalTitle').textContent = t ? 'Изменить шаблон' : 'Добавить шаблон';
+    document.getElementById('tplFile').value = '';
+    document.getElementById('tplFileHint').textContent = t
+      ? (t.dataUrl ? 'Файл уже прикреплён. Выберите новый, только если хотите его заменить.' : 'Файл ещё не прикреплён.')
+      : '';
+    document.getElementById('tplName').value = t ? t.name : '';
+    document.getElementById('tplFormat').value = t ? (t.format || 'DOCX') : 'DOCX';
+    document.getElementById('tplComment').value = t ? (t.comment || '') : '';
+    templateOverlay.classList.add('is-open');
+    document.getElementById('tplName').focus();
+  }
+  function closeTemplateModal(){ templateOverlay.classList.remove('is-open'); }
+  document.getElementById('addTemplateBtn').addEventListener('click', function(){ openTemplateModal(null); });
+  document.getElementById('templateCancel').addEventListener('click', closeTemplateModal);
+  templateOverlay.addEventListener('click', function(e){ if(e.target === templateOverlay) closeTemplateModal(); });
+  document.getElementById('tplFile').addEventListener('change', function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    tplPendingFile = file;
+    if(!document.getElementById('tplName').value.trim()) document.getElementById('tplName').value = file.name;
+  });
+  document.getElementById('templateSave').addEventListener('click', function(){
+    var name = document.getElementById('tplName').value.trim();
+    if(!name){ document.getElementById('tplName').focus(); return; }
+    var format = document.getElementById('tplFormat').value;
+    var comment = document.getElementById('tplComment').value.trim();
+
+    function applyAndSave(fileData){
+      if(templateEditingId){
+        var item = templates.find(function(t){ return t.id === templateEditingId; });
+        item.name = name; item.format = format; item.comment = comment;
+        if(fileData){ item.dataUrl = fileData.dataUrl; item.type = fileData.type; }
+      } else {
+        templates.push({
+          id:'template-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),
+          name:name, format:format, comment:comment,
+          type: fileData ? fileData.type : '',
+          dataUrl: fileData ? fileData.dataUrl : ''
+        });
+      }
+      saveTemplates(templates);
+      render();
+      closeTemplateModal();
+      showToast(templateEditingId ? 'Изменения сохранены.' : 'Шаблон добавлен.');
+    }
+
+    if(tplPendingFile){
+      readFileAsDataUrl(tplPendingFile).then(applyAndSave);
+    } else {
+      applyAndSave(null);
+    }
+  });
+
+  // ---- предпросмотр шаблона ----
+  var templatePreviewOverlay = document.getElementById('templatePreviewOverlay');
+  var templatePreviewCurrent = null;
+  function openTemplatePreview(t){
+    templatePreviewCurrent = t;
+    document.getElementById('templatePreviewTitle').textContent = t.name;
+    document.getElementById('templatePreviewFormat').textContent = t.format || '';
+    var body = document.getElementById('templatePreviewBody');
+    if(!t.dataUrl){
+      body.innerHTML = '<p class="hint" style="margin:0;">Файл ещё не загружен — добавьте его через редактирование строки.</p>';
+    } else if(t.type === 'application/pdf'){
+      body.innerHTML = '<iframe src="'+esc(t.dataUrl)+'" style="width:100%;height:60vh;border:1px solid var(--border);border-radius:8px;" title="Предпросмотр"></iframe>';
+    } else if(t.type && t.type.indexOf('image/') === 0){
+      body.innerHTML = '<div class="doc-thumb-wrap"><img class="doc-thumb-image" src="'+esc(t.dataUrl)+'" alt="'+esc(t.name)+'"></div>';
+    } else {
+      body.innerHTML = '<div class="doc-thumb-wrap"><div class="doc-thumb"><span class="doc-thumb-icon">'+DOC_ICON_SVG+'</span>'
+        + (t.format ? '<span class="doc-thumb-format">'+esc(t.format)+'</span>' : '')+'</div></div>';
+    }
+    templatePreviewOverlay.classList.add('is-open');
+  }
+  document.getElementById('templatePreviewClose').addEventListener('click', function(){ templatePreviewOverlay.classList.remove('is-open'); });
+  templatePreviewOverlay.addEventListener('click', function(e){ if(e.target === templatePreviewOverlay) templatePreviewOverlay.classList.remove('is-open'); });
+  document.getElementById('templateDownloadBtn').innerHTML = DOWNLOAD_SVG;
+  document.getElementById('templateDownloadBtn').addEventListener('click', function(){
+    if(!templatePreviewCurrent || !templatePreviewCurrent.dataUrl) return;
+    var link = document.createElement('a');
+    link.href = templatePreviewCurrent.dataUrl;
+    link.download = templatePreviewCurrent.name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  });
+
+  // ---- полный текст комментария (Шаблоны) ----
+  var commentOverlay = document.getElementById('commentOverlay');
+  document.getElementById('commentClose').addEventListener('click', function(){ commentOverlay.classList.remove('is-open'); });
+  commentOverlay.addEventListener('click', function(e){ if(e.target === commentOverlay) commentOverlay.classList.remove('is-open'); });
+
   window.addEventListener('storage', function(e){
     if(e.key === LIBRARY_KEY){ library = loadLibrary(); render(); }
     if(e.key === STAFF_KEY){ staff = loadStaff(); render(); }
     if(e.key === EXPERIENCE_KEY){ experience = loadExperience(); render(); }
+    if(e.key === TEMPLATES_KEY){ templates = loadTemplates(); render(); }
   });
 
   function togglePopover(btn, pop, other){

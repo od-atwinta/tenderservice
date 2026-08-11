@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <style>
   :root{
     --bg:#faf8f9;
@@ -67,6 +68,11 @@
   .brand-title{font-family:var(--font-display);font-weight:700;font-size:17px;line-height:1.2;white-space:nowrap;}
   .brand-sub{font-size:10.5px;color:var(--ink-muted);letter-spacing:.05em;text-transform:uppercase;margin-top:1px;white-space:nowrap;}
   .portal-nav.is-collapsed .brand{display:none;}
+  .icon-btn-sm{width:34px;height:34px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);
+    background:var(--surface);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;
+    cursor:pointer;flex:none;}
+  .icon-btn-sm:hover{background:var(--surface-2);color:var(--ink);}
+  .icon-btn-sm svg{width:16px;height:16px;}
   .nav-toggle svg{transition:transform .15s ease;}
   .portal-nav .nav-toggle{width:34px;height:34px;border-radius:7px;}
   .portal-nav.is-collapsed .nav-toggle svg{transform:rotate(180deg);}
@@ -585,7 +591,7 @@
       </button>
     </div>
     <ul class="nav-list">
-      <li><a href="#" title="Дашборд"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span class="nav-label">Дашборд</span></a></li>
+      <li><a href="дашборд.html" title="Дашборд"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg><span class="nav-label">Дашборд</span></a></li>
       <li>
         <a href="все-тендеры.html" class="is-active" title="Тендеры"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg><span class="nav-label">Тендеры</span></a>
         <ul class="nav-sub">
@@ -602,7 +608,7 @@
       <li><a href="копилка.html" title="Копилка"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="nav-label">Копилка</span></a></li>
       <li><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg><span class="nav-label">Пользователи</span></a></li>
       <li><a href="#" title="Профиль"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span class="nav-label">Профиль</span></a></li>
-      <li><a href="#" title="Финансы"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg><span class="nav-label">Финансы</span></a></li>
+      <li><a href="финансы.html" title="Финансы"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg><span class="nav-label">Финансы</span></a></li>
       <li><a href="настройки-справочники.html" title="Настройки"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg><span class="nav-label">Настройки</span></a></li>
     </ul>
     <div class="nav-datetime"><div class="nd-date" id="navDate"></div><div class="nd-time" id="navTime"></div></div>
