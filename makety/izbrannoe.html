@@ -1,3 +1,4 @@
+<html lang="ru">
 <meta charset="utf-8">
 <title>Избранное — Тендеры</title>
 <style>
@@ -44,7 +45,7 @@
 
   .shell{display:flex;align-items:flex-start;}
 
-  /* ---------- sidebar (переиспользовано из все-тендеры.html) ---------- */
+  /* ---------- sidebar (переиспользовано из vse-tendery.html) ---------- */
   .portal-nav{position:fixed;top:0;left:0;bottom:0;width:224px;border-right:1px solid var(--border);
     background:var(--surface);padding:20px 14px;display:flex;flex-direction:column;
     transition:width .18s ease;overflow-x:hidden;overflow-y:auto;z-index:10;}
@@ -126,7 +127,7 @@
   .page-actions{display:flex;align-items:center;gap:16px;flex:none;}
   .list-meta{color:var(--ink-muted);font-size:12.5px;margin:0 0 24px;}
 
-  /* ---------- filters (переиспользованы из все-тендеры.html) ---------- */
+  /* ---------- filters (переиспользованы из vse-tendery.html) ---------- */
   .filter-bar{display:flex;flex-wrap:wrap;align-items:end;gap:18px;margin-bottom:24px;}
   .toolbar-right{display:flex;align-items:end;gap:12px;margin-left:auto;}
   .filter-field{display:flex;flex-direction:column;gap:6px;}
@@ -169,7 +170,7 @@
   .icon-btn-sm:hover{background:var(--surface-2);color:var(--ink);}
   .icon-btn-sm svg{width:16px;height:16px;}
 
-  /* custom dropdown widget (single) — тот же паттерн, что в все-тендеры.html */
+  /* custom dropdown widget (single) — тот же паттерн, что в vse-tendery.html */
   .xselect{position:relative;display:inline-block;}
   .xselect-native{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;}
   .xselect-trigger{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;
@@ -396,7 +397,7 @@
       </button>
     </div>
     <ul class="nav-list">
-      <li><a href="дашборд.html" title="Дашборд">
+      <li><a href="dashboard.html" title="Дашборд">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
         <span class="nav-label">Дашборд</span>
       </a></li>
@@ -406,18 +407,18 @@
           <span class="nav-label">Тендеры</span>
         </a>
         <ul class="nav-sub">
-          <li data-admin-observer-only="1"><a href="все-тендеры.html"><span class="nav-label">Сводная таблица</span></a></li>
-          <li><a href="новые-тендеры.html"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
-          <li><a href="ожидают-решения.html"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
-          <li><a href="в-работе.html"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
-          <li><a href="архив.html"><span class="nav-label">Архив</span></a></li>
+          <li data-admin-observer-only="1"><a href="vse-tendery.html"><span class="nav-label">Сводная таблица</span></a></li>
+          <li><a href="novye-tendery.html"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
+          <li><a href="ozhidayut-resheniya.html"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
+          <li><a href="v-rabote.html"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
+          <li><a href="arhiv.html"><span class="nav-label">Архив</span></a></li>
         </ul>
       </li>
-      <li><a href="заявки.html" title="Заявки">
+      <li><a href="zayavki.html" title="Заявки">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
         <span class="nav-label">Заявки</span>
       </a></li>
-      <li><a href="избранное.html" class="is-active" title="Избранное">
+      <li><a href="izbrannoe.html" class="is-active" title="Избранное">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <span class="nav-label">Избранное</span>
       </a></li>
@@ -426,11 +427,11 @@
         <span class="nav-label">Календарь</span>
         <span class="nav-badge">2</span>
       </a></li>
-      <li><a href="копилка.html" title="Копилка">
+      <li><a href="kopilka.html" title="Копилка">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="nav-label">Копилка</span>
       </a></li>
-      <li data-admin-only="1"><a href="пользователи.html" title="Пользователи (доступно Админу и Суперадмину)">
+      <li data-admin-only="1"><a href="polzovateli.html" title="Пользователи (доступно Админу и Суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span class="nav-label">Пользователи</span>
       </a></li>
@@ -438,11 +439,11 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="nav-label">Профиль</span>
       </a></li>
-      <li><a href="финансы.html" title="Финансы">
+      <li><a href="finansy.html" title="Финансы">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
         <span class="nav-label">Финансы</span>
       </a></li>
-      <li data-admin-only="1"><a href="настройки-справочники.html" title="Настройки (доступно суперадмину)">
+      <li data-admin-only="1"><a href="nastroyki-spravochniki.html" title="Настройки (доступно суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
         <span class="nav-label">Настройки</span>
       </a></li>
@@ -615,7 +616,7 @@
   </div>
 </div>
 
-<script src="справочники.js"></script>
+<script src="spravochniki.js"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -627,7 +628,7 @@
   var APP_STATUSES = TenderReferences.get('applicationStatuses');
   var CARD_URL = 'https://claude.ai/code/artifact/cc2156ed-e65b-4080-9434-48e8241591fe';
 
-  // общее хранилище со все-тендеры.html (псевдо-синхронизация через localStorage, см. Дизайн-система.md)
+  // общее хранилище со vse-tendery.html (псевдо-синхронизация через localStorage, см. Дизайн-система.md)
   var STORAGE_KEY = 'atvinta_tenders_v2';
   function loadTenders(seedFn){
     try{
@@ -847,7 +848,7 @@
 
   var CHEVRON_SVG = '<svg class="chev" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">'
     + '<path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  // та же иконка, что "Выгрузить в Excel" в все-тендеры.html — переиспользуется для скачивания отчёта ИИ
+  // та же иконка, что "Выгрузить в Excel" в vse-tendery.html — переиспользуется для скачивания отчёта ИИ
   var DOWNLOAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
     + '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
   var CHECKO_WARNING_SVG = '<svg class="checko-warning-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
@@ -991,7 +992,7 @@
     return out;
   }
 
-  // тот же стилизованный select, что в все-тендеры.html
+  // тот же стилизованный select, что в vse-tendery.html
   function enhanceSelect(sel){
     TenderReferences.sortSelect(sel);
     var wrap = document.createElement('span');
@@ -1108,7 +1109,7 @@
       +   '<div class="tcard-row1">'
       +     '<div class="tcard-left">'
       +       '<div class="tcard-meta"><span class="status-tag"><span class="dot"></span>'+esc(favoriteStage(t))+'</span><span class="tcard-date">Создано '+fmtDateShort(t.rowCreated)+'</span></div>'
-      +       '<div class="tcard-title-line"><button class="fav-star'+(t.fav?' is-fav':'')+'" data-action="toggle-fav" data-id="'+t.id+'" aria-label="Убрать из избранного">'+(t.fav?'★':'☆')+'</button><a class="'+titleClass+'" href="карточка-тендера.html?tender='+t.id+'&section='+encodeURIComponent(favoriteSection(t))+'">'+esc(t.name)+'</a></div>'
+      +       '<div class="tcard-title-line"><button class="fav-star'+(t.fav?' is-fav':'')+'" data-action="toggle-fav" data-id="'+t.id+'" aria-label="Убрать из избранного">'+(t.fav?'★':'☆')+'</button><a class="'+titleClass+'" href="kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent(favoriteSection(t))+'">'+esc(t.name)+'</a></div>'
       +       '<div class="tcard-customer"><span>Заказчик: '+esc(t.customer)+'</span>'+checkoBtn+'</div>'
       +       '<div class="tcard-links">'
       +         (t.sourceLink ? '<a class="link-ico" href="'+t.sourceLink+'" target="_blank" rel="noopener">Тендерплан ↗</a>' : '<span style="color:var(--ink-muted);font-size:12.5px">Источник не указан</span>')
@@ -1129,7 +1130,7 @@
       +     '<div class="tcard-row2-default" data-part="default">'
       +       '<div style="display:flex;gap:14px;align-items:center">'
       +         '<button class="link-btn" data-action="toggle-details" data-id="'+t.id+'" data-label="1">Подробнее</button>'
-      +         '<a class="link-ico" href="карточка-тендера.html?tender='+t.id+'&section='+encodeURIComponent(favoriteSection(t))+'">Перейти в карточку ↗</a>'
+      +         '<a class="link-ico" href="kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent(favoriteSection(t))+'">Перейти в карточку ↗</a>'
       +       '</div>'
       +       '<div class="tcard-row2-actions">'
       +       '</div>'
@@ -1316,7 +1317,7 @@
       recipient:t.manager || 'Участники тендера',
       text:'Изменён статус тендера «'+t.name+'». Необходимо ознакомиться с изменениями в карточке.',
       date:new Date().toLocaleString('ru-RU'),
-      href:'карточка-тендера.html?tender='+t.id+'&section='+encodeURIComponent(destination)
+      href:'kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent(destination)
     });
     try{ localStorage.setItem(key, JSON.stringify(notifications.slice(-50))); }catch(e){}
   }
@@ -1357,7 +1358,7 @@
   var filterState = {search:'', deadline:'', source:'all', manager:'all', dept:'all', mine:false};
   var CARD_FILTERS_KEY = 'atvinta_tender_card_filters_v1';
   document.addEventListener('click', function(event){
-    var link = event.target.closest('a[href*="карточка-тендера.html"]');
+    var link = event.target.closest('a[href*="kartochka-tendera.html"]');
     if(!link) return;
     try{ sessionStorage.setItem(CARD_FILTERS_KEY, JSON.stringify(filterState)); }catch(e){}
     var href = new URL(link.getAttribute('href'), location.href);
@@ -1818,3 +1819,4 @@
   renderSyncedNotifications();
 })();
 </script>
+</html>
