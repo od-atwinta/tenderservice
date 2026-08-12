@@ -110,20 +110,21 @@
   .app{flex:1;min-width:0;margin-left:224px;padding:32px 32px 80px;transition:margin-left .18s ease;}
   .app.nav-collapsed{margin-left:68px;}
   .service-head{display:grid;grid-template-columns:minmax(0,1fr) 308px;gap:16px 28px;
-    align-items:start;margin-bottom:16px;}
+    align-items:start;margin-bottom:28px;}
   .service-heading{display:contents;}
   .service-title{grid-column:1;font-family:var(--font-display);font-weight:600;font-size:28px;
     line-height:1.2;margin:0;min-width:0;}
-  .tender-summary{margin-top:14px;display:flex;flex-direction:column;gap:9px;}
-  .service-head .tender-summary{grid-column:1 / -1;grid-row:2;margin-top:0;display:grid;
-    grid-template-columns:minmax(0,1fr) 308px;gap:9px 28px;}
-  .summary-top{grid-column:1;grid-row:1;display:flex;align-items:center;
+  .tender-summary{margin-top:14px;display:flex;flex-direction:column;gap:14px;}
+  .service-head .tender-summary{grid-column:1 / -1;grid-row:2;margin-top:0;}
+  .summary-nmc-row{display:flex;align-items:baseline;gap:6px;}
+  .summary-top{display:flex;align-items:flex-start;
     justify-content:space-between;gap:24px;width:100%;min-height:60px;}
+  .summary-left{display:flex;flex-direction:column;gap:14px;flex:1;min-width:0;}
   .summary-customer-check{display:flex;align-items:flex-end;gap:10px 16px;flex-wrap:wrap;min-width:0;}
-  .summary-risk{grid-column:1;grid-row:2;display:flex;align-items:center;min-height:24px;}
-  .summary-secondary{grid-column:2;grid-row:2;display:flex;align-items:center;gap:8px;
+  .summary-risk{display:flex;align-items:center;min-height:24px;}
+  .summary-secondary{display:flex;align-items:center;gap:8px;
     flex-wrap:wrap;min-height:32px;}
-  .summary-directions{grid-column:1;grid-row:3;display:flex;align-items:center;gap:8px;
+  .summary-directions{display:flex;align-items:center;gap:8px;
     flex-wrap:wrap;min-height:32px;}
   .summary-label{font-size:12px;font-weight:700;color:var(--ink-muted);
     text-transform:uppercase;letter-spacing:.03em;margin-right:2px;}
@@ -148,9 +149,9 @@
   .tender-summary .tag{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;
     color:var(--ink-muted);background:none;padding:1px 6px;white-space:nowrap;}
   .summary-nmc{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:700;
-    font-size:24px;line-height:1.25;color:var(--ink);white-space:nowrap;flex:none;}
-  .checko-link{background:var(--verified-bg);color:var(--success);padding:5px 10px;border-radius:5px;}
-  .tender-summary .checko-link,.tender-summary .checko-missing{font-size:14px;line-height:1.25;}
+    font-size:20px;line-height:1.25;color:var(--ink);white-space:nowrap;flex:none;}
+  .checko-link{color:var(--success);}
+  .tender-summary .checko-link,.tender-summary .checko-missing{font-size:10px;line-height:1.25;}
   .checko-missing{display:inline-flex;align-items:center;gap:5px;color:var(--warning);
     font-size:12.5px;font-weight:600;}
   .tender-summary .checko-warning-icon{width:24px;height:24px;}
@@ -165,11 +166,24 @@
   .risk-flag:hover .tip{display:block;}
   .service-actions{grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:flex-end;
     gap:16px;flex:none;}
-  .card.header-deadline{grid-column:2;grid-row:1;align-self:stretch;height:auto;min-height:60px;
-    padding:0 12px;display:flex;align-items:center;justify-content:space-between;line-height:20px;
+  .card.header-deadline{width:308px;box-sizing:border-box;height:auto;flex:none;
+    padding:20px 14px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:18px;
     background:#fff;color:#1c1720;}
-  .card.header-deadline .big{font-family:var(--font-mono);font-size:18px;font-weight:700;
-    line-height:20px;}
+  .header-deadline-label{font-size:12px;font-weight:700;color:var(--ink-muted);
+    text-transform:uppercase;letter-spacing:.03em;}
+  .header-deadline-date{font-size:14px;font-weight:600;color:#1c1720;white-space:nowrap;}
+  .countdown-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;
+    font-family:var(--font-mono);font-size:16px;font-weight:700;white-space:nowrap;flex:none;
+    background:var(--surface-2);color:var(--ink-muted);}
+  .countdown-pill svg{width:14px;height:14px;flex:none;}
+  .countdown-pill.is-green{background:var(--success-bg);color:var(--success);}
+  .countdown-pill.is-yellow{background:var(--warning-bg);color:var(--warning);}
+  .countdown-pill.is-red{background:var(--danger-bg);color:var(--danger);}
+  .header-status-compact{display:flex;align-items:center;flex-wrap:wrap;gap:8px;}
+  .header-status-compact .current-stage-tag{min-height:22px;padding:0 8px;font-size:10.5px;}
+  .header-status-divider{width:1px;align-self:stretch;min-height:18px;background:var(--border);}
+  .header-status-compact .current-status-label{font-size:12.5px;}
+  .header-status-compact .btn{height:28px;min-height:28px;padding:0 12px;font-size:12.5px;}
   .service-actions .icon-btn{width:38px;height:38px;border-radius:9px;position:relative;}
   .service-actions .icon-btn svg{width:18px;height:18px;}
   .service-actions .ping{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);}
@@ -186,6 +200,14 @@
   .popover-foot{margin-top:10px;text-align:right;}
   .actions-divider{width:1px;align-self:stretch;background:var(--border);margin:0 4px;}
 
+  .checklist-progress-banner{display:flex;align-items:center;gap:12px;margin:0 0 20px;}
+  .checklist-progress-label{font-size:12px;font-weight:700;color:var(--ink-muted);
+    text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;}
+  .checklist-progress-track{flex:1;height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden;}
+  .checklist-progress-fill{height:100%;border-radius:inherit;
+    background:linear-gradient(90deg,#a8e6bc,var(--success));transition:width .2s ease;}
+  .checklist-progress-percent{font-size:14px;font-weight:700;color:var(--ink);
+    white-space:nowrap;min-width:36px;text-align:right;}
   .page-columns{display:grid;grid-template-columns:minmax(0,1fr) 308px;gap:28px;align-items:start;}
   .tender-content{min-width:0;}
 
@@ -203,8 +225,7 @@
   .tender-list-panel{width:auto;min-height:calc(100vh - 124px);border-left:1px solid var(--border);
     background:var(--surface);padding:16px 18px;position:relative;
     max-height:calc(100vh - 40px);overflow-y:auto;}
-  .tl-filters{position:absolute;left:0;right:0;bottom:calc(100% + 12px);z-index:5;
-    display:flex;align-items:center;gap:18px;margin:0;}
+  .tl-filters{display:flex;align-items:center;gap:18px;margin:0 0 12px;}
   .tl-direction-filter{min-width:0;flex:1;}
   .tl-direction-filter .xselect{display:block;width:100%;}
   .tl-direction-filter .xselect-trigger{min-width:0;}
@@ -247,12 +268,8 @@
   .btn-sm{padding:0 10px;font-size:12.5px;}
 
   /* ---------- layout ---------- */
-  .layout{display:grid;grid-template-columns:1fr 296px;gap:16px;align-items:start;margin-top:16px;}
+  .layout{margin-top:16px;}
   .layout > div{min-width:0;}
-  @media (max-width:860px){
-    .layout{grid-template-columns:1fr;}
-    .current-context-tags{position:static;align-self:flex-start;}
-  }
 
   /* ---------- tabs ---------- */
   .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px;overflow-x:auto;}
@@ -268,6 +285,7 @@
     color:var(--ink);font-size:13.5px;font-weight:600;cursor:pointer;}
   .overview-toggle input{width:18px;height:18px;margin:0;accent-color:var(--accent);}
   .overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .overview-meta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
   .overview-value{font-size:14.5px;line-height:1.6;color:var(--ink);}
   .overview-value.is-empty{color:var(--ink-muted);}
   .overview-docs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
@@ -283,10 +301,10 @@
   .overview-ai-recommendation{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
   .btn-ai{background:#606F7D;border-color:#606F7D;color:#fff;}
   .btn-ai:hover{filter:brightness(1.05);border-color:#606F7D;}
-  .process-panel-head{display:flex;flex-direction:column;align-items:flex-start;gap:12px;
+  .process-panel-head{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;
     margin-bottom:16px;}
   .process-panel-head .overview-toggle{margin-top:0;}
-  .process-add-controls{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;}
+  .process-add-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
   .process-add-controls[hidden]{display:none!important;}
   .process-add-select{width:190px;}
   .process-add-controls .btn:disabled,.process-add-controls .xselect-trigger:disabled{
@@ -297,17 +315,24 @@
   .process-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
   .process-section-title{margin:0;font-size:17px;font-weight:700;color:var(--ink);}
   .process-section-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .process-section-description-block{margin-top:16px;}
+  .process-section-description{margin:6px 0 0;font-size:14px;line-height:1.6;color:var(--ink);}
+  .process-editor .process-documents > .summary-label,
+  .process-editor .process-application-head strong{
+    display:inline-block;font-size:13px;font-weight:700;color:var(--ink);
+    text-transform:none;letter-spacing:normal;}
   .process-chip{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;
     border-radius:999px;background:var(--surface-2);font-size:12px;font-weight:600;color:var(--ink-muted);}
   .process-section.is-completed .process-chip{background:var(--surface);}
-  .process-applications{display:grid;gap:14px;margin-top:16px;}
-  .process-application{border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;}
-  .process-application-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-  .process-application-title{font-size:14px;font-weight:700;color:var(--ink);}
-  .process-application-grid{display:grid;grid-template-columns:minmax(0,1fr) 180px 120px;
-    gap:16px;margin-top:12px;align-items:end;}
-  .process-progress{height:8px;border-radius:999px;background:var(--border);overflow:hidden;margin-top:7px;}
-  .process-progress > span{display:block;height:100%;background:var(--accent);border-radius:inherit;}
+  .process-amount-block{margin-top:20px;}
+  .process-amount-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:10px;}
+  .process-amount-caption{display:block;font-size:12px;color:var(--ink-muted);margin-bottom:4px;}
+  .process-amount-grid strong{font-size:15px;color:var(--ink);}
+  .process-amount-edit-grid{display:grid;grid-template-columns:1fr 160px 1fr;gap:16px;margin-top:10px;}
+  .process-amount-edit-grid input[type="number"]{-moz-appearance:textfield;}
+  .process-amount-edit-grid input[type="number"]::-webkit-outer-spin-button,
+  .process-amount-edit-grid input[type="number"]::-webkit-inner-spin-button{
+    -webkit-appearance:none;margin:0;}
   .process-documents{margin-top:14px;}
   .process-document-list{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
   .process-file-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
@@ -335,7 +360,7 @@
   .process-actions{display:flex;align-items:center;gap:12px;margin-top:20px;}
   .process-empty{color:var(--ink-muted);font-size:13.5px;}
   @media (max-width:760px){
-    .overview-grid,.process-application-grid,.process-editor-grid{grid-template-columns:1fr;}
+    .overview-grid,.process-amount-grid,.process-amount-edit-grid,.process-editor-grid{grid-template-columns:1fr;}
   }
 
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);
@@ -449,10 +474,15 @@
   .rail{position:sticky;top:20px;display:flex;flex-direction:column;gap:12px;}
   .rail .card h3{margin-bottom:10px;}
   .rail-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
-  .rail .card .rail-card-head h3{margin:0;}
+  .rail-card-head h3{margin:0;}
   .rail-card-content{margin-top:10px;}
+  #teamCard .rail-card-content{margin-top:20px;}
   .rail-edit-btn{width:24px;height:24px;min-height:24px;padding:0;flex:none;color:var(--ink-muted);}
   .rail-edit-btn svg{width:14px;height:14px;}
+  .team-sub-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+  .team-sub-head .summary-label{font-size:13px;font-weight:700;color:var(--ink);
+    text-transform:none;letter-spacing:normal;}
+  .team-sub-head-spaced{margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
   .fact-row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:12px 0;
     border-bottom:1px solid var(--border);}
   .fact-row:last-child{border-bottom:none;}
@@ -623,26 +653,31 @@
         <h1 class="service-title" id="serviceTenderTitle">Техническое сопровождение сайта tsosmz.ru на 2026 год</h1>
         <div class="tender-summary">
           <div class="summary-top">
-            <div class="summary-customer-check">
-              <span class="summary-customer"><span class="summary-label">Заказчик</span><b id="syncedCustomer">АО «СМЗ»</b></span>
-              <span id="syncedChecko"><span class="checko-missing"><svg class="checko-warning-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z"/><path d="M6.6 6.2a1.6 1.6 0 1 1 2.45 1.35C8.3 8 8 8.45 8 9.2"/><path d="M8 11.5h.01"/></svg><span>Проверка отсутствует</span></span></span>
+            <div class="summary-left">
+              <div class="summary-customer-check">
+                <span class="summary-customer"><span class="summary-label">Заказчик</span><b id="syncedCustomer">АО «СМЗ»</b></span>
+                <span id="syncedChecko"><span class="checko-missing"><svg class="checko-warning-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z"/><path d="M6.6 6.2a1.6 1.6 0 1 1 2.45 1.35C8.3 8 8 8.45 8 9.2"/><path d="M8 11.5h.01"/></svg></span></span>
+              </div>
+              <div class="summary-nmc-row">
+                <span class="summary-label">НМЦ:</span>
+                <span class="summary-nmc" id="syncedNmc">1 250 000 ₽</span>
+              </div>
+              <div class="header-status-compact">
+                <span class="current-stage-tag current-section-tag" id="currentTenderSection">Основной</span>
+                <span class="current-stage-tag" id="currentTenderStage">Подготовка</span>
+                <span class="header-status-divider"></span>
+                <span class="current-status-label" id="currentTenderStatus">Формируем</span>
+                <button class="btn btn-sm" type="button" id="statusOpen">Изменить</button>
+              </div>
             </div>
-            <span class="summary-nmc" id="syncedNmc">1 250 000 ₽</span>
-          </div>
-          <div class="card header-deadline" id="syncedDeadlineBadge">
-            <span class="summary-label">Срок подачи</span>
-            <span class="big num" id="syncedDeadlineDays">9 дн.</span>
-          </div>
-          <div class="summary-risk">
-            <span class="risk-flag" id="syncedRiskFlag"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z"/><path d="M8 5.5v4"/><path d="M8 11.8h.01"/></svg> Проверить у юристов<span class="tip" id="syncedRiskTip">Возможно нужна консультация юриста — условия из отчёта ИИ требуют проверки.</span></span>
-          </div>
-          <div class="summary-secondary">
-            <span class="summary-tags" id="syncedTags"><span class="tag">44-ФЗ</span></span>
-          </div>
-          <div class="summary-directions">
-            <span class="summary-label">Направления</span>
-            <span id="syncedDirections"><span class="directions-empty">Не указаны</span></span>
-            <button class="directions-edit" type="button" id="directionsEditOpen">Изменить</button>
+            <div class="card header-deadline" id="syncedDeadlineBadge">
+              <span class="header-deadline-label">Срок подачи</span>
+              <span class="header-deadline-date" id="syncedDeadlineDate">до —</span>
+              <span class="countdown-pill" id="deadlineCountdownPill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                <span id="syncedDeadlineDays">9 дней</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -668,6 +703,12 @@
       </div>
     </header>
 
+    <div class="checklist-progress-banner" id="checklistProgressBanner">
+      <span class="checklist-progress-label">Готовность документов</span>
+      <div class="checklist-progress-track"><div class="checklist-progress-fill" id="headerChecklistFill"></div></div>
+      <span class="checklist-progress-percent" id="headerChecklistText">0%</span>
+    </div>
+
     <div class="page-columns">
       <main class="tender-content">
     <div class="layout">
@@ -678,6 +719,7 @@
           <button class="tab" role="tab" aria-selected="false" data-tab="stages">Этапы и заявки</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="docs">Документы</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="checklist">Чек-лист</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="tasks">Задачи</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="logs">События</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="history">Логи</button>
         </div>
@@ -705,16 +747,36 @@
                 </button>
               </div>
             </div>
-            <div class="overview-card-body overview-grid" data-overview-body="description">
-              <div>
-                <div class="overview-value" id="overviewDescription">Описание пока не добавлено.</div>
+            <div class="overview-card-body" data-overview-body="description">
+              <div class="overview-meta-row">
+                <span class="summary-tags" id="syncedTags"><span class="tag">44-ФЗ</span></span>
+                <span class="risk-flag" id="syncedRiskFlag"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z"/><path d="M8 5.5v4"/><path d="M8 11.8h.01"/></svg> Проверить у юристов<span class="tip" id="syncedRiskTip">Возможно нужна консультация юриста — условия из отчёта ИИ требуют проверки.</span></span>
               </div>
-              <div>
-                <h3>Контактные данные</h3>
-                <div class="overview-value" id="overviewContacts">Контактные данные пока не добавлены.</div>
+              <div class="overview-grid">
+                <div>
+                  <div class="overview-value" id="overviewDescription">Описание пока не добавлено.</div>
+                </div>
+                <div>
+                  <h3>Контактные данные</h3>
+                  <div class="overview-value" id="overviewContacts">Контактные данные пока не добавлены.</div>
+                </div>
               </div>
             </div>
           </div>
+
+          <div class="card" id="platformCard">
+            <div class="rail-card-head">
+              <h3>Площадка</h3>
+              <button class="btn btn-sm rail-edit-btn" type="button" id="platformEditOpen"
+                title="Редактировать площадку" aria-label="Редактировать площадку"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+            </div>
+            <div class="rail-card-content">
+              <div class="fact-row"><span class="k">Тип подачи</span><span class="v" id="platformSubmitType">На площадке</span></div>
+              <div class="fact-row"><span class="k">Условие подачи</span><span class="v" id="platformFee">0 ₽</span></div>
+              <p id="platformComment" style="font-size:13px;color:var(--ink-muted);margin:10px 0 0">Комментарий не указан.</p>
+            </div>
+          </div>
+
           <div class="card" data-overview-section="ai">
             <div class="overview-card-head">
               <h3>Отчёт и рекомендация ИИ</h3>
@@ -769,6 +831,30 @@
             <h3>Прикреплённые документы</h3>
             <div class="overview-docs" id="overviewDocuments"></div>
           </div>
+
+          <div class="card" id="teamCard">
+            <div class="rail-card-head">
+              <h3>Команда</h3>
+            </div>
+            <div class="rail-card-content">
+              <div class="team-sub-head">
+                <span class="summary-label">Направления</span>
+                <button class="directions-edit" type="button" id="directionsEditOpen">Изменить</button>
+              </div>
+              <div id="syncedDirections"><span class="directions-empty">Не указаны</span></div>
+
+              <div class="team-sub-head team-sub-head-spaced">
+                <span class="summary-label">Ответственные</span>
+                <button class="btn btn-sm rail-edit-btn" type="button" id="responsiblesEditOpen"
+                  title="Редактировать ответственных" aria-label="Редактировать ответственных"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+              </div>
+              <div class="responsible-row responsible-manager-row">
+                <div class="dept-name">Менеджер</div>
+                <div class="person" id="syncedManager"><span class="avatar">ОД</span> Оксана Денисенко</div>
+              </div>
+              <div id="syncedParticipants"></div>
+            </div>
+          </div>
         </section>
 
         <!-- STAGES AND APPLICATIONS -->
@@ -780,7 +866,6 @@
             </label>
             <div class="process-add-controls" id="processAddControls">
               <button class="btn btn-primary" type="button" id="addProcessSection">Добавить этап</button>
-              <div class="process-add-select" id="nextSectionSelectSlot"></div>
             </div>
           </div>
           <div id="processSections"></div>
@@ -836,6 +921,34 @@
           </div>
         </section>
 
+        <!-- TASKS -->
+        <section class="panel" data-panel="tasks">
+          <div class="card">
+            <div class="checklist-head">
+              <h3 style="margin:0">Задачи по тендеру</h3>
+              <div class="checklist-tools">
+                <button class="icon-btn" id="taskAddOpen" title="Поставить задачу" aria-label="Поставить задачу">+</button>
+                <button class="icon-btn" id="taskEditToggle" title="Редактировать" aria-label="Редактировать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+              </div>
+            </div>
+            <div class="progress-line" id="taskProgressLine">
+              <div class="progress-track"><div class="progress-fill" id="taskProgressFill"></div></div>
+              <span class="progress-text" id="taskProgressText"></span>
+            </div>
+            <ul class="checklist" id="taskView"></ul>
+
+            <div id="taskEdit" hidden>
+              <table class="edit-table">
+                <thead><tr><th>Задача</th><th style="width:130px">Срок</th><th style="width:140px">Исполнитель</th><th></th></tr></thead>
+                <tbody id="taskEditRows"></tbody>
+              </table>
+              <div class="modal-actions">
+                <button class="btn btn-primary btn-sm" id="taskSaveEdit">Сохранить</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- EVENTS -->
         <section class="panel" data-panel="logs">
           <div class="card">
@@ -863,46 +976,6 @@
           </div>
         </section>
       </div>
-
-      <!-- RAIL -->
-      <aside class="rail">
-        <div class="current-context-tags">
-          <span class="current-stage-tag current-section-tag" id="currentTenderSection">Основной</span>
-          <span class="current-stage-tag" id="currentTenderStage">Подготовка</span>
-        </div>
-        <section class="card tender-status-panel" aria-label="Статус тендера">
-          <span class="current-status-label" id="currentTenderStatus">Формируем</span>
-          <button class="btn" type="button" id="statusOpen">Изменить статус</button>
-        </section>
-
-        <div class="card" id="platformCard">
-          <div class="rail-card-head">
-            <h3>Площадка</h3>
-            <button class="btn btn-sm rail-edit-btn" type="button" id="platformEditOpen"
-              title="Редактировать площадку" aria-label="Редактировать площадку"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
-          </div>
-          <div class="rail-card-content">
-            <div class="fact-row"><span class="k">Тип подачи</span><span class="v" id="platformSubmitType">На площадке</span></div>
-            <div class="fact-row"><span class="k">Условие подачи</span><span class="v" id="platformFee">0 ₽</span></div>
-            <p id="platformComment" style="font-size:13px;color:var(--ink-muted);margin:10px 0 0">Комментарий не указан.</p>
-          </div>
-        </div>
-
-        <div class="card" id="responsiblesCard">
-          <div class="rail-card-head">
-            <h3>Ответственные</h3>
-            <button class="btn btn-sm rail-edit-btn" type="button" id="responsiblesEditOpen"
-              title="Редактировать ответственных" aria-label="Редактировать ответственных"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
-          </div>
-          <div class="rail-card-content">
-            <div class="responsible-row responsible-manager-row">
-              <div class="dept-name">Менеджер</div>
-              <div class="person" id="syncedManager"><span class="avatar">ОД</span> Оксана Денисенко</div>
-            </div>
-            <div id="syncedParticipants"></div>
-          </div>
-        </div>
-      </aside>
     </div>
 
       </main>
@@ -1212,6 +1285,29 @@
   </div>
 </div>
 
+<!-- TASK QUICK-ADD MODAL -->
+<div class="overlay" id="taskAddOverlay">
+  <div class="modal">
+    <h4>Поставить задачу</h4>
+    <div class="field">
+      <label for="taskAddDue">Срок исполнения</label>
+      <input type="date" id="taskAddDue">
+    </div>
+    <div class="field">
+      <label>Исполнитель</label>
+      <span id="taskAddAssigneeSlot"></span>
+    </div>
+    <div class="field">
+      <label for="taskAddText">Задача</label>
+      <textarea id="taskAddText" placeholder="Например: согласовать смету с бухгалтерией"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="taskAddCancel">Отмена</button>
+      <button class="btn btn-primary" id="taskAddSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <!-- CHAT FAB + DRAWER -->
 <button class="chat-fab" id="chatFab" data-state="unread" aria-label="Открыть обсуждение тендера">
   💬<span class="fab-badge" id="fabBadge">2</span>
@@ -1274,127 +1370,6 @@
     logsList.insertBefore(li, logsList.firstChild);
     eventOverlay.classList.remove('is-open');
   });
-
-  // ---- checklist state ----
-  var participants = ['Оксана Д.', 'Ваня П.', 'Марина Б.'];
-  var nextId = 100;
-  var checklistData = [
-    {id:1, text:'Устав организации', due:'', assignee:'Оксана Д.', done:true},
-    {id:2, text:'Выписка из ЕГРЮЛ', due:'', assignee:'Оксана Д.', done:true},
-    {id:3, text:'Справка об исполнении налоговых обязательств', due:'2026-07-20', assignee:'Ваня П.', done:false},
-    {id:4, text:'Согласие на обработку персональных данных', due:'', assignee:'Марина Б.', done:false}
-  ];
-
-  function participantOptions(selected){
-    return TenderReferences.sortOptions(participants).map(function(p){
-      return '<option value="'+p+'"'+(p===selected?' selected':'')+'>'+p+'</option>';
-    }).join('');
-  }
-
-  var checklistView = document.getElementById('checklistView');
-  var clProgressFill = document.getElementById('clProgressFill');
-  var clProgressText = document.getElementById('clProgressText');
-
-  function renderChecklistView(){
-    checklistView.innerHTML = '';
-    var doneCount = 0;
-    checklistData.forEach(function(item){
-      if(item.done) doneCount++;
-      var li = document.createElement('li');
-      li.className = item.done ? 'done' : '';
-      var cb = document.createElement('input');
-      cb.type = 'checkbox'; cb.checked = item.done; cb.dataset.id = item.id;
-      cb.addEventListener('change', function(){ item.done = cb.checked; renderChecklistView(); });
-      var text = document.createElement('span'); text.className = 'cl-text'; text.textContent = item.text;
-      var meta = document.createElement('span'); meta.className = 'cl-meta';
-      meta.textContent = item.assignee + (item.due ? ' · до ' + fmt(item.due) : ' · без срока');
-      li.appendChild(cb); li.appendChild(text); li.appendChild(meta);
-      checklistView.appendChild(li);
-    });
-    var total = checklistData.length;
-    clProgressText.textContent = doneCount + ' из ' + total;
-    clProgressFill.style.width = (total ? (doneCount/total*100) : 0) + '%';
-  }
-
-  var editRows = document.getElementById('editRows');
-  function renderEditRows(){
-    editRows.innerHTML = '';
-    checklistData.forEach(function(item){
-      var tr = document.createElement('tr'); tr.dataset.id = item.id;
-      tr.innerHTML =
-        '<td><input type="text" class="edit-text" value="'+escapeHtml(item.text)+'"></td>'+
-        '<td><input type="date" class="edit-date" value="'+item.due+'"></td>'+
-        '<td><select class="edit-assignee">'+participantOptions(item.assignee)+'</select></td>'+
-        '<td><button class="icon-btn icon-danger" data-action="delete" title="Удалить" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button></td>';
-      editRows.appendChild(tr);
-    });
-    var trNew = document.createElement('tr'); trNew.dataset.id = 'new';
-    trNew.innerHTML =
-      '<td><input type="text" class="edit-text" placeholder="Новая задача…"></td>'+
-      '<td><input type="date" class="edit-date"></td>'+
-      '<td><select class="edit-assignee">'+participantOptions()+'</select></td>'+
-      '<td><button class="icon-btn icon-add" data-action="commit-new" title="Добавить">+</button></td>';
-    editRows.appendChild(trNew);
-
-    editRows.querySelectorAll('[data-action="delete"]').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var tr = btn.closest('tr');
-        checklistData = checklistData.filter(function(d){ return String(d.id) !== tr.dataset.id; });
-        renderEditRows();
-      });
-    });
-    editRows.querySelector('[data-action="commit-new"]').addEventListener('click', function(){
-      var tr = editRows.querySelector('tr[data-id="new"]');
-      var text = tr.querySelector('.edit-text').value.trim();
-      if(!text) return;
-      var due = tr.querySelector('.edit-date').value;
-      var assignee = tr.querySelector('.edit-assignee').value;
-      checklistData.push({id:nextId++, text:text, due:due, assignee:assignee, done:false});
-      renderEditRows();
-    });
-  }
-
-  var checklistEditBox = document.getElementById('checklistEdit');
-  var progressLine = document.getElementById('progressLine');
-
-  document.getElementById('clEditToggle').addEventListener('click', function(){
-    checklistView.hidden = true; progressLine.hidden = true;
-    checklistEditBox.hidden = false;
-    renderEditRows();
-  });
-  document.getElementById('clSaveEdit').addEventListener('click', function(){
-    editRows.querySelectorAll('tr').forEach(function(tr){
-      if(tr.dataset.id === 'new') return;
-      var item = checklistData.find(function(d){ return String(d.id) === tr.dataset.id; });
-      if(!item) return;
-      var newText = tr.querySelector('.edit-text').value.trim();
-      if(newText) item.text = newText;
-      item.due = tr.querySelector('.edit-date').value;
-      item.assignee = tr.querySelector('.edit-assignee').value;
-    });
-    checklistView.hidden = false; progressLine.hidden = false;
-    checklistEditBox.hidden = true;
-    renderChecklistView();
-  });
-
-  var clAddOverlay = document.getElementById('clAddOverlay');
-  var clAddText = document.getElementById('clAddText');
-  var clAddAssignee = document.getElementById('clAddAssignee');
-  document.getElementById('clAddOpen').addEventListener('click', function(){
-    clAddText.value = ''; clAddAssignee.innerHTML = participantOptions();
-    clAddOverlay.classList.add('is-open'); clAddText.focus();
-  });
-  document.getElementById('clAddCancel').addEventListener('click', function(){ clAddOverlay.classList.remove('is-open'); });
-  clAddOverlay.addEventListener('click', function(e){ if(e.target === clAddOverlay) clAddOverlay.classList.remove('is-open'); });
-  document.getElementById('clAddSave').addEventListener('click', function(){
-    var text = clAddText.value.trim();
-    if(!text){ clAddText.focus(); return; }
-    checklistData.push({id:nextId++, text:text, due:'', assignee:clAddAssignee.value, done:false});
-    renderChecklistView();
-    clAddOverlay.classList.remove('is-open');
-  });
-
-  renderChecklistView();
 
   // ---- chat fab + drawer ----
   var chatFab = document.getElementById('chatFab');
@@ -1710,6 +1685,7 @@
   }
   function ensureLegacySectionDocumentIds(t, section){
     section.documentIds = Array.isArray(section.documentIds) ? section.documentIds : [];
+    section.formsDocumentIds = Array.isArray(section.formsDocumentIds) ? section.formsDocumentIds : [];
     section.submissionDocumentIds = Array.isArray(section.submissionDocumentIds)
       ? section.submissionDocumentIds
       : [];
@@ -1928,6 +1904,32 @@
     if(!match) return String(iso);
     return match[3]+'.'+match[2]+'.'+match[1]+' '+(match[4] ? match[4]+':'+match[5] : '—:—');
   }
+  function fmtHms(ms){
+    var totalSeconds = Math.max(0, Math.floor(ms/1000));
+    var h = Math.floor(totalSeconds/3600);
+    var m = Math.floor((totalSeconds%3600)/60);
+    var s = totalSeconds%60;
+    function pad(n){ return (n<10?'0':'')+n; }
+    return pad(h)+':'+pad(m)+':'+pad(s);
+  }
+  function renderDeadlineCountdown(){
+    var el = document.getElementById('syncedDeadlineDays');
+    var dateEl = document.getElementById('syncedDeadlineDate');
+    var pill = document.getElementById('deadlineCountdownPill');
+    if(!el || !tender) return;
+    var deadlineDate = tender.deadline ? new Date(tender.deadline) : null;
+    if(dateEl) dateEl.textContent = 'до '+fmtDeadlineDateTime(tender.deadline);
+    if(!deadlineDate){ el.textContent = '—'; if(pill) pill.className = 'countdown-pill'; return; }
+    var msRemaining = deadlineDate - new Date();
+    if(pill){
+      pill.className = 'countdown-pill'
+        + (msRemaining >= 172800000 ? ' is-green' : msRemaining < 86400000 ? ' is-red' : ' is-yellow');
+    }
+    if(msRemaining < 0){ el.textContent = fmtDeadlineDateTime(tender.deadline); return; }
+    el.textContent = msRemaining >= 86400000
+      ? Math.ceil(msRemaining/86400000)+' дней'
+      : fmtHms(msRemaining);
+  }
   function stageName(t){
     TenderReferences.ensureTenderStructure(t);
     var activeSection = TenderReferences.activeTenderSection(t);
@@ -2092,6 +2094,307 @@
         }).join('')
       : '<div class="responsible-empty">Участники не добавлены.</div>';
   }
+
+  // ---- checklist state (хранится в tender.checklist, персистентно) ----
+  var DEMO_CHECKLIST_TENDER_ID = 1;
+  var DEMO_CHECKLIST_SEED = [
+    {id:1, text:'Устав организации', due:'', assignee:'Оксана Д.', done:true},
+    {id:2, text:'Выписка из ЕГРЮЛ', due:'', assignee:'Оксана Д.', done:true},
+    {id:3, text:'Справка об исполнении налоговых обязательств', due:'2026-07-20', assignee:'Ваня П.', done:false},
+    {id:4, text:'Согласие на обработку персональных данных', due:'', assignee:'Марина Б.', done:false}
+  ];
+
+  function checklistOf(t){
+    if(!Array.isArray(t.checklist)){
+      t.checklist = (t.id === DEMO_CHECKLIST_TENDER_ID)
+        ? DEMO_CHECKLIST_SEED.map(function(item){ return Object.assign({}, item); })
+        : [];
+    }
+    return t.checklist;
+  }
+  function nextChecklistId(t){
+    var ids = checklistOf(t).map(function(item){ return Number(item.id) || 0; });
+    return (ids.length ? Math.max.apply(null, ids) : 0) + 1;
+  }
+  function checklistAssignees(t){
+    var names = eligibleParticipants(t);
+    if(t.manager && names.indexOf(t.manager) === -1) names = [t.manager].concat(names);
+    return names;
+  }
+  function participantOptions(t, selected){
+    var pool = checklistAssignees(t);
+    if(selected && pool.indexOf(selected) === -1) pool = pool.concat(selected);
+    return TenderReferences.sortOptions(pool).map(function(p){
+      return '<option value="'+p+'"'+(p===selected?' selected':'')+'>'+p+'</option>';
+    }).join('');
+  }
+
+  var checklistView = document.getElementById('checklistView');
+  var clProgressFill = document.getElementById('clProgressFill');
+  var clProgressText = document.getElementById('clProgressText');
+
+  function renderHeaderChecklistProgress(t){
+    var fill = document.getElementById('headerChecklistFill');
+    var text = document.getElementById('headerChecklistText');
+    if(!fill || !text) return;
+    var data = checklistOf(t);
+    var total = data.length;
+    var done = data.filter(function(item){ return item.done; }).length;
+    var percent = total ? Math.round(done/total*100) : 0;
+    fill.style.width = percent + '%';
+    text.textContent = percent + '%';
+  }
+
+  function renderChecklistView(t){
+    var data = checklistOf(t);
+    checklistView.innerHTML = '';
+    var doneCount = 0;
+    data.forEach(function(item){
+      if(item.done) doneCount++;
+      var li = document.createElement('li');
+      li.className = item.done ? 'done' : '';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = item.done; cb.dataset.id = item.id;
+      cb.addEventListener('change', function(){
+        item.done = cb.checked;
+        saveTenders(tenders);
+        renderChecklistView(t);
+      });
+      var text = document.createElement('span'); text.className = 'cl-text'; text.textContent = item.text;
+      var meta = document.createElement('span'); meta.className = 'cl-meta';
+      meta.textContent = item.assignee + (item.due ? ' · до ' + fmtDate(item.due) : ' · без срока');
+      li.appendChild(cb); li.appendChild(text); li.appendChild(meta);
+      checklistView.appendChild(li);
+    });
+    var total = data.length;
+    clProgressText.textContent = doneCount + ' из ' + total;
+    clProgressFill.style.width = (total ? (doneCount/total*100) : 0) + '%';
+    renderHeaderChecklistProgress(t);
+  }
+
+  var editRows = document.getElementById('editRows');
+  function renderEditRows(t){
+    var data = checklistOf(t);
+    editRows.innerHTML = '';
+    data.forEach(function(item){
+      var tr = document.createElement('tr'); tr.dataset.id = item.id;
+      tr.innerHTML =
+        '<td><input type="text" class="edit-text" value="'+escSynced(item.text)+'"></td>'+
+        '<td><input type="date" class="edit-date" value="'+item.due+'"></td>'+
+        '<td><select class="edit-assignee">'+participantOptions(t, item.assignee)+'</select></td>'+
+        '<td><button class="icon-btn icon-danger" data-action="delete" title="Удалить" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button></td>';
+      editRows.appendChild(tr);
+    });
+    var trNew = document.createElement('tr'); trNew.dataset.id = 'new';
+    trNew.innerHTML =
+      '<td><input type="text" class="edit-text" placeholder="Новая задача…"></td>'+
+      '<td><input type="date" class="edit-date"></td>'+
+      '<td><select class="edit-assignee">'+participantOptions(t)+'</select></td>'+
+      '<td><button class="icon-btn icon-add" data-action="commit-new" title="Добавить">+</button></td>';
+    editRows.appendChild(trNew);
+
+    editRows.querySelectorAll('[data-action="delete"]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var tr = btn.closest('tr');
+        t.checklist = checklistOf(t).filter(function(d){ return String(d.id) !== tr.dataset.id; });
+        saveTenders(tenders);
+        renderEditRows(t);
+      });
+    });
+    editRows.querySelector('[data-action="commit-new"]').addEventListener('click', function(){
+      var tr = editRows.querySelector('tr[data-id="new"]');
+      var text = tr.querySelector('.edit-text').value.trim();
+      if(!text) return;
+      var due = tr.querySelector('.edit-date').value;
+      var assignee = tr.querySelector('.edit-assignee').value;
+      checklistOf(t).push({id:nextChecklistId(t), text:text, due:due, assignee:assignee, done:false});
+      saveTenders(tenders);
+      renderEditRows(t);
+    });
+  }
+
+  var checklistEditBox = document.getElementById('checklistEdit');
+  var progressLine = document.getElementById('progressLine');
+
+  document.getElementById('clEditToggle').addEventListener('click', function(){
+    if(!tender) return;
+    checklistView.hidden = true; progressLine.hidden = true;
+    checklistEditBox.hidden = false;
+    renderEditRows(tender);
+  });
+  document.getElementById('clSaveEdit').addEventListener('click', function(){
+    if(!tender) return;
+    editRows.querySelectorAll('tr').forEach(function(tr){
+      if(tr.dataset.id === 'new') return;
+      var item = checklistOf(tender).find(function(d){ return String(d.id) === tr.dataset.id; });
+      if(!item) return;
+      var newText = tr.querySelector('.edit-text').value.trim();
+      if(newText) item.text = newText;
+      item.due = tr.querySelector('.edit-date').value;
+      item.assignee = tr.querySelector('.edit-assignee').value;
+    });
+    saveTenders(tenders);
+    checklistView.hidden = false; progressLine.hidden = false;
+    checklistEditBox.hidden = true;
+    renderChecklistView(tender);
+  });
+
+  var clAddOverlay = document.getElementById('clAddOverlay');
+  var clAddText = document.getElementById('clAddText');
+  var clAddAssignee = document.getElementById('clAddAssignee');
+  document.getElementById('clAddOpen').addEventListener('click', function(){
+    if(!tender) return;
+    clAddText.value = ''; clAddAssignee.innerHTML = participantOptions(tender);
+    clAddOverlay.classList.add('is-open'); clAddText.focus();
+  });
+  document.getElementById('clAddCancel').addEventListener('click', function(){ clAddOverlay.classList.remove('is-open'); });
+  clAddOverlay.addEventListener('click', function(e){ if(e.target === clAddOverlay) clAddOverlay.classList.remove('is-open'); });
+  document.getElementById('clAddSave').addEventListener('click', function(){
+    if(!tender) return;
+    var text = clAddText.value.trim();
+    if(!text){ clAddText.focus(); return; }
+    checklistOf(tender).push({id:nextChecklistId(tender), text:text, due:'', assignee:clAddAssignee.value, done:false});
+    saveTenders(tenders);
+    renderChecklistView(tender);
+    clAddOverlay.classList.remove('is-open');
+  });
+
+  // ---- tasks state (хранится в tender.tasks, персистентно) ----
+  function tasksOf(t){
+    if(!Array.isArray(t.tasks)) t.tasks = [];
+    return t.tasks;
+  }
+  function nextTaskId(t){
+    var ids = tasksOf(t).map(function(item){ return Number(item.id) || 0; });
+    return (ids.length ? Math.max.apply(null, ids) : 0) + 1;
+  }
+
+  var taskView = document.getElementById('taskView');
+  var taskProgressFill = document.getElementById('taskProgressFill');
+  var taskProgressText = document.getElementById('taskProgressText');
+
+  function renderTaskView(t){
+    var data = tasksOf(t);
+    taskView.innerHTML = '';
+    var doneCount = 0;
+    data.forEach(function(item){
+      if(item.done) doneCount++;
+      var li = document.createElement('li');
+      li.className = item.done ? 'done' : '';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = item.done; cb.dataset.id = item.id;
+      cb.addEventListener('change', function(){
+        item.done = cb.checked;
+        saveTenders(tenders);
+        renderTaskView(t);
+      });
+      var text = document.createElement('span'); text.className = 'cl-text'; text.textContent = item.text;
+      var meta = document.createElement('span'); meta.className = 'cl-meta';
+      meta.textContent = 'Исполнитель: '+item.assignee+' · поставил '+item.assignedBy
+        +(item.due ? ' · до '+fmtDate(item.due) : ' · без срока');
+      li.appendChild(cb); li.appendChild(text); li.appendChild(meta);
+      taskView.appendChild(li);
+    });
+    var total = data.length;
+    taskProgressText.textContent = doneCount + ' из ' + total;
+    taskProgressFill.style.width = (total ? (doneCount/total*100) : 0) + '%';
+  }
+
+  var taskEditRows = document.getElementById('taskEditRows');
+  function renderTaskEditRows(t){
+    var data = tasksOf(t);
+    taskEditRows.innerHTML = '';
+    data.forEach(function(item){
+      var tr = document.createElement('tr'); tr.dataset.id = item.id;
+      tr.innerHTML =
+        '<td><input type="text" class="edit-text" value="'+escSynced(item.text)+'"></td>'+
+        '<td><input type="date" class="edit-date" value="'+item.due+'"></td>'+
+        '<td><select class="edit-assignee">'+participantOptions(t, item.assignee)+'</select></td>'+
+        '<td><button class="icon-btn icon-danger" data-action="delete" title="Удалить" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button></td>';
+      taskEditRows.appendChild(tr);
+    });
+    var trNew = document.createElement('tr'); trNew.dataset.id = 'new';
+    trNew.innerHTML =
+      '<td><input type="text" class="edit-text" placeholder="Новая задача…"></td>'+
+      '<td><input type="date" class="edit-date"></td>'+
+      '<td><select class="edit-assignee">'+participantOptions(t)+'</select></td>'+
+      '<td><button class="icon-btn icon-add" data-action="commit-new" title="Добавить">+</button></td>';
+    taskEditRows.appendChild(trNew);
+
+    taskEditRows.querySelectorAll('[data-action="delete"]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var tr = btn.closest('tr');
+        t.tasks = tasksOf(t).filter(function(d){ return String(d.id) !== tr.dataset.id; });
+        saveTenders(tenders);
+        renderTaskEditRows(t);
+      });
+    });
+    taskEditRows.querySelector('[data-action="commit-new"]').addEventListener('click', function(){
+      var tr = taskEditRows.querySelector('tr[data-id="new"]');
+      var text = tr.querySelector('.edit-text').value.trim();
+      if(!text) return;
+      var due = tr.querySelector('.edit-date').value;
+      var assignee = tr.querySelector('.edit-assignee').value;
+      tasksOf(t).push({id:nextTaskId(t), text:text, due:due, assignee:assignee, assignedBy:CURRENT_USER.name, done:false});
+      saveTenders(tenders);
+      renderTaskEditRows(t);
+    });
+  }
+
+  var taskEditBox = document.getElementById('taskEdit');
+  var taskProgressLine = document.getElementById('taskProgressLine');
+
+  document.getElementById('taskEditToggle').addEventListener('click', function(){
+    if(!tender) return;
+    taskView.hidden = true; taskProgressLine.hidden = true;
+    taskEditBox.hidden = false;
+    renderTaskEditRows(tender);
+  });
+  document.getElementById('taskSaveEdit').addEventListener('click', function(){
+    if(!tender) return;
+    taskEditRows.querySelectorAll('tr').forEach(function(tr){
+      if(tr.dataset.id === 'new') return;
+      var item = tasksOf(tender).find(function(d){ return String(d.id) === tr.dataset.id; });
+      if(!item) return;
+      var newText = tr.querySelector('.edit-text').value.trim();
+      if(newText) item.text = newText;
+      item.due = tr.querySelector('.edit-date').value;
+      item.assignee = tr.querySelector('.edit-assignee').value;
+    });
+    saveTenders(tenders);
+    taskView.hidden = false; taskProgressLine.hidden = false;
+    taskEditBox.hidden = true;
+    renderTaskView(tender);
+  });
+
+  var taskAddOverlay = document.getElementById('taskAddOverlay');
+  var taskAddText = document.getElementById('taskAddText');
+  var taskAddDue = document.getElementById('taskAddDue');
+  var taskAddAssigneeSelect = null;
+  document.getElementById('taskAddOpen').addEventListener('click', function(){
+    if(!tender) return;
+    taskAddText.value = ''; taskAddDue.value = '';
+    var slot = document.getElementById('taskAddAssigneeSlot');
+    slot.innerHTML = '';
+    taskAddAssigneeSelect = buildXSelect(checklistAssignees(tender), '', 'Выбрать исполнителя');
+    slot.appendChild(taskAddAssigneeSelect);
+    taskAddOverlay.classList.add('is-open'); taskAddText.focus();
+  });
+  document.getElementById('taskAddCancel').addEventListener('click', function(){ taskAddOverlay.classList.remove('is-open'); });
+  taskAddOverlay.addEventListener('click', function(e){ if(e.target === taskAddOverlay) taskAddOverlay.classList.remove('is-open'); });
+  document.getElementById('taskAddSave').addEventListener('click', function(){
+    if(!tender) return;
+    var text = taskAddText.value.trim();
+    if(!text){ taskAddText.focus(); return; }
+    if(!taskAddDue.value){ taskAddDue.focus(); return; }
+    var assignee = taskAddAssigneeSelect ? taskAddAssigneeSelect.dataset.value : '';
+    if(!assignee) return;
+    tasksOf(tender).push({id:nextTaskId(tender), text:text, due:taskAddDue.value, assignee:assignee, assignedBy:CURRENT_USER.name, done:false});
+    saveTenders(tenders);
+    renderTaskView(tender);
+    taskAddOverlay.classList.remove('is-open');
+  });
+
   function renderTenderList(){
     var selectedDirection = tenderDirectionFilter
       ? tenderDirectionFilter.dataset.value
@@ -2154,7 +2457,6 @@
   var editingProcessSectionId = '';
   var editingProcessDraft = null;
   var processSectionSelects = {};
-  var nextProcessSectionSelect = null;
   function syncProcessDraftFromEditor(){
     if(!editingProcessSectionId || !editingProcessDraft) return;
     var sectionNode = document.querySelector(
@@ -2167,66 +2469,6 @@
     }
     var sectionDeadlineInput = sectionNode.querySelector('[data-process-section-deadline]');
     if(sectionDeadlineInput) editingProcessDraft.deadline = sectionDeadlineInput.value;
-    editingProcessDraft.applications = Array.from(
-      sectionNode.querySelectorAll('.process-application[data-application-index]')
-    ).map(function(applicationNode,index){
-      var previous = editingProcessDraft.applications[index] || {};
-      var nameInput = applicationNode.querySelector('[data-application-name]');
-      var deadlineInput = applicationNode.querySelector('[data-application-deadline]');
-      var readinessInput = applicationNode.querySelector('[data-application-readiness]');
-      var refs = Array.from(applicationNode.querySelectorAll('[data-doc-ref]:checked')).map(
-        function(input){ return Number(input.dataset.docRef); }
-      );
-      return {
-        id:previous.id,
-        name:nameInput ? nameInput.value : previous.name,
-        deadline:deadlineInput ? deadlineInput.value : previous.deadline,
-        readiness:readinessInput ? readinessInput.value : previous.readiness,
-        documentRefs:refs
-      };
-    });
-  }
-  function processApplicationHtml(application, section, applicationIndex, isEditing, commonDocs){
-    var refs = Array.isArray(application.documentRefs) ? application.documentRefs : [];
-    var documents = commonDocs.length
-      ? refs.map(function(index){
-          return commonDocs[index] ? documentButton(commonDocs[index], index, false) : '';
-        }).filter(Boolean).join('')
-      : '';
-    var documentEditor = commonDocs.length
-      ? commonDocs.map(function(doc,index){
-          return '<label class="process-document-option"><input type="checkbox" data-doc-ref="'
-            +index+'" data-application-index="'+applicationIndex+'"'
-            +(refs.indexOf(index) !== -1 ? ' checked' : '')+'>'
-            +'<span>'+escSynced(documentName(doc))+'</span></label>';
-        }).join('')
-      : '<span class="process-empty">Общих документов пока нет.</span>';
-    if(isEditing){
-      return '<div class="process-application" data-application-index="'+applicationIndex+'">'
-        +'<div class="process-application-head"><strong>Заявка '+(applicationIndex+1)+'</strong>'
-        +(section.applications.length > 1
-          ? '<button class="btn btn-sm" type="button" data-process-action="remove-application"'
-            +' data-application-index="'+applicationIndex+'">Удалить</button>' : '')+'</div>'
-        +'<div class="process-application-grid">'
-        +'<div class="field"><label>Название заявки</label><input type="text" data-application-name'
-        +' value="'+escSynced(application.name || '')+'"></div>'
-        +'<div class="field"><label>Дедлайн</label><input type="datetime-local" data-application-deadline'
-        +' value="'+escSynced(String(application.deadline || '').slice(0,16))+'"></div>'
-        +'<div class="field"><label>Готовность, %</label><input type="number" min="0" max="100"'
-        +' data-application-readiness value="'+Number(application.readiness || 0)+'"></div></div>'
-        +'<div class="process-documents"><span class="summary-label">Общие документы</span>'
-        +'<div class="process-document-list">'+documentEditor+'</div></div></div>';
-    }
-    return '<div class="process-application">'
-      +'<div class="process-application-head"><span class="process-application-title">'
-      +escSynced(application.name || ('Заявка '+(applicationIndex+1)))+'</span>'
-      +'<span class="num">'+escSynced(fmtDeadlineDateTime(application.deadline))+'</span></div>'
-      +'<div class="process-application-grid"><div><span class="summary-label">Готовность</span>'
-      +'<div class="process-progress"><span style="width:'+Number(application.readiness || 0)+'%"></span></div></div>'
-      +'<strong>'+Number(application.readiness || 0)+'%</strong></div>'
-      +'<div class="process-documents"><span class="summary-label">Документы заявки</span>'
-      +'<div class="process-document-list">'+(documents || '<span class="process-empty">Документы не подключены.</span>')
-      +'</div></div></div>';
   }
   function processLibraryDocumentChips(ids,kind,isEditing,library){
     var documents = uniqueDocumentIds(ids).map(function(id){
@@ -2274,8 +2516,8 @@
     var view = isEditing && editingProcessDraft
       ? editingProcessDraft
       : (section.completed && section.snapshot ? section.snapshot : section);
-    var applications = Array.isArray(view.applications) ? view.applications : [];
     var sectionDocumentIds = uniqueDocumentIds(view.documentIds);
+    var formsDocumentIds = uniqueDocumentIds(view.formsDocumentIds);
     var submissionDocumentIds = uniqueDocumentIds(view.submissionDocumentIds);
     return '<section class="card process-section'+(section.completed ? ' is-completed' : '')+'"'
       +' data-process-section-id="'+escSynced(section.id)+'">'
@@ -2285,36 +2527,74 @@
       +'<span class="process-chip">'+escSynced(view.status || 'Статус не указан')+'</span>'
       +(section.completed ? '<span class="process-chip">Завершена · снимок</span>' : '')+'</div></div>'
       +(!section.completed && !isEditing && userCanManageStages()
-        ? '<button class="btn btn-sm" type="button" data-process-action="edit-section"'
-          +' data-section-id="'+escSynced(section.id)+'">Редактировать</button>' : '')+'</div>'
+        ? '<button class="btn btn-sm rail-edit-btn" type="button" data-process-action="edit-section"'
+          +' data-section-id="'+escSynced(section.id)+'" title="Редактировать этап" aria-label="Редактировать этап">'
+          +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>'
+        : '')+'</div>'
+      +(!isEditing && view.description
+        ? '<div class="process-section-description-block"><span class="summary-label">Описание</span>'
+          +'<p class="process-section-description">'+escSynced(view.description)+'</p></div>' : '')
       +(isEditing
         ? '<div class="process-editor"><div class="process-editor-grid">'
           +'<div class="field"><label>Название этапа</label><div data-process-section-select></div></div>'
-          +'<div class="field"><label>Дедлайн (дата и время подачи)</label><input type="datetime-local"'
+          +'<div class="field"><label>Дедлайн</label><input type="datetime-local"'
           +' data-process-section-deadline value="'+escSynced(String(view.deadline || '').slice(0,16))+'"></div>'
           +'</div>'
+          +'<div class="field" style="margin-top:16px"><label>Описание</label>'
+          +'<textarea data-process-section-description placeholder="Например: особенности этого этапа, на что обратить внимание">'
+          +escSynced(view.description || '')+'</textarea></div>'
           +processEditableDocumentBlock('Документы',sectionDocumentIds,'section',library,false)
+          +processEditableDocumentBlock('Формы для заполнения',formsDocumentIds,'forms',library,false)
           +processEditableDocumentBlock(
             'Документы на подачу',submissionDocumentIds,'submission',library,true
           )
-          +'<div class="process-applications">'
-          +applications.map(function(application,applicationIndex){
-            return processApplicationHtml(application,view,applicationIndex,true,commonDocs);
-          }).join('')
-          +'</div><button class="btn btn-sm" type="button" data-process-action="add-application"'
-          +' style="margin-top:14px">Добавить заявку</button>'
+          +processAmountEditorHtml(view)
           +'<div class="process-actions"><button class="btn" type="button" data-process-action="cancel-section">'
           +'Отмена</button><button class="btn btn-primary" type="button" data-process-action="save-section">'
           +'Сохранить</button></div></div>'
-        : processReadonlyDocumentBlock('Документы',sectionDocumentIds,'section',library,false)
-          +processReadonlyDocumentBlock(
-            'Документы на подачу',submissionDocumentIds,'submission',library,true
-          )
-          +'<div class="process-applications">'
-          +applications.map(function(application,applicationIndex){
-            return processApplicationHtml(application,view,applicationIndex,false,commonDocs);
-          }).join('')+'</div>')
+        : (section.completed
+            ? processReadonlyDocumentBlock('Документы',sectionDocumentIds,'section',library,false)
+              +processReadonlyDocumentBlock('Формы для заполнения',formsDocumentIds,'forms',library,false)
+              +processReadonlyDocumentBlock(
+                'Документы на подачу',submissionDocumentIds,'submission',library,true
+              )
+            : processEditableDocumentBlock('Документы',sectionDocumentIds,'section',library,false)
+              +processEditableDocumentBlock('Формы для заполнения',formsDocumentIds,'forms',library,false)
+              +processEditableDocumentBlock(
+                'Документы на подачу',submissionDocumentIds,'submission',library,true
+              ))
+          +processAmountViewHtml(view))
       +'</section>';
+  }
+  function formatMoney2(value){
+    var num = Number(value);
+    return isNaN(num) ? '' : num.toFixed(2);
+  }
+  function parseVatRate(rate){
+    var num = parseFloat(String(rate || '0').replace(',','.'));
+    return isNaN(num) ? 0 : num;
+  }
+  function processAmountViewHtml(view){
+    var hasExcl = view.amountExclVat !== '' && view.amountExclVat !== undefined && view.amountExclVat !== null;
+    var hasIncl = view.amountInclVat !== '' && view.amountInclVat !== undefined && view.amountInclVat !== null;
+    return '<div class="process-amount-block"><span class="summary-label">Сумма заявки</span>'
+      +'<div class="process-amount-grid">'
+      +'<div><span class="process-amount-caption">Без НДС</span><strong>'
+      +(hasExcl ? escSynced(formatMoney2(view.amountExclVat))+' ₽' : '—')+'</strong></div>'
+      +'<div><span class="process-amount-caption">НДС</span><strong>'+escSynced(view.vatRate || '—')+'</strong></div>'
+      +'<div><span class="process-amount-caption">С НДС</span><strong>'
+      +(hasIncl ? escSynced(formatMoney2(view.amountInclVat))+' ₽' : '—')+'</strong></div>'
+      +'</div></div>';
+  }
+  function processAmountEditorHtml(view){
+    return '<div class="process-amount-block"><span class="summary-label">Сумма заявки</span>'
+      +'<div class="process-amount-edit-grid">'
+      +'<div class="field"><label>Без НДС</label><input type="number" step="0.01" min="0" inputmode="decimal"'
+      +' data-amount-excl value="'+escSynced(view.amountExclVat || '')+'"></div>'
+      +'<div class="field"><label>НДС</label><div data-vat-rate-select></div></div>'
+      +'<div class="field"><label>С НДС</label><input type="number" step="0.01" min="0" inputmode="decimal"'
+      +' data-amount-incl value="'+escSynced(view.amountInclVat || '')+'"></div>'
+      +'</div></div>';
   }
   function renderProcessSections(t){
     TenderReferences.ensureTenderStructure(t);
@@ -2345,22 +2625,64 @@
           if(editingProcessDraft) editingProcessDraft.name = nameSelect.dataset.value;
         });
       }
+      var vatSlot = editSection && editSection.querySelector('[data-vat-rate-select]');
+      var exclInput = editSection && editSection.querySelector('[data-amount-excl]');
+      var inclInput = editSection && editSection.querySelector('[data-amount-incl]');
+      var vatRateSelect = null;
+      if(vatSlot){
+        vatRateSelect = buildXSelect(
+          TenderReferences.get('vatRates'),
+          editingProcessDraft.vatRate || '5%',
+          'Ставка НДС',
+          true
+        );
+        vatSlot.appendChild(vatRateSelect);
+        vatRateSelect.addEventListener('xchange', function(){
+          editingProcessDraft.vatRate = vatRateSelect.dataset.value;
+          if(exclInput && exclInput.value) recalcAmountFromExcl();
+        });
+      }
+      function recalcAmountFromExcl(){
+        var rate = parseVatRate(vatRateSelect ? vatRateSelect.dataset.value : editingProcessDraft.vatRate);
+        var val = parseFloat(exclInput.value);
+        if(isNaN(val) || val < 0){
+          exclInput.value = ''; inclInput.value = '';
+          editingProcessDraft.amountExclVat = ''; editingProcessDraft.amountInclVat = '';
+          return;
+        }
+        exclInput.value = val.toFixed(2);
+        inclInput.value = (val * (1 + rate/100)).toFixed(2);
+        editingProcessDraft.amountExclVat = exclInput.value;
+        editingProcessDraft.amountInclVat = inclInput.value;
+      }
+      function recalcAmountFromIncl(){
+        var rate = parseVatRate(vatRateSelect ? vatRateSelect.dataset.value : editingProcessDraft.vatRate);
+        var val = parseFloat(inclInput.value);
+        if(isNaN(val) || val < 0){
+          exclInput.value = ''; inclInput.value = '';
+          editingProcessDraft.amountExclVat = ''; editingProcessDraft.amountInclVat = '';
+          return;
+        }
+        inclInput.value = val.toFixed(2);
+        exclInput.value = (val / (1 + rate/100)).toFixed(2);
+        editingProcessDraft.amountExclVat = exclInput.value;
+        editingProcessDraft.amountInclVat = inclInput.value;
+      }
+      if(exclInput && inclInput){
+        exclInput.addEventListener('blur', recalcAmountFromExcl);
+        exclInput.addEventListener('keydown', function(event){
+          if(event.key === 'Enter'){ event.preventDefault(); recalcAmountFromExcl(); exclInput.blur(); }
+        });
+        inclInput.addEventListener('blur', recalcAmountFromIncl);
+        inclInput.addEventListener('keydown', function(event){
+          if(event.key === 'Enter'){ event.preventDefault(); recalcAmountFromIncl(); inclInput.blur(); }
+        });
+      }
     }
     var canAdd = TenderReferences.canAddTenderSection(t);
     var addControls = document.getElementById('processAddControls');
     addControls.hidden = !t.multiStage;
     document.getElementById('addProcessSection').disabled = !canAdd;
-    var nextSlot = document.getElementById('nextSectionSelectSlot');
-    nextSlot.innerHTML = '';
-    nextProcessSectionSelect = null;
-    if(t.multiStage){
-      var names = PROCESS_SECTION_OPTIONS.slice();
-      var used = t.tenderSections.map(function(section){ return section.name; });
-      var preferred = names.find(function(name){ return used.indexOf(name) === -1; }) || names[0] || '';
-      nextProcessSectionSelect = buildXSelect(names, preferred, 'Название этапа', true);
-      nextSlot.appendChild(nextProcessSectionSelect);
-      nextProcessSectionSelect.querySelector('.xselect-trigger').disabled = !canAdd;
-    }
   }
   function renderOverviewDetails(t){
     var description = document.getElementById('overviewDescription');
@@ -2428,7 +2750,7 @@
       .join('');
     document.getElementById('syncedChecko').innerHTML = tender.checkoUrl
       ? '<a class="link-ico checko-link" href="'+escSynced(tender.checkoUrl)+'" target="_blank" rel="noopener">Заказчик проверен ↗</a>'
-      : '<span class="checko-missing"><svg class="checko-warning-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z"/><path d="M6.6 6.2a1.6 1.6 0 1 1 2.45 1.35C8.3 8 8 8.45 8 9.2"/><path d="M8 11.5h.01"/></svg><span>Проверка отсутствует</span></span>';
+      : '<span class="checko-missing"><svg class="checko-warning-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z"/><path d="M6.6 6.2a1.6 1.6 0 1 1 2.45 1.35C8.3 8 8 8.45 8 9.2"/><path d="M8 11.5h.01"/></svg></span>';
     var tenderCurrencies = (tender.currencies || []).join(', ') || '₽';
     document.getElementById('syncedNmc').textContent = tender.nmc
       ? new Intl.NumberFormat('ru-RU').format(tender.nmc)+' '+tenderCurrencies
@@ -2445,6 +2767,8 @@
     renderPlatform(tender);
     renderDirections(tender);
     renderResponsibles(tender);
+    if(!checklistEditBox || checklistEditBox.hidden) renderChecklistView(tender);
+    if(!taskEditBox || taskEditBox.hidden) renderTaskView(tender);
 
     renderReport(tender);
     renderDocuments(tender);
@@ -2453,14 +2777,7 @@
     applyOverviewCollapsedState();
     document.getElementById('syncedManagerComment').textContent =
       tender.managerComment || 'Комментарий менеджера пока не добавлен.';
-    var deadlineDate = tender.deadline ? new Date(tender.deadline) : null;
-    var days = deadlineDate ? Math.ceil((deadlineDate - new Date()) / 86400000) : null;
-    var deadlineHasTime = /T\d{2}:\d{2}/.test(String(tender.deadline));
-    document.getElementById('syncedDeadlineDays').textContent =
-      days === null ? '—' :
-      days < 0 ? fmtDeadlineDateTime(tender.deadline) :
-      (days <= 1 && deadlineHasTime) ? fmtDeadlineDateTime(tender.deadline) :
-      days+' дн.';
+    renderDeadlineCountdown();
 
     var history = document.getElementById('syncedHistory');
     history.innerHTML = '';
@@ -2498,6 +2815,7 @@
   document.getElementById('tenderMineFilter').checked = params.get('listMine') === '1';
   document.getElementById('tenderMineFilter').addEventListener('change', renderTenderList);
   applyTenderData();
+  setInterval(renderDeadlineCountdown, 1000);
   if(targetSection || tender){
     var activeSection = targetSection || bucket(tender);
     document.querySelectorAll('.nav-sub a').forEach(function(link){
@@ -2689,13 +3007,31 @@
   var pendingSectionUploads = [];
   var pendingDuplicateUpload = null;
   var kopilkaTargetKind = 'submission';
+  var kopilkaTargetSectionId = '';
   function draftDocumentField(kind){
-    return kind === 'submission' ? 'submissionDocumentIds' : 'documentIds';
+    if(kind === 'submission') return 'submissionDocumentIds';
+    if(kind === 'forms') return 'formsDocumentIds';
+    return 'documentIds';
   }
-  function attachDocumentToDraft(kind,id){
-    if(!editingProcessDraft || !id) return;
+  function documentFolderForKind(kind){
+    if(kind === 'submission') return 'Документы для подачи';
+    if(kind === 'forms') return 'Формы для заполнения';
+    return 'Документы';
+  }
+  function resolveSectionForDocs(sectionId){
+    if(editingProcessDraft && editingProcessSectionId === sectionId) return editingProcessDraft;
+    return tender.tenderSections.find(function(s){ return s.id === sectionId; });
+  }
+  function isDirectSection(sectionId){
+    return !(editingProcessDraft && editingProcessSectionId === sectionId);
+  }
+  function attachDocumentToSection(kind,id,sectionId){
+    if(!id) return;
+    var target = resolveSectionForDocs(sectionId);
+    if(!target) return;
     var field = draftDocumentField(kind);
-    editingProcessDraft[field] = uniqueDocumentIds((editingProcessDraft[field] || []).concat(id));
+    target[field] = uniqueDocumentIds((target[field] || []).concat(id));
+    if(isDirectSection(sectionId)) saveTenders(tenders);
   }
   function continueSectionUploadQueue(){
     if(pendingDuplicateUpload || !pendingSectionUploads.length) return;
@@ -2706,6 +3042,7 @@
       pendingDuplicateUpload = {
         document:upload.document,
         kind:upload.kind,
+        sectionId:upload.sectionId,
         matches:matches
       };
       var exact = matches.some(function(item){
@@ -2722,10 +3059,10 @@
     }
     var added = addDocumentToLibrary(
       upload.document,
-      upload.kind === 'submission' ? 'Документы для подачи' : 'Документы',
+      documentFolderForKind(upload.kind),
       library
     );
-    attachDocumentToDraft(upload.kind,added.id);
+    attachDocumentToSection(upload.kind,added.id,upload.sectionId);
     renderProcessSections(tender);
     continueSectionUploadQueue();
   }
@@ -2749,10 +3086,10 @@
     var library = loadDocumentLibrary();
     var added = addDocumentToLibrary(
       upload.document,
-      upload.kind === 'submission' ? 'Документы для подачи' : 'Документы',
+      documentFolderForKind(upload.kind),
       library
     );
-    attachDocumentToDraft(upload.kind,added.id);
+    attachDocumentToSection(upload.kind,added.id,upload.sectionId);
     pendingDuplicateUpload = null;
     closeDuplicateWarning(false);
     renderProcessSections(tender);
@@ -2760,8 +3097,9 @@
   });
   function renderKopilka(){
     var library = loadDocumentLibrary();
-    var selected = editingProcessDraft
-      ? uniqueDocumentIds(editingProcessDraft[draftDocumentField(kopilkaTargetKind)])
+    var kopilkaTarget = resolveSectionForDocs(kopilkaTargetSectionId);
+    var selected = kopilkaTarget
+      ? uniqueDocumentIds(kopilkaTarget[draftDocumentField(kopilkaTargetKind)])
       : [];
     var folders = {};
     library.forEach(function(item){
@@ -2795,25 +3133,30 @@
     if(event.target === kopilkaOverlay) closeKopilka();
   });
   document.getElementById('kopilkaAdd').addEventListener('click', function(){
-    if(!editingProcessDraft) return;
+    var kopilkaTarget = resolveSectionForDocs(kopilkaTargetSectionId);
+    if(!kopilkaTarget) return;
     syncProcessDraftFromEditor();
     var ids = Array.from(document.querySelectorAll('#kopilkaFolders input:checked'))
       .map(function(input){ return input.value; });
     var field = draftDocumentField(kopilkaTargetKind);
-    editingProcessDraft[field] = uniqueDocumentIds(ids);
+    kopilkaTarget[field] = uniqueDocumentIds(ids);
+    if(isDirectSection(kopilkaTargetSectionId)) saveTenders(tenders);
     closeKopilka();
     renderProcessSections(tender);
   });
   document.getElementById('processSections').addEventListener('change', function(event){
     var input = event.target.closest('[data-process-file-kind]');
-    if(!input || !editingProcessDraft) return;
+    if(!input) return;
+    var sectionNode = input.closest('[data-process-section-id]');
+    var sectionId = sectionNode ? sectionNode.dataset.processSectionId : '';
+    if(!sectionId) return;
     syncProcessDraftFromEditor();
     var kind = input.dataset.processFileKind;
     var files = Array.prototype.slice.call(input.files || []);
     input.value = '';
     Promise.all(files.map(storedDocument)).then(function(documents){
       documents.forEach(function(document){
-        pendingSectionUploads.push({document:document,kind:kind});
+        pendingSectionUploads.push({document:document,kind:kind,sectionId:sectionId});
       });
       continueSectionUploadQueue();
     });
@@ -2852,7 +3195,7 @@
       renderProcessSections(tender);
       return;
     }
-    if(action === 'pick-section-document' && editingProcessDraft){
+    if(action === 'pick-section-document'){
       var sectionNode = event.target.closest('[data-process-section-id]');
       var fileInput = sectionNode && sectionNode.querySelector(
         '[data-process-file-kind="'+button.dataset.documentKind+'"]'
@@ -2860,16 +3203,24 @@
       if(fileInput) fileInput.click();
       return;
     }
-    if(action === 'remove-section-document' && editingProcessDraft){
+    if(action === 'remove-section-document'){
+      var removeSectionNode = event.target.closest('[data-process-section-id]');
+      var removeSectionId = removeSectionNode ? removeSectionNode.dataset.processSectionId : '';
+      var removeTarget = resolveSectionForDocs(removeSectionId);
+      if(!removeTarget) return;
       syncProcessDraftFromEditor();
       var field = draftDocumentField(button.dataset.documentKind);
-      editingProcessDraft[field] = uniqueDocumentIds(editingProcessDraft[field]).filter(function(id){
+      removeTarget[field] = uniqueDocumentIds(removeTarget[field]).filter(function(id){
         return id !== button.dataset.documentId;
       });
+      if(isDirectSection(removeSectionId)) saveTenders(tenders);
       renderProcessSections(tender);
       return;
     }
-    if(action === 'pick-from-kopilka' && editingProcessDraft){
+    if(action === 'pick-from-kopilka'){
+      var kopilkaSectionNode = event.target.closest('[data-process-section-id]');
+      kopilkaTargetSectionId = kopilkaSectionNode ? kopilkaSectionNode.dataset.processSectionId : '';
+      if(!kopilkaTargetSectionId) return;
       kopilkaTargetKind = 'submission';
       renderKopilka();
       kopilkaOverlay.classList.add('is-open');
@@ -2878,26 +3229,6 @@
     if(action === 'cancel-section'){
       editingProcessSectionId = '';
       editingProcessDraft = null;
-      renderProcessSections(tender);
-      return;
-    }
-    if(action === 'add-application' && editingProcessDraft){
-      syncProcessDraftFromEditor();
-      var applicationIndex = editingProcessDraft.applications.length;
-      editingProcessDraft.applications.push({
-        id:'application-'+String(tender.id)+'-'+String(Date.now()),
-        name:'Заявка '+(applicationIndex+1),
-        deadline:tender.deadline || '',
-        readiness:0,
-        documentRefs:[]
-      });
-      renderProcessSections(tender);
-      return;
-    }
-    if(action === 'remove-application' && editingProcessDraft){
-      if(editingProcessDraft.applications.length <= 1) return;
-      syncProcessDraftFromEditor();
-      editingProcessDraft.applications.splice(Number(button.dataset.applicationIndex),1);
       renderProcessSections(tender);
       return;
     }
@@ -2918,25 +3249,11 @@
         return;
       }
       editingProcessDraft.deadline = sectionDeadline;
+      var sectionDescriptionInput = sectionNode.querySelector('[data-process-section-description]');
+      editingProcessDraft.description = sectionDescriptionInput ? sectionDescriptionInput.value.trim() : '';
       editingProcessDraft.documentIds = uniqueDocumentIds(editingProcessDraft.documentIds);
       editingProcessDraft.submissionDocumentIds =
         uniqueDocumentIds(editingProcessDraft.submissionDocumentIds);
-      editingProcessDraft.applications = Array.from(
-        sectionNode.querySelectorAll('.process-application[data-application-index]')
-      ).map(function(applicationNode,index){
-        var refs = Array.from(applicationNode.querySelectorAll('[data-doc-ref]:checked')).map(function(input){
-          return Number(input.dataset.docRef);
-        });
-        return {
-          id:editingProcessDraft.applications[index].id,
-          name:applicationNode.querySelector('[data-application-name]').value.trim() || ('Заявка '+(index+1)),
-          deadline:applicationNode.querySelector('[data-application-deadline]').value,
-          readiness:Math.max(0,Math.min(100,Number(
-            applicationNode.querySelector('[data-application-readiness]').value
-          ) || 0)),
-          documentRefs:refs
-        };
-      });
       var sectionIndex = tender.tenderSections.findIndex(function(section){
         return section.id === editingProcessSectionId;
       });
@@ -2958,26 +3275,21 @@
   });
   document.getElementById('addProcessSection').addEventListener('click', function(){
     if(!tender || !userCanManageStages() || !TenderReferences.canAddTenderSection(tender)) return;
-    var name = nextProcessSectionSelect ? nextProcessSectionSelect.dataset.value : '';
-    if(!name){
-      if(nextProcessSectionSelect){
-        nextProcessSectionSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)';
-      }
-      return;
-    }
-    var next = TenderReferences.addTenderSection(tender,name);
+    var next = TenderReferences.addTenderSection(tender,'');
     if(!next) return;
     tender.events = tender.events || [];
     tender.events.push({
       date:eventDate(),
-      text:'Создан новый этап «'+name+'». Предыдущий этап сохранён как снимок.',
+      text:'Создан новый этап. Предыдущий этап сохранён как снимок.',
       actor:CURRENT_USER.name
     });
     saveTenders(tenders);
     targetSection = 'В работе';
     history.replaceState(null, '', sectionHref(tender));
+    editingProcessSectionId = next.id;
+    editingProcessDraft = JSON.parse(JSON.stringify(next));
     applyTenderData();
-    showToast('Этап «'+name+'» добавлен. Тендер перешёл в подготовку заявки.');
+    showToast('Этап добавлен — выберите название и заполните данные.');
   });
 
   var statusOverlay = document.getElementById('statusOverlay');

@@ -27,6 +27,7 @@
       'Подано','Допущены','Отклонено','Отменено','Без выбора победителя',
       'Завершено без ответа','Не допущены','Выиграли'],
     currencies: ['₽','USD'],
+    vatRates: ['5%','10%','20%'],
     procurementTypes: ['Электронный аукцион','Запрос предложений','Запрос цен','Конкурс','RFI'],
     foundations: ['223-ФЗ','44-ФЗ','Коммерческие закупки','внутренний конкурс','не указано']
   };
@@ -327,11 +328,18 @@
           : stageForStatus(sectionStatus, stageFromLifecycle(tender.lifecycleSection || baseSection(tender))),
         status:sectionStatus || '',
         deadline:normalized.deadline || tender.deadline || '',
+        description:normalized.description || '',
+        amountExclVat:normalized.amountExclVat || '',
+        vatRate:normalized.vatRate || '5%',
+        amountInclVat:normalized.amountInclVat || '',
         applications:applications.map(function(application,applicationIndex){
           return normalizeApplication(application,tender,index,applicationIndex);
         }),
         documentRefs:Array.isArray(normalized.documentRefs) ? normalized.documentRefs.slice() : [],
         documentIds:Array.isArray(normalized.documentIds) ? normalized.documentIds.slice() : [],
+        formsDocumentIds:Array.isArray(normalized.formsDocumentIds)
+          ? normalized.formsDocumentIds.slice()
+          : [],
         submissionDocumentIds:Array.isArray(normalized.submissionDocumentIds)
           ? normalized.submissionDocumentIds.slice()
           : [],
@@ -400,6 +408,7 @@
       applications:[normalizeApplication({},tender,nextIndex,0)],
       documentRefs:[],
       documentIds:[],
+      formsDocumentIds:[],
       submissionDocumentIds:[],
       completed:false,
       completedAt:''
