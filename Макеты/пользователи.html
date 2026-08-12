@@ -215,7 +215,11 @@
   .status-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--border-strong);}
   .status-tag.st-active .dot{background:var(--success);}
   .status-tag.st-inactive{color:var(--ink-muted);}
-  .row-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .icon-btn-xs{width:26px;height:26px;border:none;background:none;color:var(--ink-muted);cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;padding:0;flex:none;border-radius:6px;}
+  .icon-btn-xs svg{width:15px;height:15px;}
+  .icon-btn-xs:hover{background:var(--surface-2);color:var(--ink);}
   .status-cell{display:flex;align-items:center;gap:10px;}
   tr.row-inactive{filter:grayscale(1);opacity:.6;}
   .link-btn{background:none;border:none;padding:0;color:var(--inline-action);font-family:var(--font-body);
@@ -245,6 +249,7 @@
   .field input{width:100%;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
     padding:9px 10px;font-family:var(--font-body);font-size:14px;background:var(--surface);color:var(--ink);}
   .field input{height:32px;padding-top:0;padding-bottom:0;}
+  .field input:disabled{background:var(--surface-2);color:var(--ink-muted);cursor:not-allowed;}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;}
   @media (prefers-reduced-motion:no-preference){.overlay.is-open .modal{animation:pop .16s ease-out;}}
   @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98);}to{opacity:1;transform:none;}}
@@ -428,8 +433,8 @@
 <!-- ADD USER MODAL -->
 <div class="overlay" id="addUserOverlay">
   <div class="modal">
-    <h4>Добавить пользователя</h4>
-    <p class="hint">Статус — «Активен», временный пароль сгенерируется сразу после сохранения. Сотрудник обязан сменить его при первом входе.</p>
+    <h4 id="userModalTitle">Добавить пользователя</h4>
+    <p class="hint" id="userModalHint">Статус — «Активен», временный пароль сгенерируется сразу после сохранения. Сотрудник обязан сменить его при первом входе.</p>
     <div class="dup-hint" id="dupHint" hidden><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z"/><path d="M8 5.5v4"/><path d="M8 11.8h.01"/></svg><span>Похоже, такой пользователь уже есть в списке.</span></div>
     <div class="field">
       <label for="auName">ФИО</label>
@@ -493,6 +498,7 @@
   var DIRECTIONS = TenderReferences.get('departments');
   var CHEVRON_SVG = '<svg class="chev" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">'
     + '<path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var PENCIL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>';
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function fmtDate(iso){ if(!iso) return '—'; var d = String(iso).slice(0,10); var p = d.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
@@ -559,6 +565,9 @@
       + '<td><div class="status-cell">'+statusHtml + toggleBtn + '</div></td>'
       + '<td class="num">'+fmtDate(u.createdAt)+'</td>'
       + '<td class="row-actions">'
+        + (TenderReferences.isSuperadminUser(current)
+          ? '<button class="icon-btn-xs" data-action="edit-user" data-id="'+esc(u.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>'
+          : '')
         + (isSelf
           ? '<button class="btn btn-sm" disabled title="Нельзя сгенерировать новый пароль для своей учётной записи">Новый пароль</button>'
           : '<button class="btn btn-sm" data-action="new-password" data-id="'+esc(u.id)+'">Новый пароль</button>')
@@ -657,12 +666,14 @@
   var auLogin = document.getElementById('auLogin');
   var dupHint = document.getElementById('dupHint');
   var rolesWidget = null, directionsWidget = null;
+  var editingUserId = null;
 
   function checkDuplicate(){
     var name = auName.value.trim().toLowerCase();
     var login = auLogin.value.trim().toLowerCase();
     if(name.length < 3 && login.length < 3){ dupHint.hidden = true; return; }
     var found = users.some(function(u){
+      if(editingUserId && u.id === editingUserId) return false;
       return (name && u.name.toLowerCase() === name) || (login && (u.login||'').toLowerCase() === login);
     });
     dupHint.hidden = !found;
@@ -671,6 +682,11 @@
   auLogin.addEventListener('input', checkDuplicate);
 
   function openAddUser(){
+    editingUserId = null;
+    document.getElementById('userModalTitle').textContent = 'Добавить пользователя';
+    document.getElementById('userModalHint').textContent = 'Статус — «Активен», временный пароль сгенерируется сразу после сохранения. Сотрудник обязан сменить его при первом входе.';
+    document.getElementById('auSave').textContent = 'Добавить';
+    auLogin.disabled = false;
     auName.value = ''; auLogin.value = ''; dupHint.hidden = true;
     var rolesSlot = document.getElementById('auRolesSlot');
     rolesSlot.innerHTML = '';
@@ -683,7 +699,25 @@
     addOverlay.classList.add('is-open');
     auName.focus();
   }
-  function closeAddUser(){ addOverlay.classList.remove('is-open'); }
+  function openEditUser(user){
+    editingUserId = user.id;
+    document.getElementById('userModalTitle').textContent = 'Изменить пользователя';
+    document.getElementById('userModalHint').textContent = 'Логин, пароль и статус здесь не меняются — для пароля используйте «Новый пароль», для статуса — переключатель в таблице.';
+    document.getElementById('auSave').textContent = 'Сохранить';
+    auLogin.disabled = true;
+    auName.value = user.name || ''; auLogin.value = user.login || ''; dupHint.hidden = true;
+    var rolesSlot = document.getElementById('auRolesSlot');
+    rolesSlot.innerHTML = '';
+    rolesWidget = buildXMulti(ROLES, (user.roles || []).slice(), 'Выберите роль(и)');
+    rolesSlot.appendChild(rolesWidget);
+    var directionsSlot = document.getElementById('auDirectionsSlot');
+    directionsSlot.innerHTML = '';
+    directionsWidget = buildXMulti(DIRECTIONS, (user.directions || []).slice(), 'Необязательно');
+    directionsSlot.appendChild(directionsWidget);
+    addOverlay.classList.add('is-open');
+    auName.focus();
+  }
+  function closeAddUser(){ addOverlay.classList.remove('is-open'); editingUserId = null; }
   document.getElementById('addUserBtn').addEventListener('click', openAddUser);
   document.getElementById('auCancel').addEventListener('click', closeAddUser);
   addOverlay.addEventListener('click', function(e){ if(e.target === addOverlay) closeAddUser(); });
@@ -721,6 +755,19 @@
     var roles = JSON.parse((rolesWidget && rolesWidget.dataset.values) || '[]');
     if(!roles.length){ return; }
     var directions = JSON.parse((directionsWidget && directionsWidget.dataset.values) || '[]');
+    if(editingUserId){
+      var editUser = users.find(function(u){ return u.id === editingUserId; });
+      if(!editUser) return;
+      editUser.name = auName.value.trim();
+      editUser.login = auLogin.value.trim();
+      editUser.roles = roles;
+      editUser.directions = directions;
+      persist();
+      render();
+      closeAddUser();
+      showToast('Изменения сохранены.');
+      return;
+    }
     var newId = 'u' + (users.length ? Math.max.apply(null, users.map(function(u){ return Number(String(u.id).replace(/\D/g,'')) || 0; })) + 1 : 1);
     var password = generatePassword();
     var newUser = {
@@ -740,6 +787,10 @@
     if(!el) return;
     var user = users.find(function(u){ return u.id === el.dataset.id; });
     if(!user) return;
+    if(el.dataset.action === 'edit-user'){
+      if(!TenderReferences.isSuperadminUser(current)) return;
+      openEditUser(user);
+    }
     if(el.dataset.action === 'new-password'){
       if(user.name === current.name){
         showToast('Нельзя сгенерировать новый пароль для своей учётной записи.');

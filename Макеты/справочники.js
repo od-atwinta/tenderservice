@@ -488,6 +488,42 @@
       return String(role).toLocaleLowerCase('ru-RU') === 'наблюдатель';
     });
   }
+  function isSuperadminUser(user){
+    var roles = user && Array.isArray(user.roles) ? user.roles : [];
+    return roles.some(function(role){
+      var value = String(role).toLocaleLowerCase('ru-RU');
+      return value === 'суперадмин' || value === 'суперадминистратор';
+    });
+  }
+  // читает матрицу "Роли и доступы" (Настройки), настраиваемую только Суперадмином —
+  // см. hasPermission ниже и подраздел "Роли и доступы" в Настройках
+  var ACCESS_KEY = 'atvinta_role_access_v1';
+  var ROLE_MATRIX_KEYS = {
+    'суперадмин':'superadmin', 'суперадминистратор':'superadmin',
+    'админ':'admin', 'администратор':'admin',
+    'наблюдатель':'observer',
+    'менеджер':'manager',
+    'руководитель отдела':'head',
+    'сотрудник отдела':'employee'
+  };
+  // проверяет конкретное настраиваемое право (ключ строки матрицы "Роли и доступы").
+  // Если Суперадмин явно выставил "разрешено"/"запрещено" для роли пользователя —
+  // используется это значение; иначе — значение по умолчанию из defaultAllowRoles
+  // (массив ключей ролей матрицы, например ['superadmin','admin']).
+  function hasPermission(permissionKey, user, defaultAllowRoles){
+    var stored = {};
+    try{ stored = JSON.parse(localStorage.getItem(ACCESS_KEY) || '{}'); }catch(error){}
+    var roles = user && Array.isArray(user.roles) ? user.roles : [];
+    var cell = stored[permissionKey] || {};
+    return roles.some(function(role){
+      var matrixKey = ROLE_MATRIX_KEYS[String(role).toLocaleLowerCase('ru-RU')];
+      if(!matrixKey) return false;
+      var state = cell[matrixKey];
+      if(state === 'allow') return true;
+      if(state === 'deny') return false;
+      return (defaultAllowRoles || []).indexOf(matrixKey) !== -1;
+    });
+  }
   function availableStatuses(section, user, statuses){
     var values = Array.isArray(statuses) ? statuses : load().applicationStatuses;
     if(isAdminUser(user || currentUser())) return sortOptions(values);
@@ -544,6 +580,8 @@
     currentUser: currentUser,
     isAdminUser: isAdminUser,
     isObserverUser: isObserverUser,
+    isSuperadminUser: isSuperadminUser,
+    hasPermission: hasPermission,
     applyAdminOnlyNav: applyAdminOnlyNav,
     usersKey: USERS_KEY,
     systemRoles: SYSTEM_ROLES.slice(),

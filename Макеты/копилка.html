@@ -1082,6 +1082,7 @@
       ? '<span class="status-tag" style="background:var(--warning-bg);color:var(--warning);border-color:transparent;">ГПХ</span>'
       : '<span class="status-tag" style="background:var(--success-bg);color:var(--success);border-color:transparent;">Штат</span>';
     var canManageStaff = TenderReferences.isAdminUser(current);
+    var canDeleteStaff = TenderReferences.hasPermission('kopilkaDeleteStaff', current, ['superadmin','admin']);
     return '<tr data-id="'+esc(s.id)+'">'
       + '<td class="row-title">'+esc(s.name)+'</td>'
       + '<td>'+esc(s.department||'—')+'</td>'
@@ -1092,7 +1093,7 @@
       + '<td style="max-width:280px;">'+eduHtml+'</td>'
       + '<td class="row-icon-actions">'
         + (canManageStaff ? '<button class="icon-btn-xs" data-action="edit-staff" data-id="'+esc(s.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>' : '')
-        + (canManageStaff ? '<button class="icon-btn-xs icon-danger" data-action="delete-staff" data-id="'+esc(s.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>' : '')
+        + (canDeleteStaff ? '<button class="icon-btn-xs icon-danger" data-action="delete-staff" data-id="'+esc(s.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>' : '')
       + '</td>'
       + '</tr>';
   }
@@ -1111,6 +1112,7 @@
         + '<a href="'+x.dataUrl+'" download="'+esc(x.fileName||'Документ')+'" class="icon-btn-xs" title="Скачать" aria-label="Скачать">'+DOWNLOAD_SVG+'</a></span>'
       : '<span class="empty-cell">файл не прикреплён</span>';
     var canManageExp = TenderReferences.isAdminUser(current);
+    var canDeleteExp = TenderReferences.hasPermission('kopilkaDeleteExp', current, ['superadmin','admin']);
     return '<tr data-id="'+esc(x.id)+'">'
       + '<td class="row-title">'+esc(x.contractor)+'</td>'
       + '<td>'+esc(x.contractNumber||'—')+'</td>'
@@ -1122,7 +1124,7 @@
       + '<td>'+fileHtml+'</td>'
       + '<td class="row-icon-actions">'
         + (canManageExp ? '<button class="icon-btn-xs" data-action="edit-exp" data-id="'+esc(x.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>' : '')
-        + (canManageExp ? '<button class="icon-btn-xs icon-danger" data-action="delete-exp" data-id="'+esc(x.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>' : '')
+        + (canDeleteExp ? '<button class="icon-btn-xs icon-danger" data-action="delete-exp" data-id="'+esc(x.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>' : '')
       + '</td>'
       + '</tr>';
   }
@@ -1142,13 +1144,20 @@
       ? '<span class="meta-muted">'+esc(d.uploadedBy)+'<br>'+fmtDate(d.uploadedAt)+'</span>'
       : '<span class="empty-cell">—</span>';
     var canEditDoc = TenderReferences.isAdminUser(current);
+    var canDeleteDoc = TenderReferences.hasPermission('kopilkaDeleteDocs', current, ['superadmin','admin']);
+    var docActionsHtml = (canEditDoc || canDeleteDoc)
+      ? '<span class="row-icon-actions">'
+        + (canEditDoc ? '<button class="icon-btn-xs" data-action="edit" data-id="'+esc(d.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>' : '')
+        + (canDeleteDoc ? '<button class="icon-btn-xs icon-danger" data-action="delete-doc" data-id="'+esc(d.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>' : '')
+        + '</span>'
+      : '<span class="empty-cell">—</span>';
     return '<tr data-id="'+esc(d.id)+'">'
       + '<td class="row-title">'+esc(d.name)+'</td>'
       + '<td style="max-width:220px;">'+keysHtml+'</td>'
       + '<td>'+dateHtml+'</td>'
       + '<td>'+fileHtml+'</td>'
       + '<td>'+metaHtml+'</td>'
-      + '<td>'+(canEditDoc ? '<button class="link-btn" data-action="edit" data-id="'+esc(d.id)+'">Изменить</button>' : '<span class="empty-cell">—</span>')+'</td>'
+      + '<td>'+docActionsHtml+'</td>'
       + '</tr>';
   }
 
@@ -1162,13 +1171,20 @@
         + '<button type="button" class="link-btn cmt-more" data-action="view-comment-template" data-id="'+esc(t.id)+'" hidden>Показать</button>'
       : '<span class="empty-cell">—</span>';
     var canEditTemplate = TenderReferences.isAdminUser(current);
+    var canDeleteTemplate = TenderReferences.hasPermission('kopilkaDeleteTemplates', current, ['superadmin','admin']);
+    var templateActionsHtml = (canEditTemplate || canDeleteTemplate)
+      ? '<span class="row-icon-actions">'
+        + (canEditTemplate ? '<button type="button" class="icon-btn-xs" data-action="edit-template" data-id="'+esc(t.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>' : '')
+        + (canDeleteTemplate ? '<button type="button" class="icon-btn-xs icon-danger" data-action="delete-template" data-id="'+esc(t.id)+'" title="Удалить" aria-label="Удалить">'+TRASH_SVG+'</button>' : '')
+        + '</span>'
+      : '<span class="empty-cell">—</span>';
     return '<tr data-id="'+esc(t.id)+'">'
       + '<td class="row-title">'+esc(t.name)+'</td>'
       + '<td>'+previewBtn+'</td>'
       + '<td>'+(t.dataUrl ? esc(t.format||'—') : '<span class="empty-cell">не прикреплён</span>')+'</td>'
       + '<td>'+downloadHtml+'</td>'
       + '<td class="cmt-cell">'+commentHtml+'</td>'
-      + '<td>'+(canEditTemplate ? '<button type="button" class="icon-btn-xs" data-action="edit-template" data-id="'+esc(t.id)+'" title="Изменить" aria-label="Изменить">'+PENCIL_SVG+'</button>' : '<span class="empty-cell">—</span>')+'</td>'
+      + '<td>'+templateActionsHtml+'</td>'
       + '</tr>';
   }
 
@@ -1324,6 +1340,16 @@
       var doc = library.find(function(d){ return d.id === el.dataset.id; });
       if(doc) openModal(doc);
     }
+    if(el.dataset.action === 'delete-doc'){
+      if(!TenderReferences.hasPermission('kopilkaDeleteDocs', current, ['superadmin','admin'])) return;
+      var toDeleteDoc = library.find(function(d){ return d.id === el.dataset.id; });
+      if(toDeleteDoc && confirm('Удалить документ «'+toDeleteDoc.name+'» из Копилки? Это действие нельзя отменить.')){
+        library = library.filter(function(d){ return d.id !== el.dataset.id; });
+        saveLibrary(library);
+        render();
+        showToast('Документ удалён.');
+      }
+    }
     if(el.dataset.action === 'preview-doc'){
       var docPreview = library.find(function(d){ return d.id === el.dataset.id; });
       if(docPreview) openTemplatePreview({name:docPreview.name, format:formatFromFilename(docPreview.name), dataUrl:docPreview.dataUrl, type:docPreview.type});
@@ -1338,7 +1364,7 @@
       if(person) openStaffModal(person);
     }
     if(el.dataset.action === 'delete-staff'){
-      if(!TenderReferences.isAdminUser(current)) return;
+      if(!TenderReferences.hasPermission('kopilkaDeleteStaff', current, ['superadmin','admin'])) return;
       var toDelete = staff.find(function(s){ return s.id === el.dataset.id; });
       if(toDelete && confirm('Удалить сотрудника «'+toDelete.name+'» из справочника? Это действие нельзя отменить.')){
         staff = staff.filter(function(s){ return s.id !== el.dataset.id; });
@@ -1353,7 +1379,7 @@
       if(record) openExpModal(record);
     }
     if(el.dataset.action === 'delete-exp'){
-      if(!TenderReferences.isAdminUser(current)) return;
+      if(!TenderReferences.hasPermission('kopilkaDeleteExp', current, ['superadmin','admin'])) return;
       var toDeleteExp = experience.find(function(x){ return x.id === el.dataset.id; });
       if(toDeleteExp && confirm('Удалить контракт с «'+toDeleteExp.contractor+'» из справочника? Это действие нельзя отменить.')){
         experience = experience.filter(function(x){ return x.id !== el.dataset.id; });
@@ -1370,6 +1396,16 @@
       if(!TenderReferences.isAdminUser(current)) return;
       var tpl = templates.find(function(t){ return t.id === el.dataset.id; });
       if(tpl) openTemplateModal(tpl);
+    }
+    if(el.dataset.action === 'delete-template'){
+      if(!TenderReferences.hasPermission('kopilkaDeleteTemplates', current, ['superadmin','admin'])) return;
+      var toDeleteTpl = templates.find(function(t){ return t.id === el.dataset.id; });
+      if(toDeleteTpl && confirm('Удалить шаблон «'+toDeleteTpl.name+'» из Копилки? Это действие нельзя отменить.')){
+        templates = templates.filter(function(t){ return t.id !== el.dataset.id; });
+        saveTemplates(templates);
+        render();
+        showToast('Шаблон удалён.');
+      }
     }
     if(el.dataset.action === 'preview-template'){
       var tplPreview = templates.find(function(t){ return t.id === el.dataset.id; });

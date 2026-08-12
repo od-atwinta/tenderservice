@@ -2056,7 +2056,14 @@
 </script>
 <script>
 (function(){
-  if(!TenderReferences.isAdminUser(TenderReferences.currentUser())) return;
+  if(!TenderReferences.isSuperadminUser(TenderReferences.currentUser())){
+    var panel = document.querySelector('[data-settings-panel="roles"]');
+    if(panel){
+      panel.innerHTML = '<div class="access-denied"><p>Управлять ролями и доступами может только Суперадмин.'
+        +' Обратитесь к суперадминистратору, если нужно изменить эти настройки.</p></div>';
+    }
+    return;
+  }
   var ACCESS_KEY = 'atvinta_role_access_v1';
   var roles = ['superadmin','admin','observer','manager','head','employee'];
   var rows = [
@@ -2115,6 +2122,10 @@
     {key:'kopilkaDeleteExp', label:'Удалять запись в разделе «Опыт»',
       states:['allow','allow','deny','deny','deny','deny']},
     {key:'kopilkaDeleteStaff', label:'Удалять сотрудника в разделе «Штат»',
+      states:['allow','allow','deny','deny','deny','deny']},
+    {key:'kopilkaDeleteDocs', label:'Удалять документ в разделе «Учредительные»',
+      states:['allow','allow','deny','deny','deny','deny']},
+    {key:'kopilkaDeleteTemplates', label:'Удалять запись в разделе «Шаблоны»',
       states:['allow','allow','deny','deny','deny','deny']},
     {group:'Дашборд'},
     {key:'viewDashboard', label:'Просматривать Дашборд',
