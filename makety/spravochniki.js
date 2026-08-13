@@ -483,6 +483,26 @@
     try{ user = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || 'null'); }catch(error){}
     return user && user.name ? user : {name:'Оксана Денисенко',roles:['Суперадмин']};
   }
+  // считает пункты чек-листа и задачи текущего пользователя со сроком "сегодня" —
+  // используется для живого счётчика у пункта меню "Календарь"
+  function myTodayTaskCount(){
+    var tenders = [];
+    try{ tenders = JSON.parse(localStorage.getItem(TENDER_STORAGE_KEY) || '[]'); }catch(error){}
+    var me = currentUser();
+    var today = new Date();
+    var todayStr = today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    var count = 0;
+    tenders.forEach(function(tender){
+      ensureTenderStructure(tender);
+      (Array.isArray(tender.checklist) ? tender.checklist : []).forEach(function(item){
+        if(item.assignee === me.name && !item.done && String(item.due).slice(0,10) === todayStr) count++;
+      });
+      (Array.isArray(tender.tasks) ? tender.tasks : []).forEach(function(item){
+        if(item.assignee === me.name && !item.done && String(item.due).slice(0,10) === todayStr) count++;
+      });
+    });
+    return count;
+  }
   function isAdminUser(user){
     var roles = user && Array.isArray(user.roles) ? user.roles : [];
     return roles.some(function(role){
@@ -587,6 +607,7 @@
     addTenderSection: addTenderSection,
     displaySection: displaySection,
     currentUser: currentUser,
+    myTodayTaskCount: myTodayTaskCount,
     isAdminUser: isAdminUser,
     isObserverUser: isObserverUser,
     isSuperadminUser: isSuperadminUser,
