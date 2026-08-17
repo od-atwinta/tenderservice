@@ -708,6 +708,7 @@
     directionsSlot.appendChild(directionsWidget);
     addOverlay.classList.add('is-open');
     auName.focus();
+    TenderReferences.setDirty('addUser', false);
   }
   function openEditUser(user){
     editingUserId = user.id;
@@ -726,11 +727,18 @@
     directionsSlot.appendChild(directionsWidget);
     addOverlay.classList.add('is-open');
     auName.focus();
+    TenderReferences.setDirty('addUser', false);
   }
-  function closeAddUser(){ addOverlay.classList.remove('is-open'); editingUserId = null; }
+  function closeAddUser(){ addOverlay.classList.remove('is-open'); editingUserId = null; TenderReferences.setDirty('addUser', false); }
   document.getElementById('addUserBtn').addEventListener('click', openAddUser);
-  document.getElementById('auCancel').addEventListener('click', closeAddUser);
-  addOverlay.addEventListener('click', function(e){ if(e.target === addOverlay) closeAddUser(); });
+  addOverlay.addEventListener('input', function(){ TenderReferences.setDirty('addUser', true); });
+  addOverlay.addEventListener('change', function(){ TenderReferences.setDirty('addUser', true); });
+  document.getElementById('auCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('addUser', closeAddUser, function(){ document.getElementById('auSave').click(); });
+  });
+  addOverlay.addEventListener('click', function(e){
+    if(e.target === addOverlay) TenderReferences.guardedClose('addUser', closeAddUser, function(){ document.getElementById('auSave').click(); });
+  });
 
   var toast = document.getElementById('addToast');
   var toastTimer = null;

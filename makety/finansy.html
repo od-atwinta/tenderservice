@@ -524,11 +524,18 @@
     document.getElementById('finComment').value = p ? (p.comment||'') : '';
     overlay.classList.add('is-open');
     document.getElementById('finName').focus();
+    TenderReferences.setDirty('platform', false);
   }
-  function closeModal(){ overlay.classList.remove('is-open'); }
+  function closeModal(){ overlay.classList.remove('is-open'); TenderReferences.setDirty('platform', false); }
   document.getElementById('addPlatformBtn').addEventListener('click', function(){ if(canEdit) openModal(null); });
-  document.getElementById('platformCancel').addEventListener('click', closeModal);
-  overlay.addEventListener('click', function(e){ if(e.target === overlay) closeModal(); });
+  overlay.addEventListener('input', function(){ TenderReferences.setDirty('platform', true); });
+  overlay.addEventListener('change', function(){ TenderReferences.setDirty('platform', true); });
+  document.getElementById('platformCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('platform', closeModal, function(){ document.getElementById('platformSave').click(); });
+  });
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay) TenderReferences.guardedClose('platform', closeModal, function(){ document.getElementById('platformSave').click(); });
+  });
 
   var toast = document.getElementById('addToast');
   var toastTimer = null;

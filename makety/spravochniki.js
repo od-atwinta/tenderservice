@@ -584,8 +584,73 @@
 
   syncTenderHierarchy();
 
+  // ---- подтверждение выхода с несохранёнными изменениями ----
+  // каждая открытая форма помечает себя по ключу (setDirty/isDirty); при попытке
+  // закрыть её через "Отмена"/клик по фону — guardedClose показывает диалог, если
+  // есть несохранённое; при попытке уйти со страницы/закрыть вкладку, пока хотя бы
+  // одна форма помечена как "грязная" — браузерное окно подтверждения (beforeunload)
+  var dirtyFlags = {};
+  function setDirty(key, value){ dirtyFlags[key] = !!value; }
+  function isDirty(key){ return !!dirtyFlags[key]; }
+  function anyDirty(){
+    for(var k in dirtyFlags){ if(dirtyFlags[k]) return true; }
+    return false;
+  }
+  if(typeof window !== 'undefined'){
+    window.addEventListener('beforeunload', function(e){
+      if(anyDirty()){ e.preventDefault(); e.returnValue = ''; return ''; }
+    });
+  }
+  function guardedClose(key, discardFn, saveFn){
+    if(isDirty(key)){
+      confirmUnsavedExit(function(action){
+        if(action === 'save' && saveFn) saveFn(); else discardFn();
+      });
+    } else {
+      discardFn();
+    }
+  }
+
+  // общее диалоговое окно "Сохранить / Не надо", переиспользует стили .overlay/.modal
+  // уже подключённые на страницах, где есть свои модалки
+  var unsavedGuardOverlay = null;
+  function unsavedGuardModal(){
+    if(unsavedGuardOverlay) return unsavedGuardOverlay;
+    var overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.id = 'unsavedGuardOverlay';
+    overlay.style.zIndex = '60';
+    overlay.innerHTML = '<div class="modal" style="max-width:360px;">'
+      + '<h4>Сохранить изменения перед выходом?</h4>'
+      + '<p class="hint" style="margin:8px 0 0;font-size:13px;color:var(--ink-muted);">Введённые данные ещё не сохранены.</p>'
+      + '<div class="modal-actions">'
+      + '<button type="button" class="btn" data-guard="discard">Не надо</button>'
+      + '<button type="button" class="btn btn-primary" data-guard="save">Сохранить</button>'
+      + '</div></div>';
+    document.body.appendChild(overlay);
+    unsavedGuardOverlay = overlay;
+    return overlay;
+  }
+  // callback('save' | 'discard')
+  function confirmUnsavedExit(callback){
+    var overlay = unsavedGuardModal();
+    overlay.classList.add('is-open');
+    function onClick(e){
+      var btn = e.target.closest('[data-guard]');
+      if(!btn) return;
+      overlay.classList.remove('is-open');
+      overlay.removeEventListener('click', onClick);
+      callback(btn.dataset.guard);
+    }
+    overlay.addEventListener('click', onClick);
+  }
+
   global.TenderReferences = {
     key: STORAGE_KEY,
+    confirmUnsavedExit: confirmUnsavedExit,
+    setDirty: setDirty,
+    isDirty: isDirty,
+    guardedClose: guardedClose,
     statusRulesKey: STATUS_RULES_KEY,
     defaults: clone(DEFAULTS),
     defaultStatusRules: clone(DEFAULT_STATUS_RULES),

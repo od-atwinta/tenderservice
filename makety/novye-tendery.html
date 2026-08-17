@@ -1364,20 +1364,28 @@
       closeForms(cardEl);
       cardEl.querySelector('[data-part="default"]').hidden = true;
       cardEl.querySelector('[data-part="reject"]').hidden = false;
+      TenderReferences.setDirty('reject-'+id, false);
       return;
     }
     if(action === 'open-accept'){
       closeForms(cardEl);
       cardEl.querySelector('[data-part="default"]').hidden = true;
       cardEl.querySelector('[data-part="accept"]').hidden = false;
+      TenderReferences.setDirty('accept-'+id, false);
       return;
     }
     if(action === 'cancel-form'){
-      closeForms(cardEl);
+      var formKey = currentFormDirtyKey(cardEl, id);
+      if(!formKey){ closeForms(cardEl); return; }
+      TenderReferences.guardedClose(formKey, function(){ TenderReferences.setDirty(formKey, false); closeForms(cardEl); }, function(){
+        var saveBtn = cardEl.querySelector('[data-action="save-reject"], [data-action="save-accept"]');
+        if(saveBtn) saveBtn.click();
+      });
       return;
     }
     if(action === 'open-edit'){
       openEdit(cardEl, t);
+      TenderReferences.setDirty('edit-'+id, false);
       return;
     }
     if(action === 'open-report'){
@@ -1405,7 +1413,10 @@
       return;
     }
     if(action === 'cancel-edit'){
-      closeForms(cardEl);
+      TenderReferences.guardedClose('edit-'+id, function(){ TenderReferences.setDirty('edit-'+id, false); closeForms(cardEl); }, function(){
+        var saveBtn = cardEl.querySelector('[data-action="save-edit"]');
+        if(saveBtn) saveBtn.click();
+      });
       return;
     }
     if(action === 'pick-doc'){
@@ -1424,6 +1435,7 @@
     if(action === 'save-edit'){
       var editNode = cardEl.querySelector('[data-part="edit"]');
       if(!saveEditData(cardEl, t, editNode)) return;
+      TenderReferences.setDirty('edit-'+id, false);
       render();
       showToast('Изменения сохранены.');
       return;
@@ -1437,6 +1449,7 @@
       TenderReferences.updateActiveSectionFromStatus(t, 'Отклонено');
       t.rejectReason = reason;
       t.rejectComment = comment;
+      TenderReferences.setDirty('reject-'+id, false);
       resolveCard(id, 'Перемещено в архив.');
       return;
     }
@@ -1453,9 +1466,19 @@
       t.depts = depts;
       t.dept = depts[0] || '';
       t.manager = manager;
+      TenderReferences.setDirty('accept-'+id, false);
       resolveCard(id, 'Передано в работу.');
       return;
     }
+  }
+  function currentFormDirtyKey(cardEl, id){
+    var reject = cardEl.querySelector('[data-part="reject"]');
+    if(reject && !reject.hidden) return 'reject-'+id;
+    var accept = cardEl.querySelector('[data-part="accept"]');
+    if(accept && !accept.hidden) return 'accept-'+id;
+    var edit = cardEl.querySelector('[data-part="edit"]');
+    if(edit && !edit.hidden) return 'edit-'+id;
+    return null;
   }
 
   function togglePopover(btn, pop, other){
@@ -1528,11 +1551,18 @@
     dupHint.hidden = true;
     addOverlay.classList.add('is-open');
     atName.focus();
+    TenderReferences.setDirty('addTender', false);
   }
-  function closeAddTender(){ addOverlay.classList.remove('is-open'); }
+  function closeAddTender(){ addOverlay.classList.remove('is-open'); TenderReferences.setDirty('addTender', false); }
   document.getElementById('addTenderBtn').addEventListener('click', openAddTender);
-  document.getElementById('atCancel').addEventListener('click', closeAddTender);
-  addOverlay.addEventListener('click', function(e){ if(e.target === addOverlay) closeAddTender(); });
+  addOverlay.addEventListener('input', function(){ TenderReferences.setDirty('addTender', true); });
+  addOverlay.addEventListener('xchange', function(){ TenderReferences.setDirty('addTender', true); });
+  document.getElementById('atCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('addTender', closeAddTender, function(){ document.getElementById('atSave').click(); });
+  });
+  addOverlay.addEventListener('click', function(e){
+    if(e.target === addOverlay) TenderReferences.guardedClose('addTender', closeAddTender, function(){ document.getElementById('atSave').click(); });
+  });
   if(new URLSearchParams(location.search).get('add') === '1') openAddTender();
 
   document.getElementById('atSave').addEventListener('click', function(){
@@ -1699,6 +1729,15 @@
   });
 
   document.getElementById('tlist').addEventListener('click', onListClick);
+  function onListDirty(e){
+    var cardEl = e.target.closest('.tcard');
+    if(!cardEl) return;
+    var key = currentFormDirtyKey(cardEl, Number(cardEl.dataset.id));
+    if(key) TenderReferences.setDirty(key, true);
+  }
+  document.getElementById('tlist').addEventListener('input', onListDirty);
+  document.getElementById('tlist').addEventListener('change', onListDirty);
+  document.getElementById('tlist').addEventListener('xchange', onListDirty);
   render();
 })();
 </script>

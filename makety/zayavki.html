@@ -1146,11 +1146,19 @@
     dupHint.hidden = true;
     addOverlay.classList.add('is-open');
     atName.focus();
+    TenderReferences.setDirty('addTender', false);
   }
-  function closeAddTender(){ addOverlay.classList.remove('is-open'); }
+  function closeAddTender(){ addOverlay.classList.remove('is-open'); TenderReferences.setDirty('addTender', false); }
   document.getElementById('addTenderBtn').addEventListener('click', openAddTender);
-  document.getElementById('atCancel').addEventListener('click', closeAddTender);
-  addOverlay.addEventListener('click', function(e){ if(e.target === addOverlay) closeAddTender(); });
+  addOverlay.addEventListener('input', function(){ TenderReferences.setDirty('addTender', true); });
+  addOverlay.addEventListener('change', function(){ TenderReferences.setDirty('addTender', true); });
+  addOverlay.addEventListener('xchange', function(){ TenderReferences.setDirty('addTender', true); });
+  document.getElementById('atCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('addTender', closeAddTender, function(){ document.getElementById('atSave').click(); });
+  });
+  addOverlay.addEventListener('click', function(e){
+    if(e.target === addOverlay) TenderReferences.guardedClose('addTender', closeAddTender, function(){ document.getElementById('atSave').click(); });
+  });
 
   document.getElementById('atSave').addEventListener('click', function(){
     if(!atName.value.trim()){ atName.focus(); return; }

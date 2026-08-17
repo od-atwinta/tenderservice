@@ -1364,12 +1364,19 @@
   var evText = document.getElementById('evText');
   var logsList = document.querySelector('[data-panel="logs"] .timeline');
 
+  function closeEventOverlay(){ eventOverlay.classList.remove('is-open'); TenderReferences.setDirty('event', false); }
   openEventBtn.addEventListener('click', function(){
     evDate.value = todayISO(); evText.value = '';
     eventOverlay.classList.add('is-open'); evText.focus();
+    TenderReferences.setDirty('event', false);
   });
-  document.getElementById('cancelEvent').addEventListener('click', function(){ eventOverlay.classList.remove('is-open'); });
-  eventOverlay.addEventListener('click', function(e){ if(e.target === eventOverlay) eventOverlay.classList.remove('is-open'); });
+  eventOverlay.addEventListener('input', function(){ TenderReferences.setDirty('event', true); });
+  document.getElementById('cancelEvent').addEventListener('click', function(){
+    TenderReferences.guardedClose('event', closeEventOverlay, function(){ document.getElementById('saveEvent').click(); });
+  });
+  eventOverlay.addEventListener('click', function(e){
+    if(e.target === eventOverlay) TenderReferences.guardedClose('event', closeEventOverlay, function(){ document.getElementById('saveEvent').click(); });
+  });
   document.getElementById('saveEvent').addEventListener('click', function(){
     if(!evText.value.trim()){ evText.focus(); return; }
     var li = document.createElement('li');
@@ -1377,6 +1384,7 @@
     var b = document.createElement('div'); b.className = 't-body'; b.textContent = evText.value.trim();
     li.appendChild(d); li.appendChild(b);
     logsList.insertBefore(li, logsList.firstChild);
+    TenderReferences.setDirty('event', false);
     eventOverlay.classList.remove('is-open');
   });
 
@@ -2230,7 +2238,9 @@
     checklistView.hidden = true; progressLine.hidden = true;
     checklistEditBox.hidden = false;
     renderEditRows(tender);
+    TenderReferences.setDirty('checklistEdit', false);
   });
+  checklistEditBox.addEventListener('input', function(){ TenderReferences.setDirty('checklistEdit', true); });
   document.getElementById('clSaveEdit').addEventListener('click', function(){
     if(!tender) return;
     editRows.querySelectorAll('tr').forEach(function(tr){
@@ -2243,6 +2253,7 @@
       item.assignee = tr.querySelector('.edit-assignee').value;
     });
     saveTenders(tenders);
+    TenderReferences.setDirty('checklistEdit', false);
     checklistView.hidden = false; progressLine.hidden = false;
     checklistEditBox.hidden = true;
     renderChecklistView(tender);
@@ -2251,13 +2262,21 @@
   var clAddOverlay = document.getElementById('clAddOverlay');
   var clAddText = document.getElementById('clAddText');
   var clAddAssignee = document.getElementById('clAddAssignee');
+  function closeClAddOverlay(){ clAddOverlay.classList.remove('is-open'); TenderReferences.setDirty('clAdd', false); }
   document.getElementById('clAddOpen').addEventListener('click', function(){
     if(!tender) return;
     clAddText.value = ''; clAddAssignee.innerHTML = participantOptions(tender);
     clAddOverlay.classList.add('is-open'); clAddText.focus();
+    TenderReferences.setDirty('clAdd', false);
   });
-  document.getElementById('clAddCancel').addEventListener('click', function(){ clAddOverlay.classList.remove('is-open'); });
-  clAddOverlay.addEventListener('click', function(e){ if(e.target === clAddOverlay) clAddOverlay.classList.remove('is-open'); });
+  clAddOverlay.addEventListener('input', function(){ TenderReferences.setDirty('clAdd', true); });
+  clAddOverlay.addEventListener('change', function(){ TenderReferences.setDirty('clAdd', true); });
+  document.getElementById('clAddCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('clAdd', closeClAddOverlay, function(){ document.getElementById('clAddSave').click(); });
+  });
+  clAddOverlay.addEventListener('click', function(e){
+    if(e.target === clAddOverlay) TenderReferences.guardedClose('clAdd', closeClAddOverlay, function(){ document.getElementById('clAddSave').click(); });
+  });
   document.getElementById('clAddSave').addEventListener('click', function(){
     if(!tender) return;
     var text = clAddText.value.trim();
@@ -2265,7 +2284,7 @@
     checklistOf(tender).push({id:nextChecklistId(tender), text:text, due:'', assignee:clAddAssignee.value, done:false});
     saveTenders(tenders);
     renderChecklistView(tender);
-    clAddOverlay.classList.remove('is-open');
+    closeClAddOverlay();
   });
 
   // ---- tasks state (хранится в tender.tasks, персистентно) ----
@@ -2358,7 +2377,9 @@
     taskView.hidden = true; taskProgressLine.hidden = true;
     taskEditBox.hidden = false;
     renderTaskEditRows(tender);
+    TenderReferences.setDirty('taskEdit', false);
   });
+  taskEditBox.addEventListener('input', function(){ TenderReferences.setDirty('taskEdit', true); });
   document.getElementById('taskSaveEdit').addEventListener('click', function(){
     if(!tender) return;
     taskEditRows.querySelectorAll('tr').forEach(function(tr){
@@ -2371,6 +2392,7 @@
       item.assignee = tr.querySelector('.edit-assignee').value;
     });
     saveTenders(tenders);
+    TenderReferences.setDirty('taskEdit', false);
     taskView.hidden = false; taskProgressLine.hidden = false;
     taskEditBox.hidden = true;
     renderTaskView(tender);
@@ -2380,6 +2402,7 @@
   var taskAddText = document.getElementById('taskAddText');
   var taskAddDue = document.getElementById('taskAddDue');
   var taskAddAssigneeSelect = null;
+  function closeTaskAddOverlay(){ taskAddOverlay.classList.remove('is-open'); TenderReferences.setDirty('taskAdd', false); }
   document.getElementById('taskAddOpen').addEventListener('click', function(){
     if(!tender) return;
     taskAddText.value = ''; taskAddDue.value = '';
@@ -2388,9 +2411,16 @@
     taskAddAssigneeSelect = buildXSelect(checklistAssignees(tender), '', 'Выбрать исполнителя');
     slot.appendChild(taskAddAssigneeSelect);
     taskAddOverlay.classList.add('is-open'); taskAddText.focus();
+    TenderReferences.setDirty('taskAdd', false);
   });
-  document.getElementById('taskAddCancel').addEventListener('click', function(){ taskAddOverlay.classList.remove('is-open'); });
-  taskAddOverlay.addEventListener('click', function(e){ if(e.target === taskAddOverlay) taskAddOverlay.classList.remove('is-open'); });
+  taskAddOverlay.addEventListener('input', function(){ TenderReferences.setDirty('taskAdd', true); });
+  taskAddOverlay.addEventListener('xchange', function(){ TenderReferences.setDirty('taskAdd', true); });
+  document.getElementById('taskAddCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('taskAdd', closeTaskAddOverlay, function(){ document.getElementById('taskAddSave').click(); });
+  });
+  taskAddOverlay.addEventListener('click', function(e){
+    if(e.target === taskAddOverlay) TenderReferences.guardedClose('taskAdd', closeTaskAddOverlay, function(){ document.getElementById('taskAddSave').click(); });
+  });
   document.getElementById('taskAddSave').addEventListener('click', function(){
     if(!tender) return;
     var text = taskAddText.value.trim();
@@ -2401,7 +2431,7 @@
     tasksOf(tender).push({id:nextTaskId(tender), text:text, due:taskAddDue.value, assignee:assignee, assignedBy:CURRENT_USER.name, done:false});
     saveTenders(tenders);
     renderTaskView(tender);
-    taskAddOverlay.classList.remove('is-open');
+    closeTaskAddOverlay();
   });
 
   function renderTenderList(){
@@ -2854,20 +2884,28 @@
   function closeSimpleOverlay(overlay){
     overlay.classList.remove('is-open');
   }
+  function closeDescriptionOverlay(){
+    closeSimpleOverlay(descriptionOverlay);
+    TenderReferences.setDirty('description', false);
+  }
   document.getElementById('editDescription').addEventListener('click', function(){
     if(!tender) return;
     document.getElementById('descriptionInput').value = tender.description || '';
     descriptionOverlay.classList.add('is-open');
     document.getElementById('descriptionInput').focus();
+    TenderReferences.setDirty('description', false);
   });
+  descriptionOverlay.addEventListener('input', function(){ TenderReferences.setDirty('description', true); });
   document.getElementById('descriptionClose').addEventListener('click', function(){
-    closeSimpleOverlay(descriptionOverlay);
+    TenderReferences.guardedClose('description', closeDescriptionOverlay, function(){ document.getElementById('descriptionSave').click(); });
   });
   document.getElementById('descriptionCancel').addEventListener('click', function(){
-    closeSimpleOverlay(descriptionOverlay);
+    TenderReferences.guardedClose('description', closeDescriptionOverlay, function(){ document.getElementById('descriptionSave').click(); });
   });
   descriptionOverlay.addEventListener('click', function(event){
-    if(event.target === descriptionOverlay) closeSimpleOverlay(descriptionOverlay);
+    if(event.target === descriptionOverlay){
+      TenderReferences.guardedClose('description', closeDescriptionOverlay, function(){ document.getElementById('descriptionSave').click(); });
+    }
   });
   document.getElementById('descriptionSave').addEventListener('click', function(){
     if(!tender) return;
@@ -2879,25 +2917,33 @@
       actor:CURRENT_USER.name
     });
     saveTenders(tenders);
-    closeSimpleOverlay(descriptionOverlay);
+    closeDescriptionOverlay();
     applyTenderData();
     showToast('Описание закупки сохранено.');
   });
 
+  function closeManagerCommentOverlay(){
+    closeSimpleOverlay(managerCommentOverlay);
+    TenderReferences.setDirty('managerComment', false);
+  }
   document.getElementById('editManagerComment').addEventListener('click', function(){
     if(!tender) return;
     document.getElementById('managerCommentInput').value = tender.managerComment || '';
     managerCommentOverlay.classList.add('is-open');
     document.getElementById('managerCommentInput').focus();
+    TenderReferences.setDirty('managerComment', false);
   });
+  managerCommentOverlay.addEventListener('input', function(){ TenderReferences.setDirty('managerComment', true); });
   document.getElementById('managerCommentClose').addEventListener('click', function(){
-    closeSimpleOverlay(managerCommentOverlay);
+    TenderReferences.guardedClose('managerComment', closeManagerCommentOverlay, function(){ document.getElementById('managerCommentSave').click(); });
   });
   document.getElementById('managerCommentCancel').addEventListener('click', function(){
-    closeSimpleOverlay(managerCommentOverlay);
+    TenderReferences.guardedClose('managerComment', closeManagerCommentOverlay, function(){ document.getElementById('managerCommentSave').click(); });
   });
   managerCommentOverlay.addEventListener('click', function(event){
-    if(event.target === managerCommentOverlay) closeSimpleOverlay(managerCommentOverlay);
+    if(event.target === managerCommentOverlay){
+      TenderReferences.guardedClose('managerComment', closeManagerCommentOverlay, function(){ document.getElementById('managerCommentSave').click(); });
+    }
   });
   document.getElementById('managerCommentSave').addEventListener('click', function(){
     if(!tender) return;
@@ -2909,7 +2955,7 @@
       actor:CURRENT_USER.name
     });
     saveTenders(tenders);
-    closeSimpleOverlay(managerCommentOverlay);
+    closeManagerCommentOverlay();
     applyTenderData();
     showToast('Комментарий менеджера сохранён.');
   });
@@ -3170,6 +3216,15 @@
       continueSectionUploadQueue();
     });
   });
+  document.getElementById('processSections').addEventListener('input', function(){
+    if(editingProcessSectionId) TenderReferences.setDirty('processSection', true);
+  });
+  document.getElementById('processSections').addEventListener('change', function(){
+    if(editingProcessSectionId) TenderReferences.setDirty('processSection', true);
+  });
+  document.getElementById('processSections').addEventListener('xchange', function(){
+    if(editingProcessSectionId) TenderReferences.setDirty('processSection', true);
+  });
   document.getElementById('processSections').addEventListener('click', function(event){
     var button = event.target.closest('[data-process-action]');
     if(!button || !tender) return;
@@ -3202,6 +3257,7 @@
       editingProcessSectionId = sourceSection.id;
       editingProcessDraft = JSON.parse(JSON.stringify(sourceSection));
       renderProcessSections(tender);
+      TenderReferences.setDirty('processSection', false);
       return;
     }
     if(action === 'pick-section-document'){
@@ -3236,9 +3292,16 @@
       return;
     }
     if(action === 'cancel-section'){
-      editingProcessSectionId = '';
-      editingProcessDraft = null;
-      renderProcessSections(tender);
+      var cancelSectionNode = event.target.closest('[data-process-section-id]');
+      TenderReferences.guardedClose('processSection', function(){
+        editingProcessSectionId = '';
+        editingProcessDraft = null;
+        TenderReferences.setDirty('processSection', false);
+        renderProcessSections(tender);
+      }, function(){
+        var saveBtn = cancelSectionNode && cancelSectionNode.querySelector('[data-process-action="save-section"]');
+        if(saveBtn) saveBtn.click();
+      });
       return;
     }
     if(action === 'save-section' && editingProcessDraft){
@@ -3277,6 +3340,7 @@
       });
       editingProcessSectionId = '';
       editingProcessDraft = null;
+      TenderReferences.setDirty('processSection', false);
       saveTenders(tenders);
       applyTenderData();
       showToast('Этап сохранён. Срок подачи обновлён.');
@@ -3410,6 +3474,7 @@
   }
   function closePlatformModal(){
     platformOverlay.classList.remove('is-open');
+    TenderReferences.setDirty('platform', false);
   }
   document.getElementById('platformEditOpen').addEventListener('click', function(){
     if(!tender) return;
@@ -3420,10 +3485,17 @@
         ? 0 : tender.submissionFee;
     document.getElementById('platformCommentInput').value = tender.submissionComment || '';
     platformOverlay.classList.add('is-open');
+    TenderReferences.setDirty('platform', false);
   });
-  document.getElementById('platformCancel').addEventListener('click', closePlatformModal);
+  platformOverlay.addEventListener('input', function(){ TenderReferences.setDirty('platform', true); });
+  platformOverlay.addEventListener('xchange', function(){ TenderReferences.setDirty('platform', true); });
+  document.getElementById('platformCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('platform', closePlatformModal, function(){ document.getElementById('platformSave').click(); });
+  });
   platformOverlay.addEventListener('click', function(event){
-    if(event.target === platformOverlay) closePlatformModal();
+    if(event.target === platformOverlay){
+      TenderReferences.guardedClose('platform', closePlatformModal, function(){ document.getElementById('platformSave').click(); });
+    }
   });
   document.getElementById('platformSave').addEventListener('click', function(){
     if(!tender || !platformTypeSelect) return;

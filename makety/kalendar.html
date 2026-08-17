@@ -940,13 +940,20 @@
 
     document.getElementById('taskAddOverlay').classList.add('is-open');
     document.getElementById('taskAddText').focus();
+    TenderReferences.setDirty('taskAdd', false);
+  }
+  function closeTaskAddOverlay(){
+    document.getElementById('taskAddOverlay').classList.remove('is-open');
+    TenderReferences.setDirty('taskAdd', false);
   }
   document.getElementById('addTaskOpenBtn').addEventListener('click', openTaskAddModal);
+  document.getElementById('taskAddOverlay').addEventListener('input', function(){ TenderReferences.setDirty('taskAdd', true); });
+  document.getElementById('taskAddOverlay').addEventListener('xchange', function(){ TenderReferences.setDirty('taskAdd', true); });
   document.getElementById('taskAddCancel').addEventListener('click', function(){
-    document.getElementById('taskAddOverlay').classList.remove('is-open');
+    TenderReferences.guardedClose('taskAdd', closeTaskAddOverlay, function(){ document.getElementById('taskAddSave').click(); });
   });
   document.getElementById('taskAddOverlay').addEventListener('click', function(e){
-    if(e.target === this) this.classList.remove('is-open');
+    if(e.target === this) TenderReferences.guardedClose('taskAdd', closeTaskAddOverlay, function(){ document.getElementById('taskAddSave').click(); });
   });
   document.getElementById('taskAddSave').addEventListener('click', function(){
     var tenderName = taskAddState.tenderSelect ? taskAddState.tenderSelect.dataset.value : '';
@@ -969,6 +976,7 @@
     if(!target) return;
     tasksOf(target).push({id:nextTaskId(target), text:text, due:due, assignee:assignee, assignedBy:CURRENT_USER.name, done:false});
     localStorage.setItem(TENDER_STORAGE_KEY, JSON.stringify(tenders));
+    TenderReferences.setDirty('taskAdd', false);
     document.getElementById('taskAddOverlay').classList.remove('is-open');
     renderCalendar();
   });

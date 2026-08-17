@@ -1674,11 +1674,18 @@
     dupHint.hidden = true;
     addOverlay.classList.add('is-open');
     atName.focus();
+    TenderReferences.setDirty('addTender', false);
   }
-  function closeAddTender(){ addOverlay.classList.remove('is-open'); }
+  function closeAddTender(){ addOverlay.classList.remove('is-open'); TenderReferences.setDirty('addTender', false); }
   document.getElementById('addTenderBtn').addEventListener('click', openAddTender);
-  document.getElementById('atCancel').addEventListener('click', closeAddTender);
-  addOverlay.addEventListener('click', function(e){ if(e.target === addOverlay) closeAddTender(); });
+  addOverlay.addEventListener('input', function(){ TenderReferences.setDirty('addTender', true); });
+  addOverlay.addEventListener('xchange', function(){ TenderReferences.setDirty('addTender', true); });
+  document.getElementById('atCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('addTender', closeAddTender, function(){ document.getElementById('atSave').click(); });
+  });
+  addOverlay.addEventListener('click', function(e){
+    if(e.target === addOverlay) TenderReferences.guardedClose('addTender', closeAddTender, function(){ document.getElementById('atSave').click(); });
+  });
   if(new URLSearchParams(location.search).get('add') === '1') openAddTender();
 
   document.getElementById('atSave').addEventListener('click', function(){
@@ -1929,7 +1936,7 @@
     row.innerHTML = '<input type="text" value="'+escRef(value || '')+'" placeholder="Введите значение">'
       +'<button class="btn reference-delete" type="button" title="Удалить" aria-label="Удалить">'
       +'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button>';
-    row.querySelector('.reference-delete').addEventListener('click', function(){ row.remove(); });
+    row.querySelector('.reference-delete').addEventListener('click', function(){ row.remove(); TenderReferences.setDirty('reference', true); });
     editList.appendChild(row);
   }
   function addStatusRow(value, rule){
@@ -1960,6 +1967,7 @@
         var checked = row.querySelectorAll('.status-section-check:checked');
         Array.from(checked).slice(1).forEach(function(input){ input.checked = false; });
       }
+      TenderReferences.setDirty('reference', true);
     });
     row.addEventListener('change', function(event){
       if(!event.target.classList.contains('status-section-check')) return;
@@ -1969,7 +1977,7 @@
         });
       }
     });
-    row.querySelector('.status-matrix-delete').addEventListener('click', function(){ row.remove(); });
+    row.querySelector('.status-matrix-delete').addEventListener('click', function(){ row.remove(); TenderReferences.setDirty('reference', true); });
     statusMatrixRows.appendChild(row);
   }
   function openEditor(key){
@@ -1991,12 +1999,17 @@
       TenderReferences.sortOptions(data[key] || []).forEach(addEditRow);
     }
     overlay.classList.add('is-open');
+    TenderReferences.setDirty('reference', false);
   }
+  function closeReferenceOverlay(){ overlay.classList.remove('is-open'); TenderReferences.setDirty('reference', false); }
   grid.addEventListener('click', function(event){
     var button = event.target.closest('[data-edit-reference]');
     if(button) openEditor(button.dataset.editReference);
   });
+  overlay.addEventListener('input', function(){ TenderReferences.setDirty('reference', true); });
+  overlay.addEventListener('change', function(){ TenderReferences.setDirty('reference', true); });
   document.getElementById('referenceAdd').addEventListener('click', function(){
+    TenderReferences.setDirty('reference', true);
     if(currentKey === 'applicationStatuses'){
       addStatusRow('', {type:'key',sections:[]});
       var statusInputs = statusMatrixRows.querySelectorAll('.status-matrix-name');
@@ -2008,10 +2021,12 @@
     inputs[inputs.length - 1].focus();
   });
   document.getElementById('referenceCancel').addEventListener('click', function(){
-    overlay.classList.remove('is-open');
+    TenderReferences.guardedClose('reference', closeReferenceOverlay, function(){ document.getElementById('referenceSave').click(); });
   });
   overlay.addEventListener('click', function(event){
-    if(event.target === overlay) overlay.classList.remove('is-open');
+    if(event.target === overlay){
+      TenderReferences.guardedClose('reference', closeReferenceOverlay, function(){ document.getElementById('referenceSave').click(); });
+    }
   });
   document.getElementById('referenceSave').addEventListener('click', function(){
     var valueInputs = currentKey === 'applicationStatuses'
@@ -2051,6 +2066,7 @@
     }
     data[currentKey] = TenderReferences.sortOptions(values);
     data = TenderReferences.save(data);
+    TenderReferences.setDirty('reference', false);
     overlay.classList.remove('is-open');
     renderCards();
     showReferenceToast('Справочник сохранён.');
@@ -2190,6 +2206,7 @@
     if(!input) return;
     input.indeterminate = false;
     input.dataset.state = input.checked ? 'allow' : 'deny';
+    TenderReferences.setDirty('accessMatrix', true);
   });
   document.getElementById('accessSave').addEventListener('click', function(){
     var result = {};
@@ -2202,6 +2219,7 @@
     });
     localStorage.setItem(ACCESS_KEY, JSON.stringify(result));
     stored = result;
+    TenderReferences.setDirty('accessMatrix', false);
     var toast = document.getElementById('saveToast');
     document.getElementById('toastText').textContent = 'Матрица ролей и доступов сохранена.';
     toast.classList.add('is-open');
