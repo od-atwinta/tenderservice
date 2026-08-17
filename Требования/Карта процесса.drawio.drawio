@@ -1,0 +1,135 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Жизненный цикл тендера" id="tender-process-map">
+    <mxGraphModel dx="1304" dy="787" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1160" pageHeight="1720" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;" value="Жизненный цикл тендера — карта процесса" vertex="1">
+          <mxGeometry height="40" width="560" x="300" as="geometry" />
+        </mxCell>
+        <mxCell id="n1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Шаг 1. Источник тендеров&#xa;Тендерплан выгружает тендеры.&#xa;ИИ-парсер готовит отчёт: стек, требования к поставщику,&#xa;НМЦК, скоуп работ, сроки, критерии оценки, риски" vertex="1">
+          <mxGeometry height="90" width="300" x="340" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="d2" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=center;verticalAlign=middle;" value="Шаг 2. Первое решение&#xa;(менеджер отдела продаж)" vertex="1">
+          <mxGeometry height="120" width="240" x="370" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="arc1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;align=center;verticalAlign=middle;" value="Архив&#xa;(не участвуем / дубль —&#xa;по дублю тоже можно решить участвовать)" vertex="1">
+          <mxGeometry height="80" width="260" x="800" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="n3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Шаг 3. Детальное изучение&#xa;Специалисты направления изучают документацию и условия.&#xa;Возможен цикл: вопрос заказчику → встреча/обращение → ответ → снова изучение.&#xa;Крупные 223-ФЗ/44-ФЗ с формой договора: по решению менеджера — проверка&#xa;юристами и бухгалтерией (не по умолчанию, в идеале подсказывает ИИ)" vertex="1">
+          <mxGeometry height="130" width="400" x="290" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="d4" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=center;verticalAlign=middle;" value="Шаг 4. Второе решение&#xa;(решение об участии)" vertex="1">
+          <mxGeometry height="120" width="240" x="370" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="arc2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;align=center;verticalAlign=middle;" value="Архив&#xa;(отказ — причина фиксируется)" vertex="1">
+          <mxGeometry height="80" width="260" x="800" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="step5label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;" value="Шаг 5. Подготовка — три параллельные ветки" vertex="1">
+          <mxGeometry height="30" width="320" x="160" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="split1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="14" width="14" x="484" y="758" as="geometry" />
+        </mxCell>
+        <mxCell id="n5a" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="5a. Учредительные документы&#xa;Сбор документов, постановка задачи на&#xa;запрос недостающих, чек-лист,&#xa;ежедневное отслеживание дедлайна подачи" vertex="1">
+          <mxGeometry height="120" width="260" x="90" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="n5b" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="5b. Финансовая часть&#xa;Проверка стоимости участия, запрос счёта/&#xa;оферты, проверка юристами, оплата&#xa;бухгалтерией, контроль зачисления на площадку" vertex="1">
+          <mxGeometry height="120" width="260" x="370" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="n5c" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="5c. Оценка трудозатрат&#xa;Декомпозиция часов от специалиста или&#xa;менеджера, вопросы заказчику, доп. материалы&#xa;(архитектурная схема, описание стека)" vertex="1">
+          <mxGeometry height="120" width="260" x="650" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="pVouRlLfNfJJvf13znNw-3" edge="1" parent="1" source="merge1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="n6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="merge1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="14" width="14" x="483" y="1040" as="geometry" />
+        </mxCell>
+        <mxCell id="n6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Шаг 6. Формирование КП и пакета документов&#xa;Печать/подпись/скан коммерческого предложения,&#xa;сбор пакета документов для подачи (Копилка)" vertex="1">
+          <mxGeometry height="90" width="320" x="330" y="1100" as="geometry" />
+        </mxCell>
+        <mxCell id="n7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Шаг 7. Подача&#xa;На площадке или по email.&#xa;Начинается отслеживание событий по заявке" vertex="1">
+          <mxGeometry height="80" width="320" x="330" y="1240" as="geometry" />
+        </mxCell>
+        <mxCell id="n8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;align=center;verticalAlign=middle;spacing=6;" value="Шаг 8. После подачи&#xa;Сводная таблица заявок со статусами и фильтрами.&#xa;История общения с заказчиком — во вкладке «События».&#xa;Статус меняется вручную (источник событий не автоматизирован)" vertex="1">
+          <mxGeometry height="100" width="360" x="310" y="1370" as="geometry" />
+        </mxCell>
+        <mxCell id="d9" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=center;verticalAlign=middle;" value="Шаг 9. Переторжка (если есть)&#xa;Уточнение цены, без полного цикла заново" vertex="1">
+          <mxGeometry height="130" width="260" x="360" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="arc3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;align=center;verticalAlign=middle;" value="Архив&#xa;(не готовы снизить цену — отказ)" vertex="1">
+          <mxGeometry height="80" width="260" x="800" y="1530" as="geometry" />
+        </mxCell>
+        <mxCell id="d10" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;align=center;verticalAlign=middle;" value="Шаг 10. Итог" vertex="1">
+          <mxGeometry height="110" width="220" x="380" y="1690" as="geometry" />
+        </mxCell>
+        <mxCell id="endNeg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;align=center;verticalAlign=middle;" value="Тендер завершён&#xa;(отрицательный итог)" vertex="1">
+          <mxGeometry height="80" width="260" x="800" y="1710" as="geometry" />
+        </mxCell>
+        <mxCell id="endPos" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=center;verticalAlign=middle;" value="Оформление договора с заказчиком и площадкой →&#xa;Тендер завершён (положительный итог)" vertex="1">
+          <mxGeometry height="90" width="300" x="340" y="1840" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="n1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="d2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="d2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="arc1" value="Не участвуем / Дубль">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="d2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="n3" value="Участвуем → «На рассмотрении»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="n3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="d4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="d4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="arc2" value="Не участвуем">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="d4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="split1" value="Участвуем">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="split1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="n5a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="split1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="n5b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="split1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="n5c">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="n5a" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="merge1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="n5b" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="merge1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="n5c" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="merge1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="650" y="870" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="n6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="n7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="n7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="n8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="n8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="d9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="d9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="arc3" value="Не готовы снизить цену">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" edge="1" parent="1" source="d9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="d10" value="Готовы снизить / переторжки нет">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e19" edge="1" parent="1" source="d10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="endNeg" value="Отрицательный">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" edge="1" parent="1" source="d10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" target="endPos" value="Положительный">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

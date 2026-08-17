@@ -1336,6 +1336,10 @@
       <input type="text" id="clAddText" placeholder="Например: справка об отсутствии судимости">
     </div>
     <div class="field">
+      <label for="clAddDue">Срок</label>
+      <input type="date" id="clAddDue">
+    </div>
+    <div class="field">
       <label for="clAddAssignee">Ответственный</label>
       <select id="clAddAssignee"></select>
     </div>
@@ -2395,6 +2399,48 @@
     var ids = checklistOf(t).map(function(item){ return Number(item.id) || 0; });
     return (ids.length ? Math.max.apply(null, ids) : 0) + 1;
   }
+  function checklistItemMatchesDocumentName(itemText, docName){
+    var itemWords = checklistSignificantWords(itemText);
+    var docWords = checklistSignificantWords(docName);
+    return itemWords.some(function(w){ return docWords.indexOf(w) !== -1; });
+  }
+  // при загрузке документа в карточку — проверяем чек-лист: если похожий пункт уже есть и ещё
+  // не отмечен, предлагаем отметить выполненным; если похожего пункта нет, предлагаем добавить
+  function checkDocumentAgainstChecklist(t, document){
+    var docName = documentName(document);
+    if(!checklistSignificantWords(docName).length) return;
+    var matchedItem = checklistOf(t).find(function(item){
+      return checklistItemMatchesDocumentName(item.text, docName);
+    });
+    if(matchedItem){
+      if(matchedItem.done) return;
+      if(!confirm('Загруженный документ «'+docName+'» похож на пункт чек-листа «'+matchedItem.text+'».\nОтметить этот пункт как выполненный?')) return;
+      matchedItem.done = true;
+      matchedItem.attachedDocument = {name:docName, source:'Документы'};
+      t.events = t.events || [];
+      t.events.push({
+        date:eventDate(),
+        text:'Пункт чек-листа «'+matchedItem.text+'» отмечен выполненным — загружен документ «'+docName+'».',
+        actor:CURRENT_USER.name
+      });
+    } else {
+      if(!confirm('В чек-листе нет пункта, похожего на загруженный документ «'+docName+'».\nДобавить его в чек-лист как новый (уже выполненный) пункт?')) return;
+      var newItem = {
+        id:nextChecklistId(t), text:docName.replace(/\.[^.]+$/,''),
+        due:defaultChecklistDueDate(t.deadline), assignee:t.manager || '', done:true,
+        attachedDocument:{name:docName, source:'Документы'}
+      };
+      checklistOf(t).push(newItem);
+      t.events = t.events || [];
+      t.events.push({
+        date:eventDate(),
+        text:'В чек-лист автоматически добавлен пункт «'+newItem.text+'» по загруженному документу.',
+        actor:CURRENT_USER.name
+      });
+    }
+    saveTenders(tenders);
+    if(checklistEditBox && checklistEditBox.hidden) renderChecklistView(t);
+  }
   function checklistAssignees(t){
     var names = eligibleParticipants(t);
     if(t.manager && names.indexOf(t.manager) === -1) names = [t.manager].concat(names);
@@ -2480,6 +2526,7 @@
         var match = matches[0];
         if(!confirm('Найден документ в Копилке («'+match.source+'»): «'+match.name+'».\nПрикрепить его к пункту «'+item.text+'»?')) return;
         item.attachedDocument = {name:match.name, source:match.source};
+        item.done = true;
         TenderReferences.setDirty('checklistEdit', true);
         tr.replaceWith(buildChecklistEditRow(t, item));
       });
@@ -2488,12 +2535,17 @@
     if(detachBtn){
       detachBtn.addEventListener('click', function(){
         delete item.attachedDocument;
+        item.done = false;
         TenderReferences.setDirty('checklistEdit', true);
         tr.replaceWith(buildChecklistEditRow(t, item));
       });
     }
     return tr;
   }
+  // пункты, добавленные с момента последнего сохранения чек-листа (генерацией, строкой "+"
+  // прямо в таблице или совпадением с загруженным документом) — при сохранении, если у пункта
+  // есть ответственный, ему автоматически ставится задача и уходит уведомление (см. clSaveEdit)
+  var pendingChecklistTaskItems = [];
   function renderEditRows(t){
     var data = checklistOf(t);
     editRows.innerHTML = '';
@@ -2503,8 +2555,8 @@
     var trNew = document.createElement('tr'); trNew.dataset.id = 'new';
     trNew.innerHTML =
       '<td><input type="text" class="edit-text" placeholder="Новая задача…"></td>'+
-      '<td><input type="date" class="edit-date"></td>'+
-      '<td><select class="edit-assignee">'+participantOptions(t)+'</select></td>'+
+      '<td><input type="date" class="edit-date" value="'+defaultChecklistDueDate(t.deadline)+'"></td>'+
+      '<td><select class="edit-assignee">'+participantOptions(t, t.manager || '')+'</select></td>'+
       '<td><button class="icon-btn icon-add" data-action="commit-new" title="Добавить">+</button></td>';
     editRows.appendChild(trNew);
 
@@ -2514,7 +2566,9 @@
       if(!text) return;
       var due = tr.querySelector('.edit-date').value;
       var assignee = tr.querySelector('.edit-assignee').value;
-      checklistOf(t).push({id:nextChecklistId(t), text:text, due:due, assignee:assignee, done:false});
+      var item = {id:nextChecklistId(t), text:text, due:due, assignee:assignee, done:false};
+      checklistOf(t).push(item);
+      pendingChecklistTaskItems.push(item);
       saveTenders(tenders);
       renderEditRows(t);
     });
@@ -2546,6 +2600,7 @@
         if(existingTexts.indexOf(text) !== -1) return;
         var item = {id:nextChecklistId(t), text:text, due:defaultDue, assignee:defaultAssignee, done:false};
         checklistOf(t).push(item);
+        pendingChecklistTaskItems.push(item);
         existingTexts.push(text);
         newItems.push(item);
       });
@@ -2579,20 +2634,37 @@
       item.due = tr.querySelector('.edit-date').value;
       item.assignee = tr.querySelector('.edit-assignee').value;
     });
+    // новым пунктам (сформированы кнопкой "Сформировать лист" или добавлены строкой "+"),
+    // если они не были удалены до сохранения и у них указан ответственный — ставим задачу
+    var tasksAssigned = 0;
+    pendingChecklistTaskItems.forEach(function(pendingItem){
+      var stillExists = checklistOf(tender).indexOf(pendingItem) !== -1;
+      if(stillExists && pendingItem.assignee){
+        assignChecklistTask(tender, pendingItem);
+        tasksAssigned++;
+      }
+    });
+    pendingChecklistTaskItems = [];
     saveTenders(tenders);
     TenderReferences.setDirty('checklistEdit', false);
     checklistView.hidden = false; progressLine.hidden = false;
     checklistEditBox.hidden = true;
-    renderChecklistView(tender);
+    applyTenderData();
+    showToast(tasksAssigned
+      ? 'Чек-лист сохранён, задач поставлено: ' + tasksAssigned + '.'
+      : 'Чек-лист сохранён.');
   });
 
   var clAddOverlay = document.getElementById('clAddOverlay');
   var clAddText = document.getElementById('clAddText');
+  var clAddDue = document.getElementById('clAddDue');
   var clAddAssignee = document.getElementById('clAddAssignee');
   function closeClAddOverlay(){ clAddOverlay.classList.remove('is-open'); TenderReferences.setDirty('clAdd', false); }
   document.getElementById('clAddOpen').addEventListener('click', function(){
     if(!tender) return;
-    clAddText.value = ''; clAddAssignee.innerHTML = participantOptions(tender);
+    clAddText.value = '';
+    clAddDue.value = defaultChecklistDueDate(tender.deadline);
+    clAddAssignee.innerHTML = participantOptions(tender, tender.manager || '');
     clAddOverlay.classList.add('is-open'); clAddText.focus();
     TenderReferences.setDirty('clAdd', false);
   });
@@ -2608,10 +2680,16 @@
     if(!tender) return;
     var text = clAddText.value.trim();
     if(!text){ clAddText.focus(); return; }
-    checklistOf(tender).push({id:nextChecklistId(tender), text:text, due:'', assignee:clAddAssignee.value, done:false});
+    if(!clAddDue.value){ clAddDue.focus(); return; }
+    if(!clAddAssignee.value){ clAddAssignee.focus(); return; }
+    var item = {id:nextChecklistId(tender), text:text, due:clAddDue.value, assignee:clAddAssignee.value, done:false};
+    checklistOf(tender).push(item);
+    assignChecklistTask(tender, item);
     saveTenders(tenders);
-    renderChecklistView(tender);
+    TenderReferences.setDirty('clAdd', false);
     closeClAddOverlay();
+    applyTenderData();
+    showToast('Пункт добавлен, задача поставлена: '+item.assignee+'.');
   });
 
   // ---- tasks state (хранится в tender.tasks, персистентно) ----
@@ -2622,6 +2700,32 @@
   function nextTaskId(t){
     var ids = tasksOf(t).map(function(item){ return Number(item.id) || 0; });
     return (ids.length ? Math.max.apply(null, ids) : 0) + 1;
+  }
+  // при назначении ответственного на новый пункт чек-листа: ставим ему задачу
+  // (та же вкладка "Задачи по тендеру"), отправляем уведомление и фиксируем в "Логи"
+  function assignChecklistTask(t, item){
+    if(!item.assignee) return;
+    tasksOf(t).push({
+      id:nextTaskId(t), text:'Подготовить документ по чек-листу: '+item.text,
+      due:item.due || '', assignee:item.assignee, assignedBy:CURRENT_USER.name, done:false
+    });
+    var notifications = [];
+    try{ notifications = JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY) || '[]'); }catch(e){}
+    notifications.push({
+      recipient:item.assignee,
+      text:'Назначена задача по тендеру «'+t.name+'»: подготовить документ «'+item.text+'»'
+        +(item.due ? ' до '+fmtDate(item.due) : '')+'.',
+      date:new Date().toLocaleString('ru-RU'),
+      href:'kartochka-tendera.html?tender='+t.id
+    });
+    try{ localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications.slice(-50))); }catch(e){}
+    t.events = t.events || [];
+    t.events.push({
+      date:eventDate(),
+      text:'В чек-лист добавлен пункт «'+item.text+'» — назначен '+item.assignee
+        +(item.due ? ', срок '+fmtDate(item.due) : '')+'.',
+      actor:CURRENT_USER.name
+    });
   }
 
   var taskView = document.getElementById('taskView');
@@ -3450,6 +3554,7 @@
       library
     );
     attachDocumentToSection(upload.kind,added.id,upload.sectionId);
+    checkDocumentAgainstChecklist(tender, added);
     renderProcessSections(tender);
     continueSectionUploadQueue();
   }
@@ -3477,6 +3582,7 @@
       library
     );
     attachDocumentToSection(upload.kind,added.id,upload.sectionId);
+    checkDocumentAgainstChecklist(tender, added);
     pendingDuplicateUpload = null;
     closeDuplicateWarning(false);
     renderProcessSections(tender);
