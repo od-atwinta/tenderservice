@@ -398,6 +398,7 @@
   .reference-count{font-size:12px;color:var(--ink-muted);font-weight:500;margin-left:8px;}
   .reference-values{display:flex;align-items:flex-start;align-content:flex-start;gap:8px;flex-wrap:wrap;
     min-height:32px;}
+  .reference-card p.reference-hint{margin:0;font-size:13px;color:var(--ink-muted);}
   .reference-chip{display:inline-flex;align-items:center;min-height:32px;padding:5px 10px;
     border-radius:6px;background:var(--surface-2);font-size:13px;line-height:1.35;
     overflow-wrap:anywhere;}
@@ -426,6 +427,16 @@
   .status-type[data-type="through"]{color:var(--accent);border-color:var(--accent);}
   .status-section-check{width:18px;height:18px;margin:0;accent-color:var(--accent);cursor:pointer;}
   .status-matrix-delete{width:32px;padding:0;color:var(--danger);}
+  .checklist-terms-table{overflow:auto;max-height:calc(100vh - 260px);border:1px solid var(--border);border-radius:var(--radius-md);}
+  .checklist-terms-head,.checklist-terms-row{display:grid;
+    grid-template-columns:minmax(160px,1fr) minmax(220px,1.4fr) 32px;min-width:520px;align-items:center;}
+  .checklist-terms-head{min-height:40px;background:var(--surface-2);font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted);font-weight:700;}
+  .checklist-terms-head span{padding:8px 10px;}
+  .checklist-terms-row{min-height:48px;border-top:1px solid var(--border);}
+  .checklist-terms-row:first-child{border-top:0;}
+  .checklist-terms-row input{height:32px;margin:8px 10px 8px 0;}
+  .checklist-terms-delete{width:32px;padding:0;color:var(--danger);}
   .access-card{background:var(--surface);border:1px solid var(--border);
     border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:18px 20px;}
   .access-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
@@ -572,6 +583,8 @@
         aria-selected="true">Справочники</button>
       <button class="settings-tab" type="button" data-settings-tab="roles"
         aria-selected="false">Роли и доступы</button>
+      <button class="settings-tab" type="button" data-settings-tab="automation"
+        aria-selected="false">Автоматизация</button>
     </div>
     <div class="settings-panel" data-settings-panel="references">
       <div class="reference-grid" id="referenceGrid"></div>
@@ -613,6 +626,17 @@
           <button class="btn btn-primary" type="button" id="accessSave">Сохранить</button>
         </div>
       </section>
+    </div>
+    <div class="settings-panel" data-settings-panel="automation" hidden>
+      <div class="reference-grid">
+        <section class="card reference-card">
+          <div class="reference-head">
+            <h2 class="reference-title">Чек-лист</h2>
+            <button class="btn" type="button" id="checklistTermsEditOpen">Редактировать</button>
+          </div>
+          <p class="reference-hint">Справочник соответствий терминов для формирования чек-листа.</p>
+        </section>
+      </div>
     </div>
     <p class="list-meta" id="listMeta" hidden></p>
     <div class="tlist" id="tlist" hidden></div>
@@ -720,6 +744,27 @@
     <div class="modal-actions">
       <button class="btn" type="button" id="referenceCancel">Отмена</button>
       <button class="btn btn-primary" type="button" id="referenceSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT CHECKLIST TERMS MODAL -->
+<div class="overlay" id="checklistTermsOverlay">
+  <div class="modal modal-wide" id="checklistTermsModal">
+    <h4>Редактировать «Чек-лист»</h4>
+    <p class="hint">Если в тексте отчёта ИИ (требования к поставщику, критерии оценки) встречается ключевая фраза — соответствующий документ добавляется в чек-лист тендера.</p>
+    <div class="checklist-terms-table">
+      <div class="checklist-terms-head">
+        <span>Ключевая фраза</span>
+        <span>Документ в чек-листе</span>
+        <span></span>
+      </div>
+      <div id="checklistTermsRows"></div>
+    </div>
+    <button class="btn reference-add" type="button" id="checklistTermsAdd">Добавить строку</button>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="checklistTermsCancel">Отмена</button>
+      <button class="btn btn-primary" type="button" id="checklistTermsSave">Сохранить</button>
     </div>
   </div>
 </div>
@@ -2078,6 +2123,61 @@
     }
   });
   renderCards();
+
+  // ---- справочник "Чек-лист" (Автоматизация): соответствие ключевая фраза → документ ----
+  var checklistTermsOverlay = document.getElementById('checklistTermsOverlay');
+  var checklistTermsRows = document.getElementById('checklistTermsRows');
+  function addChecklistTermRow(term){
+    var row = document.createElement('div');
+    row.className = 'checklist-terms-row';
+    row.innerHTML = '<input type="text" class="ct-phrase" value="'+escRef((term && term.phrase) || '')+'" placeholder="Например: лицензия">'
+      +'<input type="text" class="ct-document" value="'+escRef((term && term.document) || '')+'" placeholder="Например: Копия лицензии на вид деятельности">'
+      +'<button class="btn checklist-terms-delete" type="button" title="Удалить" aria-label="Удалить">'
+      +'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button>';
+    row.querySelector('.checklist-terms-delete').addEventListener('click', function(){
+      row.remove();
+      TenderReferences.setDirty('checklistTerms', true);
+    });
+    checklistTermsRows.appendChild(row);
+  }
+  function openChecklistTermsEditor(){
+    checklistTermsRows.innerHTML = '';
+    TenderReferences.getChecklistTerms().forEach(addChecklistTermRow);
+    checklistTermsOverlay.classList.add('is-open');
+    TenderReferences.setDirty('checklistTerms', false);
+  }
+  function closeChecklistTermsEditor(){
+    checklistTermsOverlay.classList.remove('is-open');
+    TenderReferences.setDirty('checklistTerms', false);
+  }
+  document.getElementById('checklistTermsEditOpen').addEventListener('click', openChecklistTermsEditor);
+  checklistTermsOverlay.addEventListener('input', function(){ TenderReferences.setDirty('checklistTerms', true); });
+  document.getElementById('checklistTermsAdd').addEventListener('click', function(){
+    addChecklistTermRow(null);
+    TenderReferences.setDirty('checklistTerms', true);
+    var inputs = checklistTermsRows.querySelectorAll('.ct-phrase');
+    inputs[inputs.length - 1].focus();
+  });
+  document.getElementById('checklistTermsCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('checklistTerms', closeChecklistTermsEditor, function(){ document.getElementById('checklistTermsSave').click(); });
+  });
+  checklistTermsOverlay.addEventListener('click', function(event){
+    if(event.target === checklistTermsOverlay){
+      TenderReferences.guardedClose('checklistTerms', closeChecklistTermsEditor, function(){ document.getElementById('checklistTermsSave').click(); });
+    }
+  });
+  document.getElementById('checklistTermsSave').addEventListener('click', function(){
+    var terms = Array.from(checklistTermsRows.querySelectorAll('.checklist-terms-row')).map(function(row){
+      return {
+        phrase: row.querySelector('.ct-phrase').value.trim(),
+        document: row.querySelector('.ct-document').value.trim()
+      };
+    }).filter(function(item){ return item.phrase && item.document; });
+    TenderReferences.saveChecklistTerms(terms);
+    TenderReferences.setDirty('checklistTerms', false);
+    closeChecklistTermsEditor();
+    showReferenceToast('Справочник «Чек-лист» сохранён.');
+  });
 })();
 </script>
 <script>

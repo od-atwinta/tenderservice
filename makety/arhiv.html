@@ -657,6 +657,18 @@
   </div>
 </div>
 
+<!-- ЗАПРОС НА ВОЗВРАТ В РАБОТУ (нет прав) -->
+<div class="overlay" id="restoreRequestOverlay">
+  <div class="modal">
+    <h4>У вас недостаточно прав</h4>
+    <p class="hint">Отправить запрос администратору?</p>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="restoreRequestCancel">Отмена</button>
+      <button class="btn btn-primary" type="button" id="restoreRequestSend">Отправить</button>
+    </div>
+  </div>
+</div>
+
 <!-- AI REPORT MODAL -->
 <div class="overlay" id="reportOverlay">
   <div class="modal modal-wide">
@@ -1179,7 +1191,7 @@
       + '<td><button class="fav-star'+(t.fav?' is-fav':'')+'" data-action="toggle-fav" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button></td>'
       + '<td>'+esc(t.manager || '—')+'</td>'
       + '<td class="name-cell"><a class="'+titleClass+'" href="'+nameHref+'">'+esc(t.name)+'</a></td>'
-      + '<td><span class="status-tag"><span class="dot"></span>'+esc(t.appStatus || 'Архив')+'</span></td>'
+      + '<td>'+(t.decision === 'Отказ' ? '' : '<span class="status-tag"><span class="dot"></span>'+esc(t.appStatus || 'Архив')+'</span>')+'</td>'
       + '<td>'+esc(t.customer)+'</td>'
       + '<td class="num">'+(t.nmc ? fmtNum(t.nmc) : '—')+'</td>'
       + '<td class="num">'+fmtDate(t.pub)+'</td>'
@@ -1192,7 +1204,7 @@
       + '<td>'+esc(t.decision || '—')+'</td>'
       + '<td>'+esc(t.rejectReason || '—')+'</td>'
       + '<td class="num">'+fmtDate(t.archivedAt)+'</td>'
-      + '<td>'+(canRestore() ? '<button class="btn btn-sm" data-action="open-restore" data-id="'+t.id+'">Вернуть в работу</button>' : '')+'</td>'
+      + '<td><button class="btn btn-sm" data-action="open-restore" data-id="'+t.id+'">Вернуть в работу</button></td>'
       + '</tr>';
   }
 
@@ -1228,8 +1240,59 @@
     return {section:section, href:'kartochka-tendera.html?tender='+id+'&section='+encodeURIComponent(section)};
   }
 
+  // ---- чат тендера: минимальные функции для отправки сообщения из Архива ----
+  // (полный интерфейс чата — в карточке тендера, kartochka-tendera.html)
+  function chatOf(t){
+    if(!Array.isArray(t.chat)) t.chat = [];
+    return t.chat;
+  }
+  function nextChatId(t){
+    var ids = chatOf(t).map(function(m){ return Number(m.id) || 0; });
+    return (ids.length ? Math.max.apply(null, ids) : 0) + 1;
+  }
+  function pushChatMessage(t, opts){
+    var msg = {
+      id:nextChatId(t),
+      author:opts.system ? 'Система' : current.name,
+      text:opts.text,
+      date:new Date().toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}),
+      replyToId:null,
+      system:!!opts.system
+    };
+    chatOf(t).push(msg);
+    return msg;
+  }
+
+  var restoreRequestOverlay = document.getElementById('restoreRequestOverlay');
+  var restoreRequestTenderId = null;
+  function openRestoreRequestModal(t){
+    restoreRequestTenderId = t.id;
+    restoreRequestOverlay.classList.add('is-open');
+  }
+  document.getElementById('restoreRequestCancel').addEventListener('click', function(){
+    restoreRequestOverlay.classList.remove('is-open');
+    restoreRequestTenderId = null;
+  });
+  restoreRequestOverlay.addEventListener('click', function(e){
+    if(e.target === restoreRequestOverlay){
+      restoreRequestOverlay.classList.remove('is-open');
+      restoreRequestTenderId = null;
+    }
+  });
+  document.getElementById('restoreRequestSend').addEventListener('click', function(){
+    var t = tenders.find(function(x){ return x.id === restoreRequestTenderId; });
+    restoreRequestOverlay.classList.remove('is-open');
+    if(!t) return;
+    pushChatMessage(t, {
+      text:'Пользователь "'+current.name+'" отправил запрос на возврат тендера в работу.',
+      system:true
+    });
+    saveTenders(tenders);
+    showToast('Запрос отправлен.');
+  });
+
   function openRestoreModal(t){
-    if(!canRestore()) return;
+    if(!canRestore()){ openRestoreRequestModal(t); return; }
     restoreTenderId = t.id;
     document.getElementById('restoreTenderName').textContent = t.name;
     document.getElementById('restoreStatus').value = '';

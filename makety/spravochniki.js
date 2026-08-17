@@ -13,6 +13,7 @@
   var CURRENT_USER_KEY = 'atvinta_current_user_v1';
   var USERS_KEY = 'atvinta_users_v1';
   var USERS_SEED_MIGRATION_KEY = 'atvinta_users_seeded_v1';
+  var CHECKLIST_TERMS_KEY = 'atvinta_checklist_terms_v1';
   var SYSTEM_ROLES = ['Суперадмин','Админ','Наблюдатель','Менеджер','Руководитель отдела','Сотрудник отдела'];
   var SECTION_ORDER = ['Новые','Ожидают решения','В работе','Заявки','Архив'];
   var PROCESS_STAGES = ['Отбор','Изучение','Подготовка','Подача','Итог'];
@@ -80,6 +81,23 @@
     'Отказались сами':'Итог',
     'Отменено':'Итог'
   };
+  // справочник "Чек-лист" (Настройки → Автоматизация): соответствие ключевой фразы из
+  // текста отчёта ИИ (поля "Требования к поставщику"/"Критерии оценки") пункту чек-листа
+  var DEFAULT_CHECKLIST_TERMS = [
+    {phrase:'лицензия', document:'Копия лицензии на вид деятельности'},
+    {phrase:'ФСТЭК', document:'Копия лицензии ФСТЭК'},
+    {phrase:'СМП', document:'Декларация о принадлежности к СМП'},
+    {phrase:'малого предпринимательства', document:'Декларация о принадлежности к СМП'},
+    {phrase:'опыт', document:'Документы, подтверждающие опыт аналогичных работ'},
+    {phrase:'портфолио', document:'Портфолио выполненных проектов'},
+    {phrase:'партнёр', document:'Сертификат/статус партнёра'},
+    {phrase:'сертифицированны', document:'Документы о квалификации специалистов'},
+    {phrase:'банковская гарантия', document:'Банковская гарантия обеспечения заявки'},
+    {phrase:'обеспечение заявки', document:'Банковская гарантия обеспечения заявки'},
+    {phrase:'страхование', document:'Полис страхования ответственности'},
+    {phrase:'СРО', document:'Выписка из реестра СРО'},
+    {phrase:'аккредитация', document:'Свидетельство об аккредитации'}
+  ];
 
   function clone(value){
     return JSON.parse(JSON.stringify(value));
@@ -224,6 +242,22 @@
   }
   function statusRule(status){
     return loadStatusRules()[status] || normalizeStatusRule(status, null);
+  }
+  function loadChecklistTerms(){
+    var stored = [];
+    try{ stored = JSON.parse(localStorage.getItem(CHECKLIST_TERMS_KEY) || '[]'); }catch(error){}
+    if(!Array.isArray(stored) || !stored.length){
+      stored = clone(DEFAULT_CHECKLIST_TERMS);
+      localStorage.setItem(CHECKLIST_TERMS_KEY, JSON.stringify(stored));
+    }
+    return stored;
+  }
+  function saveChecklistTerms(terms){
+    var clean = (Array.isArray(terms) ? terms : []).map(function(item){
+      return {phrase:String((item && item.phrase) || '').trim(), document:String((item && item.document) || '').trim()};
+    }).filter(function(item){ return item.phrase && item.document; });
+    localStorage.setItem(CHECKLIST_TERMS_KEY, JSON.stringify(clean));
+    return clean;
   }
   function displaySection(section){
     return section === 'Новый' ? 'Новые' : section;
@@ -661,6 +695,9 @@
     getStatusRules: loadStatusRules,
     getStatusRule: statusRule,
     saveStatusRules: saveStatusRules,
+    checklistTermsKey: CHECKLIST_TERMS_KEY,
+    getChecklistTerms: loadChecklistTerms,
+    saveChecklistTerms: saveChecklistTerms,
     resolveSection: resolveSection,
     availableStatuses: availableStatuses,
     statusDestination: statusDestination,
