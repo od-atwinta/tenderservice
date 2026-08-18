@@ -152,6 +152,7 @@
     font-size:12.5px;font-weight:600;}
   .tender-summary .checko-warning-icon{width:24px;height:24px;}
   .checko-warning-icon{width:15px;height:15px;flex:none;}
+  .funds-warning{display:inline-flex;margin-left:6px;color:var(--warning);cursor:help;font-size:13px;}
   .risk-flag{position:relative;color:var(--danger);cursor:help;display:inline-flex;align-items:center;
     gap:5px;font-size:12.5px;font-weight:600;}
   .risk-flag > svg{width:15px;height:15px;flex:none;}
@@ -791,7 +792,9 @@
             </div>
             <div class="rail-card-content">
               <div class="fact-row"><span class="k">Тип подачи</span><span class="v" id="platformSubmitType">На площадке</span></div>
-              <div class="fact-row"><span class="k">Условие подачи</span><span class="v" id="platformFee">0 ₽</span></div>
+              <div class="fact-row" id="platformFinanceRow" data-submission-part="platform"><span class="k">Площадка</span><span class="v" id="platformFinanceName">—</span></div>
+              <div class="fact-row" data-submission-part="platform"><span class="k">Обеспечение подачи</span><span class="v"><span id="platformFee">0 ₽</span><span id="platformFundsWarning" class="funds-warning" hidden title="На счету может быть недостаточно средств, проверьте л/с на площадке">⚠</span></span></div>
+              <div class="fact-row" data-submission-part="email"><span class="k">Адрес подачи КП</span><span class="v" id="platformKpAddress">—</span></div>
               <p id="platformComment" style="font-size:13px;color:var(--ink-muted);margin:10px 0 0">Комментарий не указан.</p>
             </div>
           </div>
@@ -908,7 +911,7 @@
           </div>
           <div class="card">
             <h3>Архив поданных предложений</h3>
-            <p class="empty-note">Пока пусто — появится после формирования КП.</p>
+            <div id="submittedArchiveCard"><p class="empty-note">Пока пусто — появится после формирования КП.</p></div>
           </div>
         </section>
 
@@ -1133,12 +1136,20 @@
       <span id="platformTypeSelectSlot"></span>
     </div>
     <div class="field">
-      <label for="platformLinkInput">Ссылка на закупку на площадке</label>
+      <label for="platformLinkInput">Ссылка на закупку</label>
       <input type="url" id="platformLinkInput" placeholder="https://…">
     </div>
-    <div class="field">
-      <label for="platformFeeInput">Условие подачи, ₽</label>
+    <div class="field" data-submission-part="platform">
+      <label>Площадка</label>
+      <span id="platformFinancePlatformSlot"></span>
+    </div>
+    <div class="field" data-submission-part="platform">
+      <label for="platformFeeInput">Обеспечение подачи, ₽</label>
       <input type="number" id="platformFeeInput" min="0" step="0.01" value="0">
+    </div>
+    <div class="field" data-submission-part="email">
+      <label for="platformKpAddressInput">Адрес подачи КП</label>
+      <input type="text" id="platformKpAddressInput" placeholder="email или адрес подачи">
     </div>
     <div class="field">
       <label for="platformCommentInput">Комментарий</label>
@@ -2126,6 +2137,12 @@
     function pad(n){ return (n<10?'0':'')+n; }
     return pad(h)+':'+pad(m)+':'+pad(s);
   }
+  function pluralizeDays(n){
+    var mod10 = n % 10, mod100 = n % 100;
+    var word = (mod10 === 1 && mod100 !== 11) ? 'день'
+      : ((mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) ? 'дня' : 'дней');
+    return n + ' ' + word;
+  }
   function renderDeadlineCountdown(){
     var el = document.getElementById('syncedDeadlineDays');
     var dateEl = document.getElementById('syncedDeadlineDate');
@@ -2141,7 +2158,7 @@
     }
     if(msRemaining < 0){ el.textContent = fmtDeadlineDateTime(tender.deadline); return; }
     el.textContent = msRemaining >= 86400000
-      ? Math.ceil(msRemaining/86400000)+' дней'
+      ? pluralizeDays(Math.ceil(msRemaining/86400000))
       : fmtHms(msRemaining);
   }
   function stageName(t){
@@ -2177,13 +2194,18 @@
   function renderPlatform(t){
     var type = t.submissionType || 'На площадке';
     var typeNode = document.getElementById('platformSubmitType');
-    if(type === 'На площадке' && t.platformLink){
+    if(t.platformLink){
       typeNode.innerHTML = '<a class="link-ico" href="'+escSynced(t.platformLink)
-        +'" target="_blank" rel="noopener">На площадке ↗</a>';
+        +'" target="_blank" rel="noopener">'+escSynced(type)+' ↗</a>';
     }else{
       typeNode.textContent = type;
     }
+    document.getElementById('platformCard').querySelectorAll('[data-submission-part="platform"]').forEach(function(el){ el.hidden = type !== 'На площадке'; });
+    document.getElementById('platformCard').querySelectorAll('[data-submission-part="email"]').forEach(function(el){ el.hidden = type !== 'На почту'; });
+    document.getElementById('platformFinanceName').textContent = t.financePlatform || '—';
     document.getElementById('platformFee').textContent = formatFee(t.submissionFee);
+    document.getElementById('platformFundsWarning').hidden = !TenderReferences.submissionFundsInsufficient(t);
+    document.getElementById('platformKpAddress').textContent = t.kpSubmissionAddress || '—';
     document.getElementById('platformComment').textContent = t.submissionComment
       ? 'Комментарий: '+t.submissionComment
       : 'Комментарий не указан.';
@@ -2365,11 +2387,17 @@
   function loadTemplatesForMatch(){
     try{ return JSON.parse(localStorage.getItem('atvinta_templates_v1') || '[]'); }catch(e){ return []; }
   }
+  // временно исключаем шаблоны КП/коммерческих предложений из подбора совпадений для чек-листа
+  // (решение Оксаны 2026-08-18, пока без даты пересмотра)
+  function isCommercialOfferDoc(name){
+    return String(name || '').toLocaleLowerCase('ru-RU').indexOf('коммерческое предложение') !== -1;
+  }
   function findKopilkaMatches(checklistText){
     var words = checklistSignificantWords(checklistText);
     if(!words.length) return [];
     var pool = loadDocumentLibrary().map(function(item){ return {name:item.name, source:'Документы'}; })
-      .concat(loadTemplatesForMatch().map(function(item){ return {name:item.name, source:'Шаблоны'}; }));
+      .concat(loadTemplatesForMatch().map(function(item){ return {name:item.name, source:'Шаблоны'}; }))
+      .filter(function(item){ return !isCommercialOfferDoc(item.name); });
     return pool.filter(function(item){
       var normalizedName = String(item.name || '').toLocaleLowerCase('ru-RU');
       return words.some(function(w){ return normalizedName.indexOf(w) !== -1; });
@@ -2890,15 +2918,37 @@
       +DOWNLOAD_SVG+'<span>'+escSynced(name)+'</span></button>';
   }
   function renderDocuments(t){
-    var founderDocs = [
-      {name:'Устав 2023.pdf', author:'Оксана Д.', date:'11.06.2026'},
-      {name:'Выписка из ЕГРЮЛ.pdf', author:'Оксана Д.', date:'11.06.2026'},
-      {name:'Свидетельство ОГРН.pdf', author:'Оксана Д.', date:'11.06.2026'}
-    ];
-    document.getElementById('founderDocuments').innerHTML = founderDocs.map(function(doc){
-      return '<tr><td>'+documentButton(doc.name, 0, true)+'</td><td>'+escSynced(doc.author)
-        +'</td><td class="num">'+escSynced(doc.date)+'</td></tr>';
-    }).join('');
+    var library = loadDocumentLibrary();
+    var founderLibraryDocs = library.filter(function(item){ return item.folder === 'Учредительные документы'; });
+    var founderDocs = founderLibraryDocs.map(function(item){
+      return {name:item.name, author:item.uploadedBy || 'Оксана Денисенко', date:fmtDate(item.uploadedAt || item.issueDate || '')};
+    });
+    // документы, прикреплённые из Копилки к пунктам чек-листа этого тендера, — тоже попадают в пакет учредительных
+    var checklistAttached = t ? checklistOf(t)
+      .filter(function(item){ return item.attachedDocument; })
+      .map(function(item){ return item.attachedDocument; })
+      .filter(function(doc){ return !founderDocs.some(function(f){ return f.name === doc.name; }); }) : [];
+    founderDocs = founderDocs.concat(checklistAttached.map(function(doc){
+      return {name:doc.name, author:'Из Копилки (чек-лист)', date:fmtDate(t && t.rowCreated)};
+    }));
+    document.getElementById('founderDocuments').innerHTML = founderDocs.length
+      ? founderDocs.map(function(doc){
+          return '<tr><td>'+documentButton(doc.name, 0, true)+'</td><td>'+escSynced(doc.author)
+            +'</td><td class="num">'+escSynced(doc.date)+'</td></tr>';
+        }).join('')
+      : '<tr><td colspan="3" class="empty-note">Документы пока не прикреплены.</td></tr>';
+    var archiveDocs = library.filter(function(item){ return item.folder === 'Архив поданных предложений'; });
+    var archiveCard = document.getElementById('submittedArchiveCard');
+    if(archiveCard){
+      archiveCard.innerHTML = archiveDocs.length
+        ? '<table class="plain"><thead><tr><th>Файл</th><th>Дата</th></tr></thead><tbody>'
+          + archiveDocs.map(function(item){
+              return '<tr><td>'+documentButton(item.name, 0, true)+'</td>'
+                +'<td class="num">'+escSynced(fmtDate(item.uploadedAt || ''))+'</td></tr>';
+            }).join('')
+          + '</tbody></table>'
+        : '<p class="empty-note">Пока пусто — появится после формирования КП.</p>';
+    }
     var docs = t && Array.isArray(t.documents) ? t.documents : [];
     document.getElementById('syncedTenderDocuments').innerHTML = docs.length
       ? docs.map(function(doc,index){
@@ -4042,11 +4092,25 @@
 
   var platformOverlay = document.getElementById('platformOverlay');
   var platformTypeSelect = null;
+  var platformFinanceSelect = null;
+  function syncPlatformModalVisibility(){
+    var type = platformTypeSelect ? (platformTypeSelect.dataset.value || 'На площадке') : 'На площадке';
+    platformOverlay.querySelectorAll('[data-submission-part="platform"]').forEach(function(el){ el.hidden = type !== 'На площадке'; });
+    platformOverlay.querySelectorAll('[data-submission-part="email"]').forEach(function(el){ el.hidden = type !== 'На почту'; });
+  }
   function mountPlatformTypeSelect(value){
     var slot = document.getElementById('platformTypeSelectSlot');
     slot.innerHTML = '';
     platformTypeSelect = buildXSelect(SUBMISSION_TYPES, value || 'На площадке', 'Выбрать тип подачи');
     slot.appendChild(platformTypeSelect);
+    platformTypeSelect.addEventListener('xchange', syncPlatformModalVisibility);
+  }
+  function mountPlatformFinanceSelect(value){
+    var slot = document.getElementById('platformFinancePlatformSlot');
+    slot.innerHTML = '';
+    var names = TenderReferences.getFinancePlatforms().map(function(p){ return p.name; });
+    platformFinanceSelect = buildXSelect(names, value || '', 'Выбрать площадку');
+    slot.appendChild(platformFinanceSelect);
   }
   function closePlatformModal(){
     platformOverlay.classList.remove('is-open');
@@ -4055,11 +4119,14 @@
   document.getElementById('platformEditOpen').addEventListener('click', function(){
     if(!tender) return;
     mountPlatformTypeSelect(tender.submissionType || 'На площадке');
+    mountPlatformFinanceSelect(tender.financePlatform || '');
     document.getElementById('platformLinkInput').value = tender.platformLink || '';
     document.getElementById('platformFeeInput').value =
       tender.submissionFee === undefined || tender.submissionFee === null || tender.submissionFee === ''
         ? 0 : tender.submissionFee;
+    document.getElementById('platformKpAddressInput').value = tender.kpSubmissionAddress || '';
     document.getElementById('platformCommentInput').value = tender.submissionComment || '';
+    syncPlatformModalVisibility();
     platformOverlay.classList.add('is-open');
     TenderReferences.setDirty('platform', false);
   });
@@ -4092,13 +4159,21 @@
     feeInput.style.borderColor = '';
     tender.submissionType = type || 'На площадке';
     tender.platformLink = link;
-    tender.submissionFee = fee;
+    tender.financePlatform = tender.submissionType === 'На площадке'
+      ? (platformFinanceSelect ? (platformFinanceSelect.dataset.value || '') : '')
+      : '';
+    tender.submissionFee = tender.submissionType === 'На площадке' ? fee : 0;
+    tender.kpSubmissionAddress = tender.submissionType === 'На почту'
+      ? document.getElementById('platformKpAddressInput').value.trim()
+      : '';
     tender.submissionComment = document.getElementById('platformCommentInput').value.trim();
     tender.events = tender.events || [];
     tender.events.push({
       date:eventDate(),
       text:'Изменены данные площадки: '+tender.submissionType
-        +', условие подачи — '+formatFee(tender.submissionFee)+'.',
+        + (tender.submissionType === 'На площадке'
+          ? (tender.financePlatform ? ' — '+tender.financePlatform : '')+', обеспечение подачи — '+formatFee(tender.submissionFee)+'.'
+          : (tender.kpSubmissionAddress ? ', адрес подачи КП — '+tender.kpSubmissionAddress+'.' : '.')),
       comment:tender.submissionComment,
       actor:'Оксана Денисенко'
     });

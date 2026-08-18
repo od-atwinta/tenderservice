@@ -293,6 +293,15 @@
   .tedit-grid .xselect{display:block;width:100%;}
   .tedit-grid .xselect-trigger{width:100%;}
   .tedit-span-2{grid-column:span 2;}
+  .tedit-platform-block{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:12px;
+    row-gap:16px;margin-bottom:20px;}
+  .tedit-platform-block .tform-field{min-width:0;}
+  .tedit-platform-block input{border:1px solid var(--border-strong);border-radius:6px;padding:7px 10px;
+    font-family:var(--font-body);font-size:13px;background:var(--surface);color:var(--ink);width:100%;
+    height:var(--edit-control-height);min-height:var(--edit-control-height);}
+  .tedit-platform-block .xselect{display:block;width:100%;}
+  .tedit-platform-block .xselect-trigger{width:100%;height:var(--edit-control-height);min-height:var(--edit-control-height);}
+  .tedit-platform-block [data-submission-part][hidden]{display:none;}
   .tedit-risk-row{display:grid;grid-template-columns:auto auto minmax(220px,1fr) auto;align-items:end;
     column-gap:12px;row-gap:16px;margin-bottom:20px;}
   .tedit-check{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-muted);min-height:32px;}
@@ -1106,8 +1115,14 @@
       +         '<div class="tform-field"><label>Основание *</label><span class="xselect-foundation-slot"></span></div>'
       +         '<div class="tform-field"><label>Тип закупки</label><span class="xselect-procurement-slot"></span></div>'
       +         '<div class="tform-field"><label>Источник</label><input type="text" data-field="sourceLink" placeholder="Ссылка"></div>'
-      +         '<div class="tform-field"><label>Площадка</label><input type="url" data-field="platformLink" placeholder="Ссылка на площадку"></div>'
       +         '<div class="tform-field"><label>Ссылка на Checko</label><input type="url" data-field="checkoUrl" placeholder="https://checko.ru/company/…"></div>'
+      +       '</div>'
+      +       '<div class="tedit-platform-block">'
+      +         '<div class="tform-field"><label>Тип подачи</label><span class="xselect-submission-type-slot"></span></div>'
+      +         '<div class="tform-field"><label>Ссылка на закупку</label><input type="url" data-field="platformLink" placeholder="https://…"></div>'
+      +         '<div class="tform-field" data-submission-part="platform"><label>Площадка</label><span class="xselect-finance-platform-slot"></span></div>'
+      +         '<div class="tform-field" data-submission-part="platform"><label>Обеспечение подачи, ₽</label><input type="number" data-field="submissionFee" min="0" step="0.01" placeholder="0,00"></div>'
+      +         '<div class="tform-field" data-submission-part="email"><label>Адрес подачи КП</label><input type="text" data-field="kpSubmissionAddress" placeholder="email или адрес подачи"></div>'
       +       '</div>'
       +       '<div class="tedit-risk-row">'
       +         '<label class="tedit-check"><input type="checkbox" data-field="multiStage"> Многоэтапный</label>'
@@ -1198,12 +1213,28 @@
       multiHint.hidden = vals.length < 2;
     });
 
+    var submissionTypeSelect = buildXSelect(TenderReferences.submissionTypes, t.submissionType || 'На площадке', 'Выбрать тип подачи');
+    cardEl.querySelector('.xselect-submission-type-slot').appendChild(submissionTypeSelect);
+    var financePlatformNames = TenderReferences.getFinancePlatforms().map(function(p){ return p.name; });
+    var financePlatformSelect = buildXSelect(financePlatformNames, t.financePlatform || '', 'Выбрать площадку');
+    cardEl.querySelector('.xselect-finance-platform-slot').appendChild(financePlatformSelect);
+    function syncSubmissionPartVisibility(){
+      var type = submissionTypeSelect.dataset.value || 'На площадке';
+      cardEl.querySelectorAll('[data-submission-part="platform"]').forEach(function(el){ el.hidden = type !== 'На площадке'; });
+      cardEl.querySelectorAll('[data-submission-part="email"]').forEach(function(el){ el.hidden = type !== 'На почту'; });
+    }
+    submissionTypeSelect.addEventListener('xchange', syncSubmissionPartVisibility);
+    syncSubmissionPartVisibility();
+    cardEl._syncSubmissionPartVisibility = syncSubmissionPartVisibility;
+
     cardEl._reasonSelect = reasonSelect;
     cardEl._managerSelect = managerSelect;
     cardEl._deptMulti = deptMulti;
     cardEl._currencySelect = currencySelect;
     cardEl._foundationSelect = foundationSelect;
     cardEl._procurementSelect = procurementSelect;
+    cardEl._submissionTypeSelect = submissionTypeSelect;
+    cardEl._financePlatformSelect = financePlatformSelect;
   }
 
   function showToast(text){
@@ -1262,6 +1293,13 @@
     cardEl._procurementSelect.setValue(t.procType || '');
     editNode.querySelector('[data-field="sourceLink"]').value = t.sourceLink || '';
     editNode.querySelector('[data-field="platformLink"]').value = t.platformLink || '';
+    cardEl._submissionTypeSelect.setValue(t.submissionType || 'На площадке');
+    cardEl._financePlatformSelect.setValue(t.financePlatform || '');
+    editNode.querySelector('[data-field="submissionFee"]').value =
+      t.submissionFee === undefined || t.submissionFee === null || t.submissionFee === ''
+        ? 0 : t.submissionFee;
+    editNode.querySelector('[data-field="kpSubmissionAddress"]').value = t.kpSubmissionAddress || '';
+    cardEl._syncSubmissionPartVisibility();
     editNode.querySelector('[data-field="checkoUrl"]').value = t.checkoUrl || '';
     editNode.querySelector('[data-field="multiStage"]').checked = !!t.multiStage;
     editNode.querySelector('[data-field="risk"]').checked = !!t.risk;
@@ -1302,6 +1340,15 @@
     t.procType = cardEl._procurementSelect.dataset.value || null;
     t.sourceLink = editNode.querySelector('[data-field="sourceLink"]').value.trim();
     t.platformLink = editNode.querySelector('[data-field="platformLink"]').value.trim();
+    t.submissionType = cardEl._submissionTypeSelect.dataset.value || 'На площадке';
+    t.financePlatform = t.submissionType === 'На площадке' ? (cardEl._financePlatformSelect.dataset.value || '') : '';
+    var submissionFeeRaw = editNode.querySelector('[data-field="submissionFee"]').value;
+    t.submissionFee = t.submissionType === 'На площадке'
+      ? (submissionFeeRaw === '' ? 0 : Number(submissionFeeRaw))
+      : 0;
+    t.kpSubmissionAddress = t.submissionType === 'На почту'
+      ? editNode.querySelector('[data-field="kpSubmissionAddress"]').value.trim()
+      : '';
     t.checkoUrl = checkoUrl;
     t.checkoVerified = !!checkoUrl;
     t.multiStage = editNode.querySelector('[data-field="multiStage"]').checked;

@@ -377,6 +377,41 @@
     localStorage.setItem(ACCESS_DIRECTORY_KEY, JSON.stringify(clean));
     return clean;
   }
+  var FINANCE_PLATFORMS_KEY = 'atvinta_finance_platforms_v1';
+  // площадки ведутся на странице "Платежи" (finansy/платежи.html) — здесь только читаем,
+  // тот же сид на случай, если "Платежи" ещё ни разу не открывали в этом браузере
+  function financePlatformsSeed(){
+    return [
+      {id:'fin-1', name:'РТС-тендер', link:'https://www.rts-tender.ru',
+        tariffName:'Годовой доступ', nextPaymentDate:'2026-09-01',
+        depositAccount:'40015810900001234567', depositAmount:'20000', comment:''},
+      {id:'fin-2', name:'Сбербанк-АСТ', link:'https://www.sberbank-ast.ru',
+        tariffName:'', nextPaymentDate:'',
+        depositAccount:'40015810600007654321', depositAmount:'45000',
+        comment:'Пополняем ЛС вручную перед каждой крупной закупкой, автосписание не подключено — проверять остаток за 3 дня до подачи.'},
+      {id:'fin-3', name:'РАД (Лот-Онлайн)', link:'https://www.lot-online.ru',
+        tariffName:'Базовый', nextPaymentDate:'2026-05-01',
+        depositAccount:'', depositAmount:'', comment:'Тариф не продлевали, площадкой сейчас не пользуемся.'}
+    ];
+  }
+  function getFinancePlatforms(){
+    var stored = [];
+    try{ stored = JSON.parse(localStorage.getItem(FINANCE_PLATFORMS_KEY) || '[]'); }catch(error){}
+    return Array.isArray(stored) && stored.length ? stored : financePlatformsSeed();
+  }
+  function financePlatformBalance(name){
+    if(!name) return null;
+    var platform = getFinancePlatforms().find(function(p){ return p.name === name; });
+    return platform ? Number(platform.depositAmount || 0) : null;
+  }
+  // true — обеспечения подачи (submissionFee) больше, чем известный остаток на площадке;
+  // если тип подачи не "На площадке", площадка не выбрана или остаток неизвестен (площадку удалили) — не предупреждаем
+  function submissionFundsInsufficient(t){
+    if(!t || t.submissionType !== 'На площадке' || !t.financePlatform) return false;
+    var balance = financePlatformBalance(t.financePlatform);
+    if(balance === null) return false;
+    return Number(t.submissionFee || 0) > balance;
+  }
   // считает, сколько сохранённых записей используют старое значение справочника —
   // показывается Оксане в подтверждении перед массовым переименованием
   function countRenameUsage(refKey, oldValue){
@@ -882,6 +917,11 @@
     accessDirectoryKey: ACCESS_DIRECTORY_KEY,
     getAccessDirectory: loadAccessDirectory,
     saveAccessDirectory: saveAccessDirectory,
+    submissionTypes: ['На площадке','На почту'],
+    financePlatformsKey: FINANCE_PLATFORMS_KEY,
+    getFinancePlatforms: getFinancePlatforms,
+    financePlatformBalance: financePlatformBalance,
+    submissionFundsInsufficient: submissionFundsInsufficient,
     renameTargetKeys: Object.keys(RENAME_TARGETS),
     countRenameUsage: countRenameUsage,
     applyReferenceRename: applyReferenceRename,
