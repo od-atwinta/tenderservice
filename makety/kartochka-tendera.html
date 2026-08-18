@@ -132,13 +132,8 @@
   .direction-chip{display:inline-flex;align-items:center;min-height:24px;padding:3px 9px;
     border-radius:999px;font-size:12px;font-weight:600;line-height:18px;color:#27313a;
     overflow-wrap:anywhere;}
-  .direction-chip.tone-promotion{background:#FCE4EC;}
-  .direction-chip.tone-support{background:#E3F2FD;}
-  .direction-chip.tone-development{background:#E8EAF6;}
-  .direction-chip.tone-analytics{background:#E8F5E9;}
-  .direction-chip.tone-design{background:#F3E5F5;}
-  .direction-chip.tone-outstaff{background:#FFF3E0;}
-  .direction-chip.tone-default{background:#ECEFF1;}
+  /* цвет плашки направления теперь задаётся inline-style из TenderReferences.departmentColor()
+     (см. Настройки → Справочники → Направления), а не фиксированными tone-* классами */
   .directions-empty{font-size:13px;color:var(--ink-muted);}
   .directions-edit{border:none;background:none;padding:0;color:var(--accent);
     font-family:var(--font-body);font-size:12.5px;font-weight:600;cursor:pointer;}
@@ -1069,6 +1064,10 @@
       <label>Статус</label>
       <span id="statusSelectSlot"></span>
     </div>
+    <div class="field" id="statusReasonField" hidden>
+      <label>Причина отказа</label>
+      <span id="statusReasonSlot"></span>
+    </div>
     <div class="field">
       <label for="statusComment">Комментарий</label>
       <textarea id="statusComment" placeholder="Комментарий будет виден всем в истории карточки"></textarea>
@@ -1635,6 +1634,7 @@
   var STORAGE_KEY = 'atvinta_tenders_v2';
   var NOTIFICATIONS_KEY = 'atvinta_notifications_v1';
   var APP_STATUSES = TenderReferences.get('applicationStatuses');
+  var REASONS = TenderReferences.get('rejectionReasons');
   var DIRECTIONS = TenderReferences.get('departments');
   var SUBMISSION_TYPES = ['На площадке','На почту'];
   var MANAGERS = TenderReferences.managerNames();
@@ -2266,21 +2266,11 @@
     if(sourceFilters.fav && !t.fav) return false;
     return true;
   }
-  function directionTone(name){
-    return {
-      'Продвижение':'tone-promotion',
-      'Техническая поддержка':'tone-support',
-      'Разработка':'tone-development',
-      'Аналитика':'tone-analytics',
-      'Дизайн':'tone-design',
-      'Аутстафф':'tone-outstaff'
-    }[name] || 'tone-default';
-  }
   function renderDirections(t){
     var directions = currentDirections(t);
     document.getElementById('syncedDirections').innerHTML = directions.length
       ? directions.map(function(name){
-          return '<span class="direction-chip '+directionTone(name)+'">'
+          return '<span class="direction-chip" style="background:'+TenderReferences.departmentColor(name)+'">'
             +escSynced(name)+'</span>';
         }).join('')
       : '<span class="directions-empty">Не указаны</span>';
@@ -3806,13 +3796,28 @@
   var statusOverlay = document.getElementById('statusOverlay');
   var statusMoveOverlay = document.getElementById('statusMoveOverlay');
   var statusSelect = null;
+  var statusReasonSelect = null;
   var pendingStatusChange = null;
+  function syncStatusReasonVisibility(initialReason){
+    var isLoss = TenderReferences.lossStatuses.indexOf(statusSelect.dataset.value) !== -1;
+    document.getElementById('statusReasonField').hidden = !isLoss;
+    if(isLoss && !statusReasonSelect){
+      var slot = document.getElementById('statusReasonSlot');
+      slot.innerHTML = '';
+      statusReasonSelect = buildXSelect(REASONS, initialReason || '', 'Выбрать причину');
+      slot.appendChild(statusReasonSelect);
+    }
+  }
   function mountStatusSelect(value){
     var slot = document.getElementById('statusSelectSlot');
     slot.innerHTML = '';
     var available = TenderReferences.availableStatuses(bucket(tender), CURRENT_USER, APP_STATUSES);
     statusSelect = buildXSelect(available, value || '', 'Выбрать статус');
     slot.appendChild(statusSelect);
+    statusReasonSelect = null;
+    document.getElementById('statusReasonSlot').innerHTML = '';
+    statusSelect.addEventListener('xchange', function(){ syncStatusReasonVisibility(tender.rejectReason || ''); });
+    syncStatusReasonVisibility(tender.rejectReason || '');
   }
   function closeStatusModal(){
     statusOverlay.classList.remove('is-open');
@@ -3973,6 +3978,10 @@
     tender.appStatus = change.status;
     TenderReferences.updateActiveSectionFromStatus(tender, change.status);
     tender.lifecycleSection = change.destination;
+    if(change.rejectReason){
+      tender.rejectReason = change.rejectReason;
+      tender.rejectComment = change.comment;
+    }
     tender.events = tender.events || [];
     tender.events.push({
       date:eventDate(),
@@ -4007,11 +4016,20 @@
       statusSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)';
       return;
     }
+    var isLoss = TenderReferences.lossStatuses.indexOf(status) !== -1;
+    var rejectReason = '';
+    if(isLoss){
+      rejectReason = statusReasonSelect ? statusReasonSelect.dataset.value : '';
+      if(!rejectReason){
+        statusReasonSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)';
+        return;
+      }
+    }
     var previousStatus = tender.appStatus || 'Подготовка';
     var comment = document.getElementById('statusComment').value.trim();
     var currentSection = TenderReferences.displaySection(bucket(tender));
     var destination = TenderReferences.statusDestination(status, currentSection);
-    var change = {status:status,previousStatus:previousStatus,comment:comment,
+    var change = {status:status,previousStatus:previousStatus,comment:comment,rejectReason:rejectReason,
       currentSection:currentSection,destination:destination};
     if(currentSection !== destination){
       pendingStatusChange = change;

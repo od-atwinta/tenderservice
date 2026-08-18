@@ -14,8 +14,14 @@
   var USERS_KEY = 'atvinta_users_v1';
   var USERS_SEED_MIGRATION_KEY = 'atvinta_users_seeded_v1';
   var CHECKLIST_TERMS_KEY = 'atvinta_checklist_terms_v1';
+  var EXPERIENCE_KEY = 'atvinta_experience_v1';
+  var DEPARTMENT_COLORS_KEY = 'atvinta_department_colors_v1';
   var SYSTEM_ROLES = ['Суперадмин','Админ','Наблюдатель','Менеджер','Руководитель отдела','Сотрудник отдела'];
   var SECTION_ORDER = ['Новые','Ожидают решения','В работе','Заявки','Архив'];
+  // статусы-исходы отказа/проигрыша, ведущие в Архив (без "Выиграли" — это не отказ);
+  // используется общей модалкой "Изменить статус", чтобы спросить причину так же,
+  // как это уже делают формы решения на "Новые"/"Ожидают решения"
+  var LOSS_STATUSES = ['Отклонено','Отменено','Без выбора победителя','Завершено без ответа','Не допущены'];
   var PROCESS_STAGES = ['Отбор','Изучение','Подготовка','Подача','Итог'];
   var DEFAULTS = {
     departments: ['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф'],
@@ -98,6 +104,40 @@
     {phrase:'СРО', document:'Выписка из реестра СРО'},
     {phrase:'аккредитация', document:'Свидетельство об аккредитации'}
   ];
+  // цвет плашки направления (Дизайн-система.md): 6 текущих значений не меняются;
+  // остальные 12 — согласованный резерв пастельных тонов для новых направлений
+  var DEFAULT_DEPARTMENT_COLORS = {
+    'Продвижение':'#FCE4EC','Техническая поддержка':'#E3F2FD','Разработка':'#E8EAF6',
+    'Аналитика':'#E8F5E9','Дизайн':'#F3E5F5','Аутстафф':'#FFF3E0'
+  };
+  var DEPARTMENT_NEUTRAL_COLOR = '#ECEFF1';
+  var DEPARTMENT_COLOR_PALETTE = [
+    '#FCE4EC','#E3F2FD','#E8EAF6','#E8F5E9','#F3E5F5','#FFF3E0',
+    '#EDE7F6','#E1F5FE','#E0F7FA','#E0F2F1','#F1F8E9','#F9FBE7',
+    '#FFFDE7','#FFF8E1','#FBE9E7','#EFEBE9','#FFEBEE','#E6F9F0'
+  ];
+  // "безопасные" текстовые справочники: переименование значения обновляет его
+  // везде, где оно уже сохранено точным текстом (не трогает статусы/решения/
+  // секции — на их названиях завязана логика переходов между разделами)
+  var RENAME_TARGETS = {
+    departments: [
+      {storageKey:'atvinta_tenders_v2', fields:[{name:'depts',type:'array'},{name:'dept',type:'string'}]},
+      {storageKey:'atvinta_users_v1', fields:[{name:'directions',type:'array'}]},
+      {storageKey:'atvinta_experience_v1', fields:[{name:'directions',type:'array'}]}
+    ],
+    rejectionReasons: [
+      {storageKey:'atvinta_tenders_v2', fields:[{name:'rejectReason',type:'string'}]}
+    ],
+    procurementTypes: [
+      {storageKey:'atvinta_tenders_v2', fields:[{name:'procType',type:'string'}]}
+    ],
+    foundations: [
+      {storageKey:'atvinta_tenders_v2', fields:[{name:'law',type:'string'}]}
+    ],
+    currencies: [
+      {storageKey:'atvinta_tenders_v2', fields:[{name:'currencies',type:'array'}]}
+    ]
+  };
 
   function clone(value){
     return JSON.parse(JSON.stringify(value));
@@ -258,6 +298,82 @@
     }).filter(function(item){ return item.phrase && item.document; });
     localStorage.setItem(CHECKLIST_TERMS_KEY, JSON.stringify(clean));
     return clean;
+  }
+  function loadDepartmentColors(){
+    var stored = {};
+    try{ stored = JSON.parse(localStorage.getItem(DEPARTMENT_COLORS_KEY) || '{}'); }catch(error){}
+    if(!stored || typeof stored !== 'object') stored = {};
+    var result = clone(DEFAULT_DEPARTMENT_COLORS);
+    Object.keys(stored).forEach(function(name){
+      if(typeof stored[name] === 'string' && /^#[0-9a-fA-F]{6}$/.test(stored[name])) result[name] = stored[name];
+    });
+    return result;
+  }
+  function saveDepartmentColors(map){
+    var clean = {};
+    Object.keys(map || {}).forEach(function(name){
+      var key = String(name).trim();
+      var value = map[name];
+      if(key && typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value)) clean[key] = value;
+    });
+    localStorage.setItem(DEPARTMENT_COLORS_KEY, JSON.stringify(clean));
+    return clean;
+  }
+  function departmentColor(name){
+    var colors = loadDepartmentColors();
+    return colors[name] || DEPARTMENT_NEUTRAL_COLOR;
+  }
+  // считает, сколько сохранённых записей используют старое значение справочника —
+  // показывается Оксане в подтверждении перед массовым переименованием
+  function countRenameUsage(refKey, oldValue){
+    var targets = RENAME_TARGETS[refKey];
+    if(!targets || !oldValue) return 0;
+    var total = 0;
+    targets.forEach(function(target){
+      var list = [];
+      try{ list = JSON.parse(localStorage.getItem(target.storageKey) || '[]'); }catch(error){ list = []; }
+      if(!Array.isArray(list)) return;
+      list.forEach(function(record){
+        if(!record || typeof record !== 'object') return;
+        var matched = target.fields.some(function(field){
+          var value = record[field.name];
+          return field.type === 'array'
+            ? Array.isArray(value) && value.indexOf(oldValue) !== -1
+            : value === oldValue;
+        });
+        if(matched) total++;
+      });
+    });
+    return total;
+  }
+  // переименовывает значение справочника во всех сохранённых записях, где оно
+  // встречается точным текстом (см. RENAME_TARGETS); возвращает число задетых записей
+  function applyReferenceRename(refKey, oldValue, newValue){
+    var targets = RENAME_TARGETS[refKey];
+    if(!targets || !oldValue || !newValue || oldValue === newValue) return 0;
+    var touched = 0;
+    targets.forEach(function(target){
+      var list = [];
+      try{ list = JSON.parse(localStorage.getItem(target.storageKey) || '[]'); }catch(error){ list = []; }
+      if(!Array.isArray(list) || !list.length) return;
+      var changed = false;
+      list.forEach(function(record){
+        if(!record || typeof record !== 'object') return;
+        var recordChanged = false;
+        target.fields.forEach(function(field){
+          var value = record[field.name];
+          if(field.type === 'array' && Array.isArray(value)){
+            var idx = value.indexOf(oldValue);
+            if(idx !== -1){ value[idx] = newValue; recordChanged = true; }
+          }else if(field.type === 'string' && value === oldValue){
+            record[field.name] = newValue; recordChanged = true;
+          }
+        });
+        if(recordChanged){ touched++; changed = true; }
+      });
+      if(changed) localStorage.setItem(target.storageKey, JSON.stringify(list));
+    });
+    return touched;
   }
   function displaySection(section){
     return section === 'Новый' ? 'Новые' : section;
@@ -689,6 +805,7 @@
     defaults: clone(DEFAULTS),
     defaultStatusRules: clone(DEFAULT_STATUS_RULES),
     sections: SECTION_ORDER.slice(),
+    lossStatuses: LOSS_STATUSES.slice(),
     processStages: PROCESS_STAGES.slice(),
     getAll: load,
     get: function(key){ return load()[key] || []; },
@@ -698,6 +815,15 @@
     checklistTermsKey: CHECKLIST_TERMS_KEY,
     getChecklistTerms: loadChecklistTerms,
     saveChecklistTerms: saveChecklistTerms,
+    departmentColorsKey: DEPARTMENT_COLORS_KEY,
+    departmentColorPalette: DEPARTMENT_COLOR_PALETTE.slice(),
+    departmentNeutralColor: DEPARTMENT_NEUTRAL_COLOR,
+    getDepartmentColors: loadDepartmentColors,
+    saveDepartmentColors: saveDepartmentColors,
+    departmentColor: departmentColor,
+    renameTargetKeys: Object.keys(RENAME_TARGETS),
+    countRenameUsage: countRenameUsage,
+    applyReferenceRename: applyReferenceRename,
     resolveSection: resolveSection,
     availableStatuses: availableStatuses,
     statusDestination: statusDestination,

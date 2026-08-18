@@ -539,11 +539,6 @@
   function pad2(n){ return n < 10 ? '0'+n : ''+n; }
 
   var TODAY = '2026-07-17';
-  var DIRECTION_COLORS = {
-    'Продвижение':'#FCE4EC','Техническая поддержка':'#E3F2FD','Разработка':'#E8EAF6',
-    'Аналитика':'#E8F5E9','Дизайн':'#F3E5F5','Аутстафф':'#FFF3E0'
-  };
-  var DIRECTION_FALLBACK = '#ECEFF1';
 
   function loadTenders(){
     try{ var list = JSON.parse(localStorage.getItem('atvinta_tenders_v2') || '[]'); return Array.isArray(list) ? list : []; }
@@ -814,7 +809,7 @@
       var offset = 0;
       keys.forEach(function(k){
         var len = b.counts[k] / b.total * circumference;
-        svgParts += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+(DIRECTION_COLORS[k] || DIRECTION_FALLBACK)+'" '
+        svgParts += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+TenderReferences.departmentColor(k)+'" '
           + 'stroke-width="'+sw+'" stroke-dasharray="'+len+' '+(circumference-len)+'" stroke-dashoffset="'+(-offset)+'" '
           + 'transform="rotate(-90 '+cx+' '+cy+')"></circle>';
         offset += len;
@@ -835,7 +830,7 @@
     document.getElementById('donutLegend').innerHTML = keys.map(function(k){
       var pct = b.total ? Math.round(b.counts[k] / b.total * 100) : 0;
       var sumHtml = mode === 'won' ? ' · '+fmtMoney(b.sums[k]) : '';
-      return '<li class="donut-legend-item"><span class="donut-swatch" style="background:'+(DIRECTION_COLORS[k] || DIRECTION_FALLBACK)+'"></span>'
+      return '<li class="donut-legend-item"><span class="donut-swatch" style="background:'+TenderReferences.departmentColor(k)+'"></span>'
         + '<span class="donut-legend-name">'+esc(k)+'</span>'
         + '<span class="donut-legend-value">'+b.counts[k]+' · '+pct+'%'+sumHtml+'</span></li>';
     }).join('');

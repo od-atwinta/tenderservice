@@ -406,9 +406,20 @@
     border-radius:6px;color:var(--ink-muted);font-size:13px;text-align:center;}
   .reference-edit-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto;}
   .reference-edit-row{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:8px;align-items:end;}
+  .reference-edit-row.has-color{grid-template-columns:minmax(0,1fr) 32px 32px;}
   .reference-edit-row input{height:32px;}
   .reference-delete{width:32px;padding:0;color:var(--danger);}
   .reference-add{margin-top:16px;}
+  .color-swatch-wrap{position:relative;}
+  .color-swatch-btn{width:32px;height:32px;padding:0;border:1px solid var(--border-strong);
+    border-radius:var(--radius-sm);cursor:pointer;}
+  .color-swatch-menu{display:none;position:absolute;top:calc(100% + 4px);right:0;z-index:30;
+    width:132px;background:var(--surface);border:1px solid var(--border);border-radius:8px;
+    box-shadow:var(--shadow-md);padding:6px;grid-template-columns:repeat(6,18px);gap:6px;}
+  .color-swatch-menu.is-open{display:grid;}
+  .color-swatch-option{width:18px;height:18px;border-radius:4px;border:1px solid var(--border-strong);
+    padding:0;cursor:pointer;}
+  .color-swatch-option.is-selected{outline:2px solid var(--accent);outline-offset:1px;}
   .status-reference-modal{max-width:980px;max-height:calc(100vh - 40px);overflow-y:auto;}
   .status-matrix{overflow:auto;border:1px solid var(--border);border-radius:var(--radius-md);}
   .status-matrix-head,.status-matrix-row{display:grid;
@@ -744,6 +755,18 @@
     <div class="modal-actions">
       <button class="btn" type="button" id="referenceCancel">Отмена</button>
       <button class="btn btn-primary" type="button" id="referenceSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME CONFIRMATION MODAL -->
+<div class="overlay" id="renameConfirmOverlay">
+  <div class="modal" id="renameConfirmModal">
+    <h4>Переименовать значение справочника?</h4>
+    <p class="hint" id="renameConfirmHint"></p>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="renameConfirmCancel">Отмена</button>
+      <button class="btn btn-primary" type="button" id="renameConfirmOk">Переименовать</button>
     </div>
   </div>
 </div>
@@ -1977,13 +2000,54 @@
   }
   function addEditRow(value){
     var row = document.createElement('div');
-    row.className = 'reference-edit-row';
-    row.innerHTML = '<input type="text" value="'+escRef(value || '')+'" placeholder="Введите значение">'
-      +'<button class="btn reference-delete" type="button" title="Удалить" aria-label="Удалить">'
+    var isDepartments = currentKey === 'departments';
+    row.className = 'reference-edit-row' + (isDepartments ? ' has-color' : '');
+    row.dataset.original = value || '';
+    var html = '<input type="text" value="'+escRef(value || '')+'" placeholder="Введите значение">';
+    if(isDepartments){
+      var color = value ? TenderReferences.departmentColor(value) : TenderReferences.departmentNeutralColor;
+      row.dataset.color = color;
+      html += '<span class="color-swatch-wrap">'
+        + '<button class="color-swatch-btn" type="button" title="Выбрать цвет" aria-label="Выбрать цвет" style="background:'+color+'"></button>'
+        + '<span class="color-swatch-menu">'
+        + TenderReferences.departmentColorPalette.map(function(hex){
+            return '<button class="color-swatch-option" type="button" data-color="'+hex+'" style="background:'+hex+'" aria-label="'+hex+'"></button>';
+          }).join('')
+        + '</span></span>';
+    }
+    html += '<button class="btn reference-delete" type="button" title="Удалить" aria-label="Удалить">'
       +'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button>';
+    row.innerHTML = html;
     row.querySelector('.reference-delete').addEventListener('click', function(){ row.remove(); TenderReferences.setDirty('reference', true); });
+    if(isDepartments){
+      var swatchBtn = row.querySelector('.color-swatch-btn');
+      var swatchMenu = row.querySelector('.color-swatch-menu');
+      swatchBtn.addEventListener('click', function(event){
+        event.stopPropagation();
+        var willOpen = !swatchMenu.classList.contains('is-open');
+        document.querySelectorAll('.color-swatch-menu.is-open').forEach(function(m){ m.classList.remove('is-open'); });
+        if(willOpen){
+          swatchMenu.querySelectorAll('.color-swatch-option').forEach(function(opt){
+            opt.classList.toggle('is-selected', opt.dataset.color.toLowerCase() === row.dataset.color.toLowerCase());
+          });
+          swatchMenu.classList.add('is-open');
+        }
+      });
+      swatchMenu.addEventListener('click', function(event){
+        var option = event.target.closest('.color-swatch-option');
+        event.stopPropagation();
+        if(!option) return;
+        row.dataset.color = option.dataset.color;
+        swatchBtn.style.background = option.dataset.color;
+        swatchMenu.classList.remove('is-open');
+        TenderReferences.setDirty('reference', true);
+      });
+    }
     editList.appendChild(row);
   }
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.color-swatch-menu.is-open').forEach(function(m){ m.classList.remove('is-open'); });
+  });
   function addStatusRow(value, rule){
     var statusRule = rule || {type:'key',sections:[]};
     var row = document.createElement('div');
@@ -2073,6 +2137,51 @@
       TenderReferences.guardedClose('reference', closeReferenceOverlay, function(){ document.getElementById('referenceSave').click(); });
     }
   });
+  var renameConfirmOverlay = document.getElementById('renameConfirmOverlay');
+  var renameConfirmHint = document.getElementById('renameConfirmHint');
+  function pluralizeRecords(n){
+    var mod10 = n % 10, mod100 = n % 100;
+    var word = (mod10 === 1 && mod100 !== 11) ? 'запись'
+      : ((mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) ? 'записи' : 'записей');
+    return n + ' ' + word;
+  }
+  function askRenameConfirm(renames, onConfirm){
+    var lines = renames.map(function(r){
+      var count = TenderReferences.countRenameUsage(currentKey, r.oldValue);
+      return '«'+r.oldValue+'» → «'+r.newValue+'»'
+        + (count ? ' — обновится '+pluralizeRecords(count)+'.' : ' — сейчас нигде не используется.');
+    });
+    renameConfirmHint.innerHTML = lines.map(escRef).join('<br>');
+    renameConfirmOverlay.classList.add('is-open');
+    function cleanup(){
+      renameConfirmOverlay.classList.remove('is-open');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+    }
+    var okBtn = document.getElementById('renameConfirmOk');
+    var cancelBtn = document.getElementById('renameConfirmCancel');
+    function onOk(){ cleanup(); onConfirm(); }
+    function onCancel(){ cleanup(); }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+  }
+  function finalizeReferenceSave(values, renames){
+    renames.forEach(function(r){ TenderReferences.applyReferenceRename(currentKey, r.oldValue, r.newValue); });
+    if(currentKey === 'departments'){
+      var colors = {};
+      Array.from(editList.querySelectorAll('.reference-edit-row')).forEach(function(row){
+        var name = row.querySelector('input').value.trim();
+        if(name) colors[name] = row.dataset.color || TenderReferences.departmentNeutralColor;
+      });
+      TenderReferences.saveDepartmentColors(colors);
+    }
+    data[currentKey] = TenderReferences.sortOptions(values);
+    data = TenderReferences.save(data);
+    TenderReferences.setDirty('reference', false);
+    overlay.classList.remove('is-open');
+    renderCards();
+    showReferenceToast('Справочник сохранён.');
+  }
   document.getElementById('referenceSave').addEventListener('click', function(){
     var valueInputs = currentKey === 'applicationStatuses'
       ? statusMatrixRows.querySelectorAll('.status-matrix-name')
@@ -2108,13 +2217,27 @@
         return;
       }
       TenderReferences.saveStatusRules(statusRules, values);
+      data[currentKey] = TenderReferences.sortOptions(values);
+      data = TenderReferences.save(data);
+      TenderReferences.setDirty('reference', false);
+      overlay.classList.remove('is-open');
+      renderCards();
+      showReferenceToast('Справочник сохранён.');
+      return;
     }
-    data[currentKey] = TenderReferences.sortOptions(values);
-    data = TenderReferences.save(data);
-    TenderReferences.setDirty('reference', false);
-    overlay.classList.remove('is-open');
-    renderCards();
-    showReferenceToast('Справочник сохранён.');
+    var renames = [];
+    if(TenderReferences.renameTargetKeys.indexOf(currentKey) !== -1){
+      Array.from(editList.querySelectorAll('.reference-edit-row')).forEach(function(row){
+        var original = row.dataset.original || '';
+        var current = row.querySelector('input').value.trim();
+        if(original && current && current !== original) renames.push({oldValue:original, newValue:current});
+      });
+    }
+    if(renames.length){
+      askRenameConfirm(renames, function(){ finalizeReferenceSave(values, renames); });
+    }else{
+      finalizeReferenceSave(values, renames);
+    }
   });
   window.addEventListener('storage', function(event){
     if(event.key === TenderReferences.key || event.key === TenderReferences.statusRulesKey){

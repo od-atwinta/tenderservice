@@ -597,6 +597,10 @@
       <label>Статус</label>
       <span id="statusSelectSlot"></span>
     </div>
+    <div class="field" id="statusReasonField" hidden>
+      <label>Причина отказа</label>
+      <span id="statusReasonSlot"></span>
+    </div>
     <div class="field">
       <label for="statusComment">Комментарий</label>
       <textarea id="statusComment" placeholder="Комментарий будет виден всем в истории карточки"></textarea>
@@ -1253,7 +1257,19 @@
   var statusMoveOverlay = document.getElementById('statusMoveOverlay');
   var statusTenderId = null;
   var statusSelect = null;
+  var statusReasonSelect = null;
   var pendingStatusChange = null;
+
+  function syncStatusReasonVisibility(initialReason){
+    var isLoss = TenderReferences.lossStatuses.indexOf(statusSelect.dataset.value) !== -1;
+    document.getElementById('statusReasonField').hidden = !isLoss;
+    if(isLoss && !statusReasonSelect){
+      var slot = document.getElementById('statusReasonSlot');
+      slot.innerHTML = '';
+      statusReasonSelect = buildXSelect(REASONS, initialReason || '', 'Выбрать причину');
+      slot.appendChild(statusReasonSelect);
+    }
+  }
 
   function mountStatusSelect(t, value){
     var slot = document.getElementById('statusSelectSlot');
@@ -1261,6 +1277,10 @@
     var available = TenderReferences.availableStatuses(bucket(t), TenderReferences.currentUser(), APP_STATUSES);
     statusSelect = buildXSelect(available, value || '', 'Выбрать статус');
     slot.appendChild(statusSelect);
+    statusReasonSelect = null;
+    document.getElementById('statusReasonSlot').innerHTML = '';
+    statusSelect.addEventListener('xchange', function(){ syncStatusReasonVisibility(t.rejectReason || ''); });
+    syncStatusReasonVisibility(t.rejectReason || '');
   }
 
   function openStatusModal(t){
@@ -1285,6 +1305,10 @@
     t.appStatus = change.status;
     t.lifecycleSection = change.destination;
     TenderReferences.updateActiveSectionFromStatus(t, change.status);
+    if(change.rejectReason){
+      t.rejectReason = change.rejectReason;
+      t.rejectComment = change.comment;
+    }
     t.events = t.events || [];
     t.events.push({
       date:new Date().toLocaleString('ru-RU', {
@@ -1336,12 +1360,21 @@
       statusSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)';
       return;
     }
+    var isLoss = TenderReferences.lossStatuses.indexOf(status) !== -1;
+    var rejectReason = '';
+    if(isLoss){
+      rejectReason = statusReasonSelect ? statusReasonSelect.dataset.value : '';
+      if(!rejectReason){
+        statusReasonSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)';
+        return;
+      }
+    }
     var previousStatus = t.appStatus || 'Подготовка';
     var comment = document.getElementById('statusComment').value.trim();
     var currentSection = TenderReferences.displaySection(bucket(t));
     var destination = TenderReferences.statusDestination(status, currentSection);
     var change = {tender:t,status:status,previousStatus:previousStatus,comment:comment,
-      currentSection:currentSection,destination:destination};
+      currentSection:currentSection,destination:destination,rejectReason:rejectReason};
     if(currentSection !== destination){
       pendingStatusChange = change;
       document.getElementById('statusMoveText').textContent =
