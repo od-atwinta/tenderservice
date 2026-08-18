@@ -16,6 +16,9 @@
   var CHECKLIST_TERMS_KEY = 'atvinta_checklist_terms_v1';
   var EXPERIENCE_KEY = 'atvinta_experience_v1';
   var DEPARTMENT_COLORS_KEY = 'atvinta_department_colors_v1';
+  // справочник доступов площадок (Настройки → Автоматизация) — независим от
+  // списка площадок на странице "Платежи" (там тарифы/депозиты, здесь доступ)
+  var ACCESS_DIRECTORY_KEY = 'atvinta_access_directory_v1';
   var SYSTEM_ROLES = ['Суперадмин','Админ','Наблюдатель','Менеджер','Руководитель отдела','Сотрудник отдела'];
   var SECTION_ORDER = ['Новые','Ожидают решения','В работе','Заявки','Архив'];
   // статусы-исходы отказа/проигрыша, ведущие в Архив (без "Выиграли" — это не отказ);
@@ -322,6 +325,25 @@
   function departmentColor(name){
     var colors = loadDepartmentColors();
     return colors[name] || DEPARTMENT_NEUTRAL_COLOR;
+  }
+  function loadAccessDirectory(){
+    var stored = [];
+    try{ stored = JSON.parse(localStorage.getItem(ACCESS_DIRECTORY_KEY) || '[]'); }catch(error){}
+    return Array.isArray(stored) ? stored : [];
+  }
+  function saveAccessDirectory(list){
+    var clean = (Array.isArray(list) ? list : []).map(function(item){
+      return {
+        id:item.id,
+        name:String(item.name || '').trim(),
+        link:String(item.link || '').trim(),
+        accessType:item.accessType || 'Смешанный',
+        login:item.accessType === 'Логин' ? String(item.login || '').trim() : '',
+        password:item.accessType === 'Логин' ? String(item.password || '') : ''
+      };
+    }).filter(function(item){ return item.name; });
+    localStorage.setItem(ACCESS_DIRECTORY_KEY, JSON.stringify(clean));
+    return clean;
   }
   // считает, сколько сохранённых записей используют старое значение справочника —
   // показывается Оксане в подтверждении перед массовым переименованием
@@ -821,6 +843,9 @@
     getDepartmentColors: loadDepartmentColors,
     saveDepartmentColors: saveDepartmentColors,
     departmentColor: departmentColor,
+    accessDirectoryKey: ACCESS_DIRECTORY_KEY,
+    getAccessDirectory: loadAccessDirectory,
+    saveAccessDirectory: saveAccessDirectory,
     renameTargetKeys: Object.keys(RENAME_TARGETS),
     countRenameUsage: countRenameUsage,
     applyReferenceRename: applyReferenceRename,

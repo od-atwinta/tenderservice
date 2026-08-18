@@ -539,9 +539,9 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="nav-label">Профиль</span>
       </a></li>
-      <li><a href="finansy.html" title="Финансы">
+      <li><a href="platezhi.html" title="Платежи">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="16"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/></svg>
-        <span class="nav-label">Финансы</span>
+        <span class="nav-label">Платежи</span>
       </a></li>
       <li data-admin-only="1"><a href="nastroyki-spravochniki.html" class="is-active" title="Настройки (доступно суперадмину)">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
@@ -646,6 +646,15 @@
             <button class="btn" type="button" id="checklistTermsEditOpen">Редактировать</button>
           </div>
           <p class="reference-hint">Справочник соответствий терминов для формирования чек-листа.</p>
+        </section>
+        <section class="card reference-card">
+          <div class="reference-head">
+            <h2 class="reference-title">Площадки — справочник доступов<span class="reference-count" id="accessDirCount"></span></h2>
+            <a class="icon-btn-xs" href="nastroyki-ploshchadki.html" title="Открыть" aria-label="Открыть"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></a>
+          </div>
+          <p class="reference-hint">Ссылка на площадку, тип входа, логин и пароль доступа — не связано со списком площадок на странице "Платежи".</p>
+          <div class="reference-values" id="accessDirValues"></div>
+          <a class="link-ico" id="accessDirSeeAll" href="nastroyki-ploshchadki.html" hidden>Смотреть все ↗</a>
         </section>
       </div>
     </div>
@@ -2301,6 +2310,24 @@
     closeChecklistTermsEditor();
     showReferenceToast('Справочник «Чек-лист» сохранён.');
   });
+
+  // ---- справочник "Площадки" (Автоматизация): сводка на карточке, полный список — на nastroyki-ploshchadki.html ----
+  var ACCESS_DIR_PREVIEW_LIMIT = 20;
+  function renderAccessDirectoryCard(){
+    var items = TenderReferences.getAccessDirectory();
+    document.getElementById('accessDirCount').textContent = items.length;
+    var valuesEl = document.getElementById('accessDirValues');
+    valuesEl.innerHTML = items.length
+      ? items.slice(0, ACCESS_DIR_PREVIEW_LIMIT).map(function(item){
+          return '<span class="reference-chip">'+escRef(item.name)+'</span>';
+        }).join('')
+      : '<div class="reference-empty">Нет значений</div>';
+    document.getElementById('accessDirSeeAll').hidden = items.length <= ACCESS_DIR_PREVIEW_LIMIT;
+  }
+  renderAccessDirectoryCard();
+  window.addEventListener('storage', function(event){
+    if(event.key === TenderReferences.accessDirectoryKey) renderAccessDirectoryCard();
+  });
 })();
 </script>
 <script>
@@ -2381,10 +2408,10 @@
       states:['allow','allow','allow','allow','allow','allow']},
     {key:'editDashboard', label:'Настраивать Дашборд (виджеты, период)',
       states:['allow','allow','allow','allow','allow','allow']},
-    {group:'Финансы'},
-    {key:'viewFinance', label:'Просматривать раздел «Финансы»',
+    {group:'Платежи'},
+    {key:'viewFinance', label:'Просматривать раздел «Платежи»',
       states:['allow','allow','allow','allow','allow','allow']},
-    {key:'editFinance', label:'Добавлять/изменять/удалять площадку в «Финансах»',
+    {key:'editFinance', label:'Добавлять/изменять/удалять площадку в «Платежах»',
       states:['allow','allow','deny','deny','deny','deny']}
   ];
   var stored = {};
