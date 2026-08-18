@@ -141,6 +141,38 @@
       {storageKey:'atvinta_tenders_v2', fields:[{name:'currencies',type:'array'}]}
     ]
   };
+  // деактивация вместо удаления — только для "безопасных" справочников выше
+  // (те же ключи, что у переименования): значение остаётся в data[key], но
+  // TenderReferences.get() скрывает его из выпадающих списков по всему сервису;
+  // полный список (включая деактивированные) виден только в редакторе Настроек
+  var REFERENCE_INACTIVE_KEY = 'atvinta_reference_inactive_v1';
+  function loadInactiveReferenceValues(){
+    var stored = {};
+    try{ stored = JSON.parse(localStorage.getItem(REFERENCE_INACTIVE_KEY) || '{}'); }catch(error){}
+    var result = {};
+    Object.keys(RENAME_TARGETS).forEach(function(key){
+      result[key] = Array.isArray(stored[key]) ? stored[key].slice() : [];
+    });
+    return result;
+  }
+  function saveInactiveReferenceValues(map){
+    var clean = {};
+    Object.keys(RENAME_TARGETS).forEach(function(key){
+      clean[key] = Array.isArray(map && map[key]) ? map[key].filter(Boolean) : [];
+    });
+    localStorage.setItem(REFERENCE_INACTIVE_KEY, JSON.stringify(clean));
+    return clean;
+  }
+  function isReferenceValueInactive(key, value){
+    if(!RENAME_TARGETS[key]) return false;
+    return loadInactiveReferenceValues()[key].indexOf(value) !== -1;
+  }
+  function activeReferenceValues(key){
+    var all = load()[key] || [];
+    if(!RENAME_TARGETS[key]) return all;
+    var inactive = loadInactiveReferenceValues()[key];
+    return all.filter(function(value){ return inactive.indexOf(value) === -1; });
+  }
 
   function clone(value){
     return JSON.parse(JSON.stringify(value));
@@ -830,7 +862,11 @@
     lossStatuses: LOSS_STATUSES.slice(),
     processStages: PROCESS_STAGES.slice(),
     getAll: load,
-    get: function(key){ return load()[key] || []; },
+    get: activeReferenceValues,
+    inactiveReferenceKeys: Object.keys(RENAME_TARGETS),
+    isReferenceValueInactive: isReferenceValueInactive,
+    getInactiveReferenceValues: loadInactiveReferenceValues,
+    saveInactiveReferenceValues: saveInactiveReferenceValues,
     getStatusRules: loadStatusRules,
     getStatusRule: statusRule,
     saveStatusRules: saveStatusRules,

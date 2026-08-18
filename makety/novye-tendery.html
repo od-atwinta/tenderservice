@@ -204,9 +204,8 @@
 
   .tcard-date{font-size:11px;color:var(--ink-muted);line-height:1;height:14px;}
   .tcard-title{display:block;margin-top:6px;font-size:15.5px;color:var(--ink-muted);font-weight:500;
-    text-decoration:none;line-height:1.35;}
+    text-decoration:none;line-height:1.35;cursor:default;}
   .tcard-title.is-unread{color:var(--ink);font-weight:700;}
-  .tcard-title:hover{text-decoration:underline;}
   .tcard-title-line{display:flex;align-items:flex-start;gap:8px;margin-top:6px;}
   .tcard-title-line .tcard-title{margin-top:0;flex:1;}
   .fav-star{background:none;border:none;cursor:pointer;padding:1px 0 0;font-size:16px;color:var(--border-strong);
@@ -433,10 +432,6 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="nav-label">Копилка</span>
       </a></li>
-      <li data-admin-only="1"><a href="polzovateli.html" title="Пользователи (доступно Админу и Суперадмину)">
-        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span class="nav-label">Пользователи</span>
-      </a></li>
       <li><a href="profil.html" title="Профиль">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="nav-label">Профиль</span>
@@ -483,7 +478,7 @@
           <div class="popover" id="calPopover">
             <h4>Задачи на сегодня</h4>
             <div class="popover-item">Разобрать новые тендеры до конца дня.<div class="p-meta">Без времени</div></div>
-            <div class="popover-foot"><a class="link-ico" href="#">Все задачи ↗</a></div>
+            <div class="popover-foot"><a class="link-ico" href="kalendar.html">Все задачи ↗</a></div>
           </div>
         </div>
         <span class="actions-divider"></span>
@@ -1053,7 +1048,7 @@
       +   '<div class="tcard-row1">'
       +     '<div class="tcard-left">'
       +       '<div class="tcard-date">Создано '+fmtDateShort(t.rowCreated)+'</div>'
-      +       '<div class="tcard-title-line"><button class="fav-star'+(t.fav?' is-fav':'')+'" data-action="toggle-fav" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button><a class="'+titleClass+'" href="#" data-action="toggle-details" data-id="'+t.id+'">'+esc(t.name)+'</a></div>'
+      +       '<div class="tcard-title-line"><button class="fav-star'+(t.fav?' is-fav':'')+'" data-action="toggle-fav" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button><span class="'+titleClass+'">'+esc(t.name)+'</span></div>'
       +       '<div class="tcard-customer"><span>Заказчик: '+esc(t.customer)+'</span>'+checkoBtn+'</div>'
       +       '<div class="tcard-links">'
       +         (t.sourceLink ? '<a class="link-ico" href="'+t.sourceLink+'" target="_blank" rel="noopener">Тендерплан ↗</a>' : '<span style="color:var(--ink-muted);font-size:12.5px">Источник не указан</span>')
@@ -1124,21 +1119,21 @@
       +         '<div class="tform-field"><label>Описание закупки</label><textarea data-field="description" placeholder="Описание закупки"></textarea></div>'
       +         '<div class="tform-field"><label>Контактные данные</label><textarea data-field="contacts" placeholder="Контакты заказчика"></textarea></div>'
       +       '</div>'
-      +       '<div class="tedit-split">'
-      +         '<div class="tform-field"><label>Отчёт нейронки</label><div class="ai-report-edit">'
-      +           reportFilesHtml(t)
-      +           '<button type="button" class="btn btn-sm btn-ai" data-action="generate-report" data-id="'+t.id+'">Сгенерировать отчёт</button>'
-      +         '</div></div>'
-      +         '<div class="tform-field"><label>Рекомендация от ИИ</label><textarea data-field="aiComment" readonly placeholder="Появится после генерации отчёта">'+esc(t.aiComment || '')+'</textarea></div>'
-      +       '</div>'
-      +       '<div class="tform-field" style="margin-bottom:20px"><label>Комментарий менеджера</label><textarea data-field="managerComment" placeholder="Правки и примечания — отдельно от текста ИИ"></textarea></div>'
-      +       '<div class="tform-field" style="margin-bottom:0">'
+      +       '<div class="tform-field" style="margin-bottom:20px">'
       +         '<label>Документы</label>'
       +         '<div class="doc-edit-row"><ul class="doc-edit-list" data-docs></ul>'
       +           '<input type="file" data-doc-file hidden multiple>'
       +           '<button type="button" class="btn btn-sm btn-action" data-action="pick-doc" data-id="'+t.id+'">Добавить документ</button>'
       +         '</div>'
       +       '</div>'
+      +       '<div class="tedit-split">'
+      +         '<div class="tform-field"><label>Отчёт нейронки</label><div class="ai-report-edit">'
+      +           reportFilesHtml(t)
+      +           '<button type="button" class="btn btn-sm btn-ai" data-action="generate-report" data-id="'+t.id+'"'+((t.documents && t.documents.length) ? '' : ' disabled')+'>Сгенерировать отчёт</button>'
+      +         '</div></div>'
+      +         '<div class="tform-field"><label>Рекомендация от ИИ</label><textarea data-field="aiComment" readonly placeholder="Появится после генерации отчёта">'+esc(t.aiComment || '')+'</textarea></div>'
+      +       '</div>'
+      +       '<div class="tform-field" style="margin-bottom:20px"><label>Комментарий менеджера</label><textarea data-field="managerComment" placeholder="Правки и примечания — отдельно от текста ИИ"></textarea></div>'
       +       '<div class="tform-actions" style="margin-top:20px">'
       +         '<button class="btn" data-action="cancel-edit" data-id="'+t.id+'">Отмена</button>'
       +         '<button class="btn btn-primary" data-action="save-edit" data-id="'+t.id+'">Сохранить</button>'
@@ -1252,6 +1247,8 @@
       return '<li><button type="button" class="doc-download" data-action="download-doc" data-id="'+cardId+'" data-index="'+i+'">'+DOWNLOAD_SVG+' '+esc(documentName(d))+'</button>'
         +'<button type="button" class="doc-remove" data-action="remove-doc" data-id="'+cardId+'" data-index="'+i+'" aria-label="Удалить документ">✕</button></li>';
     }).join('') : '<li style="border:none;color:var(--ink-muted);padding:0">Пока нет документов</li>';
+    var generateBtn = editNode.querySelector('[data-action="generate-report"]');
+    if(generateBtn) generateBtn.disabled = !docs.length;
   }
 
   function openEdit(cardEl, t){

@@ -432,10 +432,6 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="nav-label">Копилка</span>
       </a></li>
-      <li data-admin-only="1"><a href="polzovateli.html" title="Пользователи (доступно Админу и Суперадмину)">
-        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        <span class="nav-label">Пользователи</span>
-      </a></li>
       <li><a href="profil.html" title="Профиль">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         <span class="nav-label">Профиль</span>
@@ -482,7 +478,7 @@
           <div class="popover" id="calPopover">
             <h4>Задачи на сегодня</h4>
             <div class="popover-item">Разобрать новые тендеры до конца дня.<div class="p-meta">Без времени</div></div>
-            <div class="popover-foot"><a class="link-ico" href="#">Все задачи ↗</a></div>
+            <div class="popover-foot"><a class="link-ico" href="kalendar.html">Все задачи ↗</a></div>
           </div>
         </div>
         <span class="actions-divider"></span>
@@ -586,37 +582,6 @@
   </div>
 </div>
 
-<!-- CHANGE STATUS MODAL -->
-<div class="overlay" id="statusOverlay">
-  <div class="modal status-modal">
-    <h4>Изменить статус</h4>
-    <p class="hint">Новый статус определит, в какой раздел перейдёт тендер.</p>
-    <div class="field">
-      <label>Статус</label>
-      <span id="statusSelectSlot"></span>
-    </div>
-    <div class="field">
-      <label for="statusComment">Комментарий</label>
-      <textarea id="statusComment" placeholder="Комментарий будет виден всем в истории карточки"></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" id="statusCancel">Отмена</button>
-      <button class="btn btn-primary" id="statusSave">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay status-move-overlay" id="statusMoveOverlay">
-  <div class="modal">
-    <h4>Перенести тендер?</h4>
-    <p class="status-move-copy" id="statusMoveText"></p>
-    <div class="modal-actions">
-      <button class="btn" type="button" id="statusMoveCancel">Отмена</button>
-      <button class="btn btn-primary" type="button" id="statusMoveConfirm">Перенести</button>
-    </div>
-  </div>
-</div>
-
 <script src="spravochniki.js"></script>
 <script>
 (function(){
@@ -631,10 +596,7 @@
   })();
   var TODAY = '2026-07-17';
   var DEPTS = TenderReferences.get('departments');
-  var REASONS = TenderReferences.get('rejectionReasons');
-  var MANAGERS = TenderReferences.managerNames();
   var CURRENT_USER_NAME = 'Оксана Денисенко';
-  var APP_STATUSES = TenderReferences.get('applicationStatuses');
   var CARD_URL = 'https://claude.ai/code/artifact/cc2156ed-e65b-4080-9434-48e8241591fe';
 
   // общее хранилище со vse-tendery.html (псевдо-синхронизация через localStorage, см. Дизайн-система.md)
@@ -1076,7 +1038,6 @@
       .map(function(s){ return '<h2>'+esc(s[1])+'</h2><p>'+esc(report[s[0]])+'</p>'; }).join('');
   }
   function sanitizeFilename(s){ return String(s).replace(/[\/\\:*?"<>|]/g, ' ').trim(); }
-  function documentName(doc){ return typeof doc === 'string' ? doc : (doc && doc.name ? doc.name : 'Документ'); }
   function reportHistory(t){
     var history = Array.isArray(t.aiReports) ? t.aiReports.slice() : [];
     if(!history.length && t.aiReport){
@@ -1096,15 +1057,6 @@
     var pad = function(n){ return n<10 ? '0'+n : ''+n; };
     return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes());
   }
-  function storedDocument(file){
-    return new Promise(function(resolve){
-      var reader = new FileReader();
-      reader.onload = function(){ resolve({name:file.name,type:file.type || 'application/octet-stream',dataUrl:reader.result}); };
-      reader.onerror = function(){ resolve({name:file.name,type:file.type || 'application/octet-stream',dataUrl:''}); };
-      reader.readAsDataURL(file);
-    });
-  }
-
   function cardHtml(t){
     var titleClass = 'tcard-title' + (t.unread ? ' is-unread' : '');
     var dlClass = deadlineClass(t.deadline);
@@ -1136,80 +1088,7 @@
       +   '</div>'
 
       +   '<div class="tcard-row2">'
-      +     '<div class="tcard-row2-default" data-part="default">'
-      +       '<div style="display:flex;gap:14px;align-items:center">'
-      +         '<button class="link-btn" data-action="toggle-details" data-id="'+t.id+'" data-label="1">Подробнее</button>'
-      +         '<a class="link-ico" href="kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent(favoriteSection(t))+'">Перейти в карточку ↗</a>'
-      +       '</div>'
-      +       '<div class="tcard-row2-actions">'
-      +       '</div>'
-      +     '</div>'
-
-      +     '<div class="tform" data-part="reject" data-id="'+t.id+'" hidden>'
-      +       '<div class="tform-field"><label>Причина</label><span class="xselect-reject-slot"></span></div>'
-      +       '<div class="tform-field" style="flex:1;min-width:200px"><label>Комментарий</label><textarea data-field="comment" placeholder="Необязательно"></textarea></div>'
-      +       '<div class="tform-actions">'
-      +         '<button class="btn" data-action="cancel-form" data-id="'+t.id+'">Отмена</button>'
-      +         '<button class="btn btn-primary" data-action="save-reject" data-id="'+t.id+'">Сохранить</button>'
-      +       '</div>'
-      +     '</div>'
-
-      +     '<div class="tform" data-part="accept" data-id="'+t.id+'" hidden>'
-      +       '<div class="tform-field"><label>Направления</label><span class="xmulti-slot"></span></div>'
-      +       '<div class="tform-field"><label>Ответственный</label><span class="xselect-manager-slot"></span></div>'
-      +       '<div class="tform-hint" data-part="multi-hint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</div>'
-      +       '<div class="tform-actions">'
-      +         '<button class="btn" data-action="cancel-form" data-id="'+t.id+'">Отмена</button>'
-      +         '<button class="btn btn-primary" data-action="save-accept" data-id="'+t.id+'">Сохранить</button>'
-      +       '</div>'
-      +     '</div>'
-
-      +     '<div class="tedit" data-part="edit" data-id="'+t.id+'" hidden>'
-      +       '<div class="tedit-grid">'
-      +         '<div class="tform-field"><label>Название</label><input type="text" data-field="name"></div>'
-      +         '<div class="tform-field"><label>Заказчик</label><input type="text" data-field="customer"></div>'
-      +         '<div class="tform-field"><label>НМЦ</label><input type="number" data-field="nmc"></div>'
-      +         '<div class="tform-field"><label>Валюты</label><input type="text" data-field="currencies" placeholder="₽, USD"></div>'
-      +         '<div class="tform-field"><label>Срок подачи</label><input type="datetime-local" data-field="deadline"></div>'
-      +         '<div class="tform-field"><label>Закон</label><input type="text" data-field="law" placeholder="44-ФЗ / 223-ФЗ"></div>'
-      +         '<div class="tform-field"><label>Тип закупки</label><input type="text" data-field="procType" placeholder="Запрос цен, RFI…"></div>'
-      +         '<div class="tform-field"><label>Источник</label><input type="text" data-field="sourceLink" placeholder="Ссылка"></div>'
-      +         '<div class="tform-field"><label>Ссылка на Checko</label><input type="url" data-field="checkoUrl" placeholder="https://checko.ru/company/…"></div>'
-      +       '</div>'
-      +       '<div class="tedit-check-row">'
-      +         '<label class="tedit-check"><input type="checkbox" data-field="multiStage"> Многоэтапный</label>'
-      +         '<label class="tedit-check"><input type="checkbox" data-field="risk"> Нужна консультация юриста</label>'
-      +       '</div>'
-      +       '<div class="tform-field" style="margin-bottom:20px"><label>Описание</label><textarea data-field="description" placeholder="Описание тендера"></textarea></div>'
-      +       '<div class="tform-field" style="margin-bottom:20px"><label>Комментарий менеджера</label><textarea data-field="managerComment" placeholder="Правки и примечания — отдельно от текста ИИ"></textarea></div>'
-      +       '<div class="tform-field" style="margin-bottom:0">'
-      +         '<label>Документы</label>'
-      +         '<div class="doc-edit-row"><ul class="doc-edit-list" data-docs></ul>'
-      +           '<input type="file" data-doc-file hidden multiple>'
-      +           '<button type="button" class="btn btn-sm btn-action" data-action="pick-doc" data-id="'+t.id+'">Добавить документ</button>'
-      +         '</div>'
-      +       '</div>'
-      +       '<div class="tform-actions" style="margin-top:20px">'
-      +         '<button class="btn" data-action="cancel-edit" data-id="'+t.id+'">Отмена</button>'
-      +         '<button class="btn btn-primary" data-action="save-edit" data-id="'+t.id+'">Сохранить</button>'
-      +       '</div>'
-      +     '</div>'
-      +   '</div>'
-
-      +   '<div class="tcard-row3" data-part="details" hidden>'
-      +     '<p>'+(t.description ? esc(t.description) : 'Описание пока не удалось извлечь из документации.')+'</p>'
-      +     (t.aiVerdict
-            ? '<div class="ai-rec"><span class="ai-rec-badge '+(t.aiVerdict==='go'?'go':'no-go')+'">'+(t.aiVerdict==='go'?'Идём':'Не идём')+'</span><span class="ai-rec-text">'+esc(t.aiComment)+'</span></div>'
-            : '<div class="ai-rec"><span class="ai-rec-text">Тендер добавлен вручную — отчёт и рекомендация ИИ ещё не готовы.</span></div>')
-      +     (t.managerComment ? '<div class="mgr-comment"><b>Комментарий менеджера:</b> '+esc(t.managerComment)+'</div>' : '')
-      +     ((t.documents || []).length
-            ? '<ul class="doc-list">'+t.documents.map(function(d, i){ return '<li><button type="button" class="doc-download" data-action="download-doc" data-id="'+t.id+'" data-index="'+i+'">'+DOWNLOAD_SVG+' '+esc(documentName(d))+'</button></li>'; }).join('')+'</ul>'
-            : '<div class="doc-empty">Документы пока не прикреплены.</div>')
-      +     ((t.events || []).length
-            ? '<div class="mgr-comment"><b>История событий:</b><br>'+t.events.slice().reverse().map(function(ev){
-                return esc(ev.date+' · '+ev.text)+(ev.comment ? '<br><span style="color:var(--ink-muted)">'+esc(ev.comment)+'</span>' : '');
-              }).join('<br><br>')+'</div>'
-            : '')
+      +     '<a class="link-ico" href="kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent(favoriteSection(t))+'">Перейти в карточку ↗</a>'
       +   '</div>'
       + '</div>';
   }
@@ -1226,30 +1105,6 @@
     document.getElementById('navProgress').textContent = progressCount;
   }
 
-  function initCardWidgets(cardEl, t){
-    var rejectSlot = cardEl.querySelector('.xselect-reject-slot');
-    var reasonSelect = buildXSelect(REASONS, '', 'Выбрать причину');
-    rejectSlot.appendChild(reasonSelect);
-
-    var managerSlot = cardEl.querySelector('.xselect-manager-slot');
-    var managerSelect = buildXSelect(MANAGERS, '', 'Выбрать ответственного');
-    managerSlot.appendChild(managerSelect);
-
-    var multiSlot = cardEl.querySelector('.xmulti-slot');
-    var deptMulti = buildXMulti();
-    multiSlot.appendChild(deptMulti);
-
-    var multiHint = cardEl.querySelector('[data-part="multi-hint"]');
-    deptMulti.addEventListener('xchange', function(){
-      var vals = JSON.parse(deptMulti.dataset.values);
-      multiHint.hidden = vals.length < 2;
-    });
-
-    cardEl._reasonSelect = reasonSelect;
-    cardEl._managerSelect = managerSelect;
-    cardEl._deptMulti = deptMulti;
-  }
-
   function showToast(text){
     var toast = document.getElementById('saveToast');
     document.getElementById('toastText').textContent = text;
@@ -1259,109 +1114,6 @@
   }
   document.getElementById('toastClose').addEventListener('click', function(){
     document.getElementById('saveToast').classList.remove('is-open');
-  });
-
-  var statusOverlay = document.getElementById('statusOverlay');
-  var statusMoveOverlay = document.getElementById('statusMoveOverlay');
-  var statusTenderId = null;
-  var statusSelect = null;
-  var pendingStatusChange = null;
-
-  function mountStatusSelect(t, value){
-    var slot = document.getElementById('statusSelectSlot');
-    slot.innerHTML = '';
-    var available = TenderReferences.availableStatuses(bucket(t), TenderReferences.currentUser(), APP_STATUSES);
-    statusSelect = buildXSelect(available, value || '', 'Выбрать статус');
-    slot.appendChild(statusSelect);
-  }
-
-  function openStatusModal(t){
-    statusTenderId = t.id;
-    mountStatusSelect(t, t.appStatus || '');
-    document.getElementById('statusComment').value = '';
-    statusOverlay.classList.add('is-open');
-  }
-
-  function closeStatusModal(){
-    statusOverlay.classList.remove('is-open');
-    statusTenderId = null;
-  }
-  function closeStatusMoveModal(){
-    statusMoveOverlay.classList.remove('is-open');
-    pendingStatusChange = null;
-  }
-  function applyStatusChange(change){
-    var t = change.tender;
-    var moved = change.currentSection !== change.destination;
-    t.decision = 'Участвуем';
-    t.appStatus = change.status;
-    t.lifecycleSection = change.destination;
-    TenderReferences.updateActiveSectionFromStatus(t, change.status);
-    t.events = t.events || [];
-    t.events.push({
-      date:new Date().toLocaleString('ru-RU', {
-        day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
-      }),
-      text:'Статус изменён: '+change.previousStatus+' → '+change.status+'. '
-        +(moved ? 'Тендер перенесён в раздел «'+change.destination+'».'
-          : 'Раздел не изменён: «'+change.destination+'».'),
-      comment:change.comment,
-      actor:'Оксана Денисенко'
-    });
-    saveTenders(tenders);
-    pushStatusNotification(t, change.destination);
-    closeStatusMoveModal();
-    closeStatusModal();
-    render();
-    showToast(moved
-      ? 'Статус сохранён. Тендер перенесён в раздел «'+change.destination+'».'
-      : 'Статус сохранён. Тендер остался в разделе «'+change.destination+'».');
-  }
-
-  function pushStatusNotification(t, destination){
-    var key = 'atvinta_notifications_v1';
-    var notifications = [];
-    try{ notifications = JSON.parse(localStorage.getItem(key) || '[]'); }catch(e){}
-    notifications.push({
-      recipient:t.manager || 'Участники тендера',
-      text:'Изменён статус тендера «'+t.name+'». Необходимо ознакомиться с изменениями в карточке.',
-      date:new Date().toLocaleString('ru-RU'),
-      href:'kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent(destination)
-    });
-    try{ localStorage.setItem(key, JSON.stringify(notifications.slice(-50))); }catch(e){}
-  }
-
-  document.getElementById('statusCancel').addEventListener('click', closeStatusModal);
-  statusOverlay.addEventListener('click', function(e){ if(e.target === statusOverlay) closeStatusModal(); });
-  document.getElementById('statusMoveCancel').addEventListener('click', closeStatusMoveModal);
-  statusMoveOverlay.addEventListener('click', function(e){
-    if(e.target === statusMoveOverlay) closeStatusMoveModal();
-  });
-  document.getElementById('statusMoveConfirm').addEventListener('click', function(){
-    if(pendingStatusChange) applyStatusChange(pendingStatusChange);
-  });
-  document.getElementById('statusSave').addEventListener('click', function(){
-    var t = tenders.find(function(item){ return item.id === statusTenderId; });
-    if(!t || !statusSelect) return;
-    var status = statusSelect.dataset.value;
-    if(!status){
-      statusSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)';
-      return;
-    }
-    var previousStatus = t.appStatus || 'Подготовка';
-    var comment = document.getElementById('statusComment').value.trim();
-    var currentSection = TenderReferences.displaySection(bucket(t));
-    var destination = TenderReferences.statusDestination(status, currentSection);
-    var change = {tender:t,status:status,previousStatus:previousStatus,comment:comment,
-      currentSection:currentSection,destination:destination};
-    if(currentSection !== destination){
-      pendingStatusChange = change;
-      document.getElementById('statusMoveText').textContent =
-        'Тендер будет перенесен в раздел «'+destination+'».';
-      statusMoveOverlay.classList.add('is-open');
-      return;
-    }
-    applyStatusChange(change);
   });
 
   var filterState = {search:'', deadline:'', source:'all', manager:'all', dept:'all', mine:false};
@@ -1414,55 +1166,6 @@
     render();
   });
 
-  // решение принято — карточка остаётся в общем списке (для Сводной таблицы), но уходит из вида "Новые"
-  function resolveCard(id, toastText){
-    var cardEl = document.querySelector('.tcard[data-id="'+id+'"]');
-    saveTenders(tenders);
-    showToast(toastText);
-    if(!cardEl){ render(); return; }
-    cardEl.classList.add('is-leaving');
-    setTimeout(function(){ render(); }, 300);
-  }
-
-  function closeForms(cardEl){
-    cardEl.querySelector('[data-part="default"]').hidden = false;
-    cardEl.querySelector('[data-part="reject"]').hidden = true;
-    cardEl.querySelector('[data-part="accept"]').hidden = true;
-    cardEl.querySelector('[data-part="edit"]').hidden = true;
-  }
-
-  function renderDocEditList(editNode){
-    var docs = JSON.parse(editNode.dataset.docs || '[]');
-    var ul = editNode.querySelector('[data-docs]');
-    var cardId = editNode.dataset.id;
-    ul.innerHTML = docs.length ? docs.map(function(d, i){
-      return '<li><button type="button" class="doc-download" data-action="download-doc" data-id="'+cardId+'" data-index="'+i+'">'+DOWNLOAD_SVG+' '+esc(documentName(d))+'</button>'
-        +'<button type="button" class="doc-remove" data-action="remove-doc" data-id="'+cardId+'" data-index="'+i+'" aria-label="Удалить документ">✕</button></li>';
-    }).join('') : '<li style="border:none;color:var(--ink-muted);padding:0">Пока нет документов</li>';
-  }
-
-  function openEdit(cardEl, t){
-    var editNode = cardEl.querySelector('[data-part="edit"]');
-    editNode.querySelector('[data-field="name"]').value = t.name || '';
-    editNode.querySelector('[data-field="customer"]').value = t.customer || '';
-    editNode.querySelector('[data-field="nmc"]').value = t.nmc || '';
-    editNode.querySelector('[data-field="currencies"]').value = (t.currencies || []).join(', ');
-    editNode.querySelector('[data-field="deadline"]').value = t.deadline ? t.deadline.slice(0,16) : '';
-    editNode.querySelector('[data-field="law"]').value = t.law || '';
-    editNode.querySelector('[data-field="procType"]').value = t.procType || '';
-    editNode.querySelector('[data-field="sourceLink"]').value = t.sourceLink || '';
-    editNode.querySelector('[data-field="checkoUrl"]').value = t.checkoUrl || '';
-    editNode.querySelector('[data-field="multiStage"]').checked = !!t.multiStage;
-    editNode.querySelector('[data-field="risk"]').checked = !!t.risk;
-    editNode.querySelector('[data-field="description"]').value = t.description || '';
-    editNode.querySelector('[data-field="managerComment"]').value = t.managerComment || '';
-    editNode.dataset.docs = JSON.stringify(t.documents || []);
-    renderDocEditList(editNode);
-    closeForms(cardEl);
-    cardEl.querySelector('[data-part="default"]').hidden = true;
-    editNode.hidden = false;
-  }
-
   function render(){
     var list = document.getElementById('tlist');
     var visible = visibleTenders();
@@ -1473,12 +1176,6 @@
     }
     list.innerHTML = visible.map(cardHtml).join('');
     refreshMeta();
-
-    document.querySelectorAll('.tcard').forEach(function(cardEl){
-      var id = Number(cardEl.dataset.id);
-      var t = tenders.find(function(x){ return x.id === id; });
-      initCardWidgets(cardEl, t);
-    });
   }
 
   function onListClick(e){
@@ -1496,129 +1193,12 @@
       render();
       return;
     }
-    if(action === 'open-status'){
-      openStatusModal(t);
-      return;
-    }
-    if(action === 'toggle-details'){
-      var details = cardEl.querySelector('[data-part="details"]');
-      details.hidden = !details.hidden;
-      cardEl.querySelectorAll('[data-action="toggle-details"][data-label="1"]').forEach(function(b){
-        b.textContent = details.hidden ? 'Подробнее' : 'Свернуть';
-      });
-      return;
-    }
-    if(action === 'open-reject'){
-      closeForms(cardEl);
-      cardEl.querySelector('[data-part="default"]').hidden = true;
-      cardEl.querySelector('[data-part="reject"]').hidden = false;
-      return;
-    }
-    if(action === 'open-accept'){
-      closeForms(cardEl);
-      cardEl.querySelector('[data-part="default"]').hidden = true;
-      cardEl.querySelector('[data-part="accept"]').hidden = false;
-      return;
-    }
-    if(action === 'cancel-form'){
-      closeForms(cardEl);
-      return;
-    }
-    if(action === 'open-edit'){
-      openEdit(cardEl, t);
-      return;
-    }
     if(action === 'open-report'){
       openReportModal(t);
       return;
     }
     if(action === 'download-report'){
       downloadReport(t);
-      return;
-    }
-    if(action === 'download-doc'){
-      var editForDownload = cardEl.querySelector('[data-part="edit"]');
-      var docsForDownload = editForDownload.dataset.docs
-        ? JSON.parse(editForDownload.dataset.docs)
-        : (t.documents || []);
-      downloadDocument(docsForDownload[Number(el.dataset.index)]);
-      return;
-    }
-    if(action === 'cancel-edit'){
-      closeForms(cardEl);
-      return;
-    }
-    if(action === 'pick-doc'){
-      var editNode = cardEl.querySelector('[data-part="edit"]');
-      editNode.querySelector('[data-doc-file]').click();
-      return;
-    }
-    if(action === 'remove-doc'){
-      var editNode = cardEl.querySelector('[data-part="edit"]');
-      var docs = JSON.parse(editNode.dataset.docs || '[]');
-      docs.splice(Number(el.dataset.index), 1);
-      editNode.dataset.docs = JSON.stringify(docs);
-      renderDocEditList(editNode);
-      return;
-    }
-    if(action === 'save-edit'){
-      var editNode = cardEl.querySelector('[data-part="edit"]');
-      var name = editNode.querySelector('[data-field="name"]').value.trim();
-      var customer = editNode.querySelector('[data-field="customer"]').value.trim();
-      var deadline = editNode.querySelector('[data-field="deadline"]').value;
-      if(!name){ editNode.querySelector('[data-field="name"]').style.borderColor = 'var(--danger)'; return; }
-      if(!customer){ editNode.querySelector('[data-field="customer"]').style.borderColor = 'var(--danger)'; return; }
-      if(!deadline){ editNode.querySelector('[data-field="deadline"]').style.borderColor = 'var(--danger)'; return; }
-      var nmcRaw = editNode.querySelector('[data-field="nmc"]').value;
-      var currenciesRaw = editNode.querySelector('[data-field="currencies"]').value;
-      var checkoUrl = editNode.querySelector('[data-field="checkoUrl"]').value.trim();
-      if(checkoUrl && !/^https?:\/\/(?:www\.)?checko\.ru\/company\//i.test(checkoUrl)){
-        editNode.querySelector('[data-field="checkoUrl"]').style.borderColor = 'var(--danger)';
-        return;
-      }
-      t.name = name;
-      t.customer = customer;
-      t.nmc = nmcRaw ? Number(nmcRaw) : null;
-      t.currencies = currenciesRaw.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
-      t.deadline = deadline;
-      t.law = editNode.querySelector('[data-field="law"]').value.trim() || null;
-      t.procType = editNode.querySelector('[data-field="procType"]').value.trim() || null;
-      t.sourceLink = editNode.querySelector('[data-field="sourceLink"]').value.trim();
-      t.checkoUrl = checkoUrl;
-      t.checkoVerified = !!checkoUrl;
-      t.multiStage = editNode.querySelector('[data-field="multiStage"]').checked;
-      TenderReferences.ensureTenderStructure(t);
-      t.risk = editNode.querySelector('[data-field="risk"]').checked;
-      t.description = editNode.querySelector('[data-field="description"]').value.trim();
-      t.managerComment = editNode.querySelector('[data-field="managerComment"]').value.trim();
-      t.documents = JSON.parse(editNode.dataset.docs || '[]');
-      saveTenders(tenders);
-      render();
-      showToast('Изменения сохранены.');
-      return;
-    }
-    if(action === 'save-reject'){
-      var reason = cardEl._reasonSelect.dataset.value;
-      if(!reason){ cardEl._reasonSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; return; }
-      var comment = cardEl.querySelector('[data-part="reject"] textarea[data-field="comment"]').value.trim();
-      t.decision = 'Отказ';
-      t.rejectReason = reason;
-      t.rejectComment = comment;
-      resolveCard(id, 'Перемещено в архив.');
-      return;
-    }
-    if(action === 'save-accept'){
-      var depts = JSON.parse(cardEl._deptMulti.dataset.values);
-      var manager = cardEl._managerSelect.dataset.value;
-      var ok = true;
-      if(!depts.length){ cardEl._deptMulti.querySelector('.xmulti-trigger').style.borderColor = 'var(--danger)'; ok = false; }
-      if(!manager){ cardEl._managerSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; ok = false; }
-      if(!ok) return;
-      t.decision = 'На рассмотрении';
-      t.depts = depts;
-      t.dept = depts[0] || '';
-      t.manager = manager;
-      resolveCard(id, 'Передано в работу.');
       return;
     }
   }
@@ -1727,19 +1307,6 @@
     showToast('Добавлено в раздел «'+addSection+'».');
   });
 
-  document.getElementById('tlist').addEventListener('change', function(e){
-    if(!e.target.matches('[data-doc-file]')) return;
-    var editNode = e.target.closest('[data-part="edit"]');
-    var docs = JSON.parse(editNode.dataset.docs || '[]');
-    var files = Array.prototype.slice.call(e.target.files);
-    editNode.dataset.docs = JSON.stringify(docs);
-    e.target.value = '';
-    Promise.all(files.map(storedDocument)).then(function(stored){
-      editNode.dataset.docs = JSON.stringify(docs.concat(stored));
-      renderDocEditList(editNode);
-    });
-  });
-
   // ---- отчёт ИИ: модалка для чтения + скачивание ----
   var reportOverlay = document.getElementById('reportOverlay');
   var currentReportId = null;
@@ -1773,23 +1340,6 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
   }
-  function downloadDocument(doc){
-    if(!doc) return;
-    var name = documentName(doc);
-    var a = document.createElement('a');
-    var revoke = false;
-    if(typeof doc === 'object' && doc.dataUrl){
-      a.href = doc.dataUrl;
-    }else{
-      a.href = URL.createObjectURL(new Blob(['Демонстрационный файл «'+name+'».\\nСодержимое исходного документа не хранится в HTML-макете.'], {type:'text/plain;charset=utf-8;'}));
-      revoke = true;
-    }
-    a.download = sanitizeFilename(name) || 'Документ';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    if(revoke) URL.revokeObjectURL(a.href);
-  }
   document.getElementById('reportClose').addEventListener('click', closeReportModal);
   reportOverlay.addEventListener('click', function(e){ if(e.target === reportOverlay) closeReportModal(); });
   document.getElementById('reportDownloadBtn').addEventListener('click', function(){
@@ -1799,7 +1349,6 @@
 
   window.addEventListener('storage', function(e){
     if(e.key === TenderReferences.statusRulesKey || e.key === TenderReferences.key){
-      APP_STATUSES = TenderReferences.get('applicationStatuses');
       render();
       return;
     }
