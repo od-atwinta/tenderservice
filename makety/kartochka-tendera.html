@@ -269,7 +269,7 @@
   .layout > div{min-width:0;}
 
   /* ---------- tabs ---------- */
-  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px;overflow-x:auto;}
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px;overflow-x:auto;overflow-y:hidden;}
   .tab{font-family:var(--font-body);font-size:13.5px;font-weight:600;color:var(--ink-muted);
     background:none;border:none;padding:11px 14px;cursor:pointer;white-space:nowrap;
     border-bottom:2px solid transparent;margin-bottom:-1px;}
@@ -315,9 +315,19 @@
   .process-section{position:relative;}
   .process-section.is-completed{background:var(--surface-2);}
   .process-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+  .process-section-topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+  .process-section-topbar .process-section-name-field{flex:1;max-width:320px;margin:0;}
   .process-section-title{margin:0;font-size:17px;font-weight:700;color:var(--ink);}
   .process-section-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
   .process-section-description-block{margin-top:16px;}
+  .process-columns{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:16px;}
+  .process-column{min-width:0;display:flex;flex-direction:column;gap:24px;}
+  .process-column .fact-row{margin-top:0;}
+  .process-column .field{margin-top:0;}
+  .process-column .process-documents{margin-top:0;}
+  .process-column .process-amount-block{margin-top:0;}
+  .process-checklist-block{margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+  @media (max-width:860px){ .process-columns{grid-template-columns:1fr;} }
   .process-section-description{margin:6px 0 0;font-size:14px;line-height:1.6;color:var(--ink);}
   .process-editor .process-documents > .summary-label,
   .process-editor .process-application-head strong{
@@ -336,10 +346,15 @@
   .process-amount-edit-grid input[type="number"]::-webkit-inner-spin-button{
     -webkit-appearance:none;margin:0;}
   .process-documents{margin-top:14px;}
+  .process-archive-link{display:inline-flex;align-items:center;gap:4px;border:none;background:none;
+    color:var(--inline-action);font-family:var(--font-body);font-size:12.5px;font-weight:600;
+    cursor:pointer;padding:0;}
+  .process-archive-link:hover{text-decoration:underline;}
+  .process-archive-link svg{width:13px;height:13px;flex:none;}
   .process-document-list{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
   .process-file-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
   .process-doc-edit-list{display:contents;}
-  .process-doc-chip{display:inline-flex;align-items:center;height:32px;border:1px solid var(--border-strong);
+  .process-doc-chip{display:inline-flex;align-items:center;height:32px;max-width:260px;border:1px solid var(--border-strong);
     border-radius:var(--radius-sm);color:var(--ink-muted);}
   .process-doc-chip:hover{border-color:var(--accent);}
   .process-doc-chip .doc-download{border:none;}
@@ -470,6 +485,11 @@
   .timeline .t-date{font-family:var(--font-mono);font-size:12px;color:var(--ink-muted);}
   .timeline .t-body{font-size:14.5px;margin-top:3px;}
   .timeline .t-meta{font-size:12.5px;color:var(--ink-muted);margin-top:4px;}
+  .timeline li.timeline-empty{border:none;padding:0;color:var(--ink-muted);font-size:13.5px;}
+  .timeline li.timeline-empty::before{display:none;}
+  .timeline .t-actions{display:flex;gap:4px;margin-top:6px;}
+  .timeline .t-actions .icon-btn{width:24px;height:24px;}
+  .timeline .t-actions .icon-btn svg{width:14px;height:14px;}
 
   .empty-note{border:1px dashed var(--border-strong);border-radius:var(--radius-sm);padding:16px;
     font-size:13.5px;color:var(--ink-muted);text-align:center;}
@@ -737,8 +757,6 @@
         <div class="tabs" role="tablist" aria-label="Разделы тендера">
           <button class="tab" role="tab" aria-selected="true" data-tab="overview">Обзор</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="stages">Этапы и заявки</button>
-          <button class="tab" role="tab" aria-selected="false" data-tab="docs">Документы</button>
-          <button class="tab" role="tab" aria-selected="false" data-tab="checklist">Чек-лист</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="tasks">Задачи</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="logs">События</button>
           <button class="tab" role="tab" aria-selected="false" data-tab="history">Логи</button>
@@ -849,11 +867,6 @@
               <p id="syncedManagerComment">Комментарий менеджера пока не добавлен.</p>
             </div>
           </div>
-          <div class="card">
-            <h3>Прикреплённые документы</h3>
-            <div class="overview-docs" id="overviewDocuments"></div>
-          </div>
-
           <div class="card" id="teamCard">
             <div class="rail-card-head">
               <h3>Команда</h3>
@@ -893,57 +906,6 @@
           <div id="processSections"></div>
         </section>
 
-        <!-- DOCS -->
-        <section class="panel" data-panel="docs">
-          <div class="card">
-            <h3>Учредительные</h3>
-            <table class="plain">
-              <thead><tr><th>Файл</th><th>Загрузил</th><th>Дата</th></tr></thead>
-              <tbody id="founderDocuments"></tbody>
-            </table>
-          </div>
-          <div class="card">
-            <h3>Документы тендера</h3>
-            <table class="plain">
-              <thead><tr><th>Файл</th><th>Категория</th><th>Дата</th></tr></thead>
-              <tbody id="syncedTenderDocuments"></tbody>
-            </table>
-          </div>
-          <div class="card">
-            <h3>Архив поданных предложений</h3>
-            <div id="submittedArchiveCard"><p class="empty-note">Пока пусто — появится после формирования КП.</p></div>
-          </div>
-        </section>
-
-        <!-- CHECKLIST -->
-        <section class="panel" data-panel="checklist">
-          <div class="card">
-            <div class="checklist-head">
-              <h3 style="margin:0">Чек-лист документов</h3>
-              <div class="checklist-tools">
-                <button class="btn btn-sm btn-ai" type="button" id="clGenerateList" title="ИИ предложит список документов на основе тендерной документации">Сформировать лист</button>
-                <button class="icon-btn" id="clAddOpen" title="Быстро добавить" aria-label="Быстро добавить">+</button>
-                <button class="icon-btn" id="clEditToggle" title="Редактировать" aria-label="Редактировать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
-              </div>
-            </div>
-            <div class="progress-line" id="progressLine">
-              <div class="progress-track"><div class="progress-fill" id="clProgressFill"></div></div>
-              <span class="progress-text" id="clProgressText"></span>
-            </div>
-            <ul class="checklist" id="checklistView"></ul>
-
-            <div id="checklistEdit" hidden>
-              <table class="edit-table">
-                <thead><tr><th>Задача</th><th style="width:130px">Срок</th><th style="width:140px">Ответственный</th><th></th></tr></thead>
-                <tbody id="editRows"></tbody>
-              </table>
-              <div class="modal-actions">
-                <button class="btn btn-primary btn-sm" id="clSaveEdit">Сохранить</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- TASKS -->
         <section class="panel" data-panel="tasks">
           <div class="card">
@@ -966,6 +928,7 @@
                 <tbody id="taskEditRows"></tbody>
               </table>
               <div class="modal-actions">
+                <button class="btn btn-sm" id="taskCancelEdit">Отмена</button>
                 <button class="btn btn-primary btn-sm" id="taskSaveEdit">Сохранить</button>
               </div>
             </div>
@@ -979,10 +942,7 @@
               <h3 style="margin:0">События</h3>
               <button class="btn btn-sm" id="openEventModal">+ Добавить событие</button>
             </div>
-            <ul class="timeline">
-              <li><div class="t-date">15.07.2026</div><div class="t-body">Уточняющий звонок от заказчика по срокам поставки резервных копий.</div></li>
-              <li><div class="t-date">13.07.2026</div><div class="t-body">Заказчик подтвердил получение вопросов по почте, ответ обещали на неделе.</div></li>
-            </ul>
+            <ul class="timeline" id="manualEventsList"></ul>
           </div>
         </section>
 
@@ -1215,7 +1175,7 @@
 <!-- EVENT MODAL -->
 <div class="overlay" id="eventOverlay">
   <div class="modal">
-    <h4>Добавить событие</h4>
+    <h4 id="eventModalTitle">Добавить событие</h4>
     <p class="hint">Запись попадёт в ленту «События» этого тендера.</p>
     <div class="field">
       <label for="evDate">Дата</label>
@@ -1341,7 +1301,7 @@
   <div class="modal">
     <h4>Добавить пункт чек-листа</h4>
     <div class="field">
-      <label for="clAddText">Задача</label>
+      <label for="clAddText">Документ</label>
       <input type="text" id="clAddText" placeholder="Например: справка об отсутствии судимости">
     </div>
     <div class="field">
@@ -1439,10 +1399,35 @@
   var openEventBtn = document.getElementById('openEventModal');
   var evDate = document.getElementById('evDate');
   var evText = document.getElementById('evText');
-  var logsList = document.querySelector('[data-panel="logs"] .timeline');
+  var manualEventsList = document.getElementById('manualEventsList');
+  var editingManualEventId = null;
 
-  function closeEventOverlay(){ eventOverlay.classList.remove('is-open'); TenderReferences.setDirty('event', false); }
+  function manualEventsOf(t){
+    if(!Array.isArray(t.manualEvents)) t.manualEvents = [];
+    return t.manualEvents;
+  }
+  function nextManualEventId(t){
+    var ids = manualEventsOf(t).map(function(item){ return Number(item.id) || 0; });
+    return (ids.length ? Math.max.apply(null, ids) : 0) + 1;
+  }
+  var EVENT_EDIT_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>';
+  var EVENT_DELETE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>';
+  function renderManualEvents(t){
+    var items = manualEventsOf(t).slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+    manualEventsList.innerHTML = items.length ? items.map(function(item){
+      return '<li data-event-id="'+escSynced(item.id)+'"><div class="t-date">'+escSynced(fmt(item.date))+'</div>'
+        +'<div class="t-body">'+escSynced(item.text)+'</div>'
+        +'<div class="t-actions">'
+          +'<button class="icon-btn" type="button" data-action="edit-event" title="Изменить" aria-label="Изменить">'+EVENT_EDIT_SVG+'</button>'
+          +'<button class="icon-btn icon-danger" type="button" data-action="delete-event" title="Удалить" aria-label="Удалить">'+EVENT_DELETE_SVG+'</button>'
+        +'</div></li>';
+    }).join('') : '<li class="timeline-empty">Событий пока нет.</li>';
+  }
+
+  function closeEventOverlay(){ eventOverlay.classList.remove('is-open'); TenderReferences.setDirty('event', false); editingManualEventId = null; }
   openEventBtn.addEventListener('click', function(){
+    editingManualEventId = null;
+    document.getElementById('eventModalTitle').textContent = 'Добавить событие';
     evDate.value = todayISO(); evText.value = '';
     eventOverlay.classList.add('is-open'); evText.focus();
     TenderReferences.setDirty('event', false);
@@ -1455,14 +1440,42 @@
     if(e.target === eventOverlay) TenderReferences.guardedClose('event', closeEventOverlay, function(){ document.getElementById('saveEvent').click(); });
   });
   document.getElementById('saveEvent').addEventListener('click', function(){
+    if(!tender) return;
     if(!evText.value.trim()){ evText.focus(); return; }
-    var li = document.createElement('li');
-    var d = document.createElement('div'); d.className = 't-date'; d.textContent = fmt(evDate.value);
-    var b = document.createElement('div'); b.className = 't-body'; b.textContent = evText.value.trim();
-    li.appendChild(d); li.appendChild(b);
-    logsList.insertBefore(li, logsList.firstChild);
+    if(editingManualEventId){
+      var item = manualEventsOf(tender).find(function(x){ return x.id === editingManualEventId; });
+      if(item){ item.date = evDate.value; item.text = evText.value.trim(); }
+    } else {
+      manualEventsOf(tender).push({id:nextManualEventId(tender), date:evDate.value, text:evText.value.trim()});
+    }
+    saveTenders(tenders);
     TenderReferences.setDirty('event', false);
     eventOverlay.classList.remove('is-open');
+    editingManualEventId = null;
+    renderManualEvents(tender);
+  });
+  manualEventsList.addEventListener('click', function(e){
+    if(!tender) return;
+    var el = e.target.closest('[data-action]');
+    if(!el) return;
+    var li = el.closest('[data-event-id]');
+    if(!li) return;
+    var id = Number(li.dataset.eventId);
+    var item = manualEventsOf(tender).find(function(x){ return x.id === id; });
+    if(!item) return;
+    if(el.dataset.action === 'edit-event'){
+      editingManualEventId = id;
+      document.getElementById('eventModalTitle').textContent = 'Изменить событие';
+      evDate.value = item.date || todayISO();
+      evText.value = item.text || '';
+      eventOverlay.classList.add('is-open'); evText.focus();
+      TenderReferences.setDirty('event', false);
+    } else if(el.dataset.action === 'delete-event'){
+      if(!confirm('Удалить событие «'+item.text+'»?')) return;
+      tender.manualEvents = manualEventsOf(tender).filter(function(x){ return x.id !== id; });
+      saveTenders(tenders);
+      renderManualEvents(tender);
+    }
   });
 
   // ---- chat fab + drawer ----
@@ -1907,6 +1920,19 @@
   }
   function libraryDocument(id){
     return loadDocumentLibrary().find(function(item){ return item.id === id; }) || null;
+  }
+  // чек-лист переехал с уровня тендера на уровень этапа 2026-08-18; для уже сохранённых
+  // тендеров со старым плоским t.checklist переносим его в первый этап при первой отрисовке
+  function ensureSectionChecklist(t, section, isFirst){
+    if(Array.isArray(section.checklist)) return;
+    if(isFirst && Array.isArray(t.checklist) && t.checklist.length){
+      section.checklist = t.checklist;
+      delete t.checklist;
+    } else if(isFirst && t.id === DEMO_CHECKLIST_TENDER_ID){
+      section.checklist = DEMO_CHECKLIST_SEED.map(function(item){ return Object.assign({}, item); });
+    } else {
+      section.checklist = [];
+    }
   }
   function ensureLegacySectionDocumentIds(t, section){
     section.documentIds = Array.isArray(section.documentIds) ? section.documentIds : [];
@@ -2404,16 +2430,14 @@
     });
   }
 
-  function checklistOf(t){
-    if(!Array.isArray(t.checklist)){
-      t.checklist = (t.id === DEMO_CHECKLIST_TENDER_ID)
-        ? DEMO_CHECKLIST_SEED.map(function(item){ return Object.assign({}, item); })
-        : [];
-    }
-    return t.checklist;
+  // section — конкретный этап тендера (t.tenderSections[i]); чек-лист живёт на уровне этапа,
+  // ensureSectionChecklist уже гарантирует наличие section.checklist к моменту вызова
+  function checklistOf(section){
+    if(!Array.isArray(section.checklist)) section.checklist = [];
+    return section.checklist;
   }
-  function nextChecklistId(t){
-    var ids = checklistOf(t).map(function(item){ return Number(item.id) || 0; });
+  function nextChecklistId(section){
+    var ids = checklistOf(section).map(function(item){ return Number(item.id) || 0; });
     return (ids.length ? Math.max.apply(null, ids) : 0) + 1;
   }
   function checklistItemMatchesDocumentName(itemText, docName){
@@ -2423,10 +2447,11 @@
   }
   // при загрузке документа в карточку — проверяем чек-лист: если похожий пункт уже есть и ещё
   // не отмечен, предлагаем отметить выполненным; если похожего пункта нет, предлагаем добавить
-  function checkDocumentAgainstChecklist(t, document){
+  function checkDocumentAgainstChecklist(t, section, document){
+    if(!section) return;
     var docName = documentName(document);
     if(!checklistSignificantWords(docName).length) return;
-    var matchedItem = checklistOf(t).find(function(item){
+    var matchedItem = checklistOf(section).find(function(item){
       return checklistItemMatchesDocumentName(item.text, docName);
     });
     if(matchedItem){
@@ -2443,11 +2468,11 @@
     } else {
       if(!confirm('В чек-листе нет пункта, похожего на загруженный документ «'+docName+'».\nДобавить его в чек-лист как новый (уже выполненный) пункт?')) return;
       var newItem = {
-        id:nextChecklistId(t), text:docName.replace(/\.[^.]+$/,''),
+        id:nextChecklistId(section), text:docName.replace(/\.[^.]+$/,''),
         due:defaultChecklistDueDate(t.deadline), assignee:t.manager || '', done:true,
         attachedDocument:{name:docName, source:'Документы'}
       };
-      checklistOf(t).push(newItem);
+      checklistOf(section).push(newItem);
       t.events = t.events || [];
       t.events.push({
         date:eventDate(),
@@ -2456,7 +2481,7 @@
       });
     }
     saveTenders(tenders);
-    if(checklistEditBox && checklistEditBox.hidden) renderChecklistView(t);
+    renderProcessSections(t);
   }
   function checklistAssignees(t){
     var names = eligibleParticipants(t);
@@ -2471,220 +2496,259 @@
     }).join('');
   }
 
-  var checklistView = document.getElementById('checklistView');
-  var clProgressFill = document.getElementById('clProgressFill');
-  var clProgressText = document.getElementById('clProgressText');
-
+  // сводная готовность документов по всем этапам тендера сразу — не по одному этапу
   function renderHeaderChecklistProgress(t){
     var fill = document.getElementById('headerChecklistFill');
     var text = document.getElementById('headerChecklistText');
     if(!fill || !text) return;
-    var data = checklistOf(t);
-    var total = data.length;
-    var done = data.filter(function(item){ return item.done; }).length;
+    var total = 0, done = 0;
+    (t.tenderSections || []).forEach(function(section){
+      var data = checklistOf(section);
+      total += data.length;
+      done += data.filter(function(item){ return item.done; }).length;
+    });
     var percent = total ? Math.round(done/total*100) : 0;
     fill.style.width = percent + '%';
     text.textContent = percent + '%';
   }
 
-  function renderChecklistView(t){
-    var data = checklistOf(t);
-    checklistView.innerHTML = '';
-    var doneCount = 0;
-    data.forEach(function(item){
-      if(item.done) doneCount++;
-      var li = document.createElement('li');
-      li.className = item.done ? 'done' : '';
-      var cb = document.createElement('input');
-      cb.type = 'checkbox'; cb.checked = item.done; cb.dataset.id = item.id;
-      cb.addEventListener('change', function(){
-        item.done = cb.checked;
-        saveTenders(tenders);
-        renderChecklistView(t);
-      });
-      var text = document.createElement('span'); text.className = 'cl-text'; text.textContent = item.text;
-      var meta = document.createElement('span'); meta.className = 'cl-meta';
-      meta.textContent = item.assignee + (item.due ? ' · до ' + fmtDate(item.due) : ' · без срока')
-        + (item.attachedDocument ? ' · 📎 ' + item.attachedDocument.name : '');
-      li.appendChild(cb); li.appendChild(text); li.appendChild(meta);
-      checklistView.appendChild(li);
-    });
-    var total = data.length;
-    clProgressText.textContent = doneCount + ' из ' + total;
-    clProgressFill.style.width = (total ? (doneCount/total*100) : 0) + '%';
-    renderHeaderChecklistProgress(t);
-  }
+  // ---- чек-лист: свой у каждого этапа тендера, встроен в карточку этапа снизу ----
+  var editingChecklistSectionId = null;
+  // пункты, добавленные с момента последнего сохранения чек-листа (генерацией, строкой "+"
+  // или совпадением с загруженным документом) — при сохранении, если у пункта есть
+  // ответственный, ему автоматически ставится задача и уходит уведомление
+  var pendingChecklistTaskItems = [];
+  var CL_EDIT_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>';
+  var CL_DELETE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>';
 
-  var editRows = document.getElementById('editRows');
-  function buildChecklistEditRow(t, item){
-    var tr = document.createElement('tr'); tr.dataset.id = item.id;
+  function checklistViewHtml(section){
+    var data = checklistOf(section);
+    if(!data.length) return '<p class="process-empty">Пункты чек-листа пока не добавлены.</p>';
+    return '<ul class="checklist">' + data.map(function(item){
+      return '<li class="'+(item.done?'done':'')+'"><input type="checkbox" data-checklist-toggle data-item-id="'+item.id+'"'+(item.done?' checked':'')+'>'
+        +'<span class="cl-text">'+escSynced(item.text)+'</span>'
+        +'<span class="cl-meta">'+escSynced(item.assignee||'—')+(item.due?' · до '+escSynced(fmtDate(item.due)):' · без срока')
+        +(item.attachedDocument?' · 📎 '+escSynced(item.attachedDocument.name):'')+'</span></li>';
+    }).join('') + '</ul>';
+  }
+  function checklistProgressHtml(section){
+    var data = checklistOf(section);
+    var done = data.filter(function(item){ return item.done; }).length;
+    var total = data.length;
+    return '<div class="progress-line"><div class="progress-track"><div class="progress-fill" style="width:'+(total?(done/total*100):0)+'%"></div></div>'
+      +'<span class="progress-text">'+done+' из '+total+'</span></div>';
+  }
+  function checklistEditRowHtml(t, item){
     var kopilkaHtml = '';
     if(item.attachedDocument){
       kopilkaHtml = '<div class="cl-kopilka-attached">📎 Прикреплено из Копилки: '+escSynced(item.attachedDocument.name)
-        +' <button type="button" class="process-inline-action" data-action="detach-kopilka">Открепить</button></div>';
+        +' <button type="button" class="process-inline-action" data-checklist-action="detach-kopilka" data-item-id="'+item.id+'">Открепить</button></div>';
     } else if(findKopilkaMatches(item.text).length){
-      kopilkaHtml = '<div class="cl-kopilka-match"><button type="button" class="process-inline-action" data-action="attach-kopilka">📎 Есть в Копилке — прикрепить?</button></div>';
+      kopilkaHtml = '<div class="cl-kopilka-match"><button type="button" class="process-inline-action" data-checklist-action="attach-kopilka" data-item-id="'+item.id+'">📎 Есть в Копилке — прикрепить?</button></div>';
     }
-    tr.innerHTML =
-      '<td><input type="text" class="edit-text" value="'+escSynced(item.text)+'">'+kopilkaHtml+'</td>'+
-      '<td><input type="date" class="edit-date" value="'+item.due+'"></td>'+
-      '<td><select class="edit-assignee">'+participantOptions(t, item.assignee)+'</select></td>'+
-      '<td><button class="icon-btn icon-danger" data-action="delete" title="Удалить" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button></td>';
-    tr.querySelector('[data-action="delete"]').addEventListener('click', function(){
-      t.checklist = checklistOf(t).filter(function(d){ return String(d.id) !== tr.dataset.id; });
-      saveTenders(tenders);
-      renderEditRows(t);
-    });
-    var attachBtn = tr.querySelector('[data-action="attach-kopilka"]');
-    if(attachBtn){
-      attachBtn.addEventListener('click', function(){
-        var matches = findKopilkaMatches(item.text);
-        if(!matches.length) return;
-        var match = matches[0];
-        if(!confirm('Найден документ в Копилке («'+match.source+'»): «'+match.name+'».\nПрикрепить его к пункту «'+item.text+'»?')) return;
-        item.attachedDocument = {name:match.name, source:match.source};
-        item.done = true;
-        TenderReferences.setDirty('checklistEdit', true);
-        tr.replaceWith(buildChecklistEditRow(t, item));
-      });
-    }
-    var detachBtn = tr.querySelector('[data-action="detach-kopilka"]');
-    if(detachBtn){
-      detachBtn.addEventListener('click', function(){
-        delete item.attachedDocument;
-        item.done = false;
-        TenderReferences.setDirty('checklistEdit', true);
-        tr.replaceWith(buildChecklistEditRow(t, item));
-      });
-    }
-    return tr;
+    return '<tr data-item-id="'+item.id+'">'
+      +'<td><input type="text" class="edit-text" value="'+escSynced(item.text)+'">'+kopilkaHtml+'</td>'
+      +'<td><input type="date" class="edit-date" value="'+escSynced(item.due)+'"></td>'
+      +'<td><select class="edit-assignee">'+participantOptions(t, item.assignee)+'</select></td>'
+      +'<td><button class="icon-btn icon-danger" type="button" data-checklist-action="delete-item" data-item-id="'+item.id+'" title="Удалить" aria-label="Удалить">'+CL_DELETE_ICON_SVG+'</button></td>'
+      +'</tr>';
   }
-  // пункты, добавленные с момента последнего сохранения чек-листа (генерацией, строкой "+"
-  // прямо в таблице или совпадением с загруженным документом) — при сохранении, если у пункта
-  // есть ответственный, ему автоматически ставится задача и уходит уведомление (см. clSaveEdit)
-  var pendingChecklistTaskItems = [];
-  function renderEditRows(t){
-    var data = checklistOf(t);
-    editRows.innerHTML = '';
-    data.forEach(function(item){
-      editRows.appendChild(buildChecklistEditRow(t, item));
-    });
-    var trNew = document.createElement('tr'); trNew.dataset.id = 'new';
-    trNew.innerHTML =
-      '<td><input type="text" class="edit-text" placeholder="Новая задача…"></td>'+
-      '<td><input type="date" class="edit-date" value="'+defaultChecklistDueDate(t.deadline)+'"></td>'+
-      '<td><select class="edit-assignee">'+participantOptions(t, t.manager || '')+'</select></td>'+
-      '<td><button class="icon-btn icon-add" data-action="commit-new" title="Добавить">+</button></td>';
-    editRows.appendChild(trNew);
-
-    editRows.querySelector('[data-action="commit-new"]').addEventListener('click', function(){
-      var tr = editRows.querySelector('tr[data-id="new"]');
-      var text = tr.querySelector('.edit-text').value.trim();
-      if(!text) return;
-      var due = tr.querySelector('.edit-date').value;
-      var assignee = tr.querySelector('.edit-assignee').value;
-      var item = {id:nextChecklistId(t), text:text, due:due, assignee:assignee, done:false};
-      checklistOf(t).push(item);
-      pendingChecklistTaskItems.push(item);
-      saveTenders(tenders);
-      renderEditRows(t);
-    });
+  function checklistEditHtml(t, section){
+    var data = checklistOf(section);
+    var rows = data.map(function(item){ return checklistEditRowHtml(t, item); }).join('');
+    return '<div class="checklist-edit-block">'
+      +'<table class="edit-table"><thead><tr><th>Документ</th><th style="width:130px">Срок</th><th style="width:140px">Ответственный</th><th></th></tr></thead>'
+      +'<tbody>'+rows
+      +'<tr data-item-id="new"><td><input type="text" class="edit-text" placeholder="Новый документ…"></td>'
+      +'<td><input type="date" class="edit-date" value="'+escSynced(defaultChecklistDueDate(t.deadline))+'"></td>'
+      +'<td><select class="edit-assignee">'+participantOptions(t, t.manager||'')+'</select></td>'
+      +'<td><button class="icon-btn icon-add" type="button" data-checklist-action="commit-new" title="Добавить">+</button></td></tr>'
+      +'</tbody></table>'
+      +'<div class="process-actions"><button class="btn" type="button" data-checklist-action="cancel-edit">Отмена</button>'
+      +'<button class="btn btn-primary" type="button" data-checklist-action="save-edit">Сохранить</button></div>'
+      +'</div>';
   }
-
-  var checklistEditBox = document.getElementById('checklistEdit');
-  var progressLine = document.getElementById('progressLine');
-
-  document.getElementById('clEditToggle').addEventListener('click', function(){
-    if(!tender) return;
-    checklistView.hidden = true; progressLine.hidden = true;
-    checklistEditBox.hidden = false;
-    renderEditRows(tender);
+  function checklistBlockHtml(t, section){
+    var isEditing = editingChecklistSectionId === section.id;
+    return '<div class="process-checklist-block">'
+      +'<div class="checklist-head"><h3 style="margin:0">Чек-лист документов</h3>'
+      +'<div class="checklist-tools">'
+        +'<button class="btn btn-sm btn-ai" type="button" data-checklist-action="generate" title="ИИ предложит список документов на основе тендерной документации">Сформировать лист</button>'
+        +'<button class="icon-btn" type="button" data-checklist-action="add-open" title="Быстро добавить" aria-label="Быстро добавить">+</button>'
+        +'<button class="icon-btn" type="button" data-checklist-action="edit-toggle" title="Редактировать" aria-label="Редактировать">'+CL_EDIT_ICON_SVG+'</button>'
+      +'</div></div>'
+      + (isEditing ? checklistEditHtml(t, section) : (checklistProgressHtml(section) + checklistViewHtml(section)))
+      +'</div>';
+  }
+  function closeChecklistEdit(){
     TenderReferences.setDirty('checklistEdit', false);
-  });
+    editingChecklistSectionId = null;
+    renderProcessSections(tender);
+  }
+  document.getElementById('processSections').addEventListener('click', function(e){
+    if(!tender) return;
+    var el = e.target.closest('[data-checklist-action]');
+    if(!el) return;
+    var sectionCard = el.closest('[data-process-section-id]');
+    if(!sectionCard) return;
+    var sectionId = sectionCard.dataset.processSectionId;
+    var section = tender.tenderSections.find(function(s){ return s.id === sectionId; });
+    if(!section) return;
+    var action = el.dataset.checklistAction;
+    var row = el.closest('[data-item-id]');
+    var itemId = row ? Number(row.dataset.itemId) : null;
+    var item = itemId ? checklistOf(section).find(function(x){ return x.id === itemId; }) : null;
 
-  var clGenerateBtn = document.getElementById('clGenerateList');
-  clGenerateBtn.addEventListener('click', function(){
-    if(!tender || clGenerateBtn.disabled) return;
-    clGenerateBtn.disabled = true;
-    clGenerateBtn.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span>Формируем список…';
-    setTimeout(function(){
-      var t = tender;
-      var existingTexts = checklistOf(t).map(function(item){ return item.text.trim(); });
-      var newItems = [];
-      var defaultDue = defaultChecklistDueDate(t.deadline);
-      var defaultAssignee = t.manager || '';
-      checklistSuggestionCandidates(t).forEach(function(text){
-        if(existingTexts.indexOf(text) !== -1) return;
-        var item = {id:nextChecklistId(t), text:text, due:defaultDue, assignee:defaultAssignee, done:false};
-        checklistOf(t).push(item);
-        pendingChecklistTaskItems.push(item);
-        existingTexts.push(text);
-        newItems.push(item);
+    if(action === 'edit-toggle'){
+      if(editingChecklistSectionId === section.id) return;
+      editingChecklistSectionId = section.id;
+      TenderReferences.setDirty('checklistEdit', false);
+      renderProcessSections(tender);
+      return;
+    }
+    if(action === 'cancel-edit'){
+      TenderReferences.guardedClose('checklistEdit', closeChecklistEdit, function(){
+        sectionCard.querySelector('[data-checklist-action="save-edit"]').click();
       });
-      clGenerateBtn.disabled = false;
-      clGenerateBtn.textContent = 'Сформировать лист';
-      if(!newItems.length){
-        showToast('Новых пунктов не найдено — все уже есть в списке.');
-        return;
-      }
-      if(checklistEditBox.hidden){
-        checklistView.hidden = true; progressLine.hidden = true;
-        checklistEditBox.hidden = false;
-        renderEditRows(t);
-      } else {
-        var newRow = editRows.querySelector('tr[data-id="new"]');
-        newItems.forEach(function(item){ editRows.insertBefore(buildChecklistEditRow(t, item), newRow); });
-      }
+      return;
+    }
+    if(action === 'save-edit'){
+      sectionCard.querySelectorAll('.checklist-edit-block tr[data-item-id]').forEach(function(tr){
+        if(tr.dataset.itemId === 'new') return;
+        var rowItem = checklistOf(section).find(function(d){ return String(d.id) === tr.dataset.itemId; });
+        if(!rowItem) return;
+        var newText = tr.querySelector('.edit-text').value.trim();
+        if(newText) rowItem.text = newText;
+        rowItem.due = tr.querySelector('.edit-date').value;
+        rowItem.assignee = tr.querySelector('.edit-assignee').value;
+      });
+      var tasksAssigned = 0;
+      pendingChecklistTaskItems.forEach(function(pendingItem){
+        var stillExists = checklistOf(section).indexOf(pendingItem) !== -1;
+        if(stillExists && pendingItem.assignee){
+          assignChecklistTask(tender, pendingItem);
+          tasksAssigned++;
+        }
+      });
+      pendingChecklistTaskItems = [];
+      saveTenders(tenders);
+      TenderReferences.setDirty('checklistEdit', false);
+      editingChecklistSectionId = null;
+      renderProcessSections(tender);
+      showToast(tasksAssigned
+        ? 'Чек-лист сохранён, задач поставлено: ' + tasksAssigned + '.'
+        : 'Чек-лист сохранён.');
+      return;
+    }
+    if(action === 'delete-item' && item){
+      section.checklist = checklistOf(section).filter(function(d){ return d.id !== item.id; });
+      saveTenders(tenders);
+      renderProcessSections(tender);
+      return;
+    }
+    if(action === 'attach-kopilka' && item){
+      var matches = findKopilkaMatches(item.text);
+      if(!matches.length) return;
+      var match = matches[0];
+      if(!confirm('Найден документ в Копилке («'+match.source+'»): «'+match.name+'».\nПрикрепить его к пункту «'+item.text+'»?')) return;
+      item.attachedDocument = {name:match.name, source:match.source};
+      item.done = true;
       TenderReferences.setDirty('checklistEdit', true);
-      showToast('Список сформирован — добавлено новых пунктов: ' + newItems.length + '. Проверьте и нажмите «Сохранить».');
-    }, 1400);
+      renderProcessSections(tender);
+      return;
+    }
+    if(action === 'detach-kopilka' && item){
+      delete item.attachedDocument;
+      item.done = false;
+      TenderReferences.setDirty('checklistEdit', true);
+      renderProcessSections(tender);
+      return;
+    }
+    if(action === 'commit-new'){
+      var trNew = sectionCard.querySelector('.checklist-edit-block tr[data-item-id="new"]');
+      var text = trNew.querySelector('.edit-text').value.trim();
+      if(!text) return;
+      var due = trNew.querySelector('.edit-date').value;
+      var assignee = trNew.querySelector('.edit-assignee').value;
+      var newItem = {id:nextChecklistId(section), text:text, due:due, assignee:assignee, done:false};
+      checklistOf(section).push(newItem);
+      pendingChecklistTaskItems.push(newItem);
+      saveTenders(tenders);
+      TenderReferences.setDirty('checklistEdit', true);
+      renderProcessSections(tender);
+      return;
+    }
+    if(action === 'generate'){
+      if(el.disabled) return;
+      el.disabled = true;
+      el.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span>Формируем список…';
+      setTimeout(function(){
+        var existingTexts = checklistOf(section).map(function(x){ return x.text.trim(); });
+        var newItems = [];
+        var defaultDue = defaultChecklistDueDate(tender.deadline);
+        var defaultAssignee = tender.manager || '';
+        checklistSuggestionCandidates(tender).forEach(function(text){
+          if(existingTexts.indexOf(text) !== -1) return;
+          var newItem = {id:nextChecklistId(section), text:text, due:defaultDue, assignee:defaultAssignee, done:false};
+          checklistOf(section).push(newItem);
+          pendingChecklistTaskItems.push(newItem);
+          existingTexts.push(text);
+          newItems.push(newItem);
+        });
+        if(!newItems.length){
+          showToast('Новых пунктов не найдено — все уже есть в списке.');
+          el.disabled = false;
+          el.textContent = 'Сформировать лист';
+          return;
+        }
+        editingChecklistSectionId = section.id;
+        TenderReferences.setDirty('checklistEdit', true);
+        renderProcessSections(tender);
+        showToast('Список сформирован — добавлено новых пунктов: ' + newItems.length + '. Проверьте и нажмите «Сохранить».');
+      }, 1400);
+      return;
+    }
+    if(action === 'add-open'){
+      openChecklistAdd(section);
+      return;
+    }
   });
-  checklistEditBox.addEventListener('input', function(){ TenderReferences.setDirty('checklistEdit', true); });
-  document.getElementById('clSaveEdit').addEventListener('click', function(){
+  document.getElementById('processSections').addEventListener('change', function(e){
     if(!tender) return;
-    editRows.querySelectorAll('tr').forEach(function(tr){
-      if(tr.dataset.id === 'new') return;
-      var item = checklistOf(tender).find(function(d){ return String(d.id) === tr.dataset.id; });
+    if(e.target.matches('[data-checklist-toggle]')){
+      var sectionCard = e.target.closest('[data-process-section-id]');
+      var sectionId = sectionCard && sectionCard.dataset.processSectionId;
+      var section = tender.tenderSections.find(function(s){ return s.id === sectionId; });
+      if(!section) return;
+      var itemId = Number(e.target.dataset.itemId);
+      var item = checklistOf(section).find(function(x){ return x.id === itemId; });
       if(!item) return;
-      var newText = tr.querySelector('.edit-text').value.trim();
-      if(newText) item.text = newText;
-      item.due = tr.querySelector('.edit-date').value;
-      item.assignee = tr.querySelector('.edit-assignee').value;
-    });
-    // новым пунктам (сформированы кнопкой "Сформировать лист" или добавлены строкой "+"),
-    // если они не были удалены до сохранения и у них указан ответственный — ставим задачу
-    var tasksAssigned = 0;
-    pendingChecklistTaskItems.forEach(function(pendingItem){
-      var stillExists = checklistOf(tender).indexOf(pendingItem) !== -1;
-      if(stillExists && pendingItem.assignee){
-        assignChecklistTask(tender, pendingItem);
-        tasksAssigned++;
-      }
-    });
-    pendingChecklistTaskItems = [];
-    saveTenders(tenders);
-    TenderReferences.setDirty('checklistEdit', false);
-    checklistView.hidden = false; progressLine.hidden = false;
-    checklistEditBox.hidden = true;
-    applyTenderData();
-    showToast(tasksAssigned
-      ? 'Чек-лист сохранён, задач поставлено: ' + tasksAssigned + '.'
-      : 'Чек-лист сохранён.');
+      item.done = e.target.checked;
+      saveTenders(tenders);
+      renderProcessSections(tender);
+      return;
+    }
+    if(e.target.closest('.checklist-edit-block')) TenderReferences.setDirty('checklistEdit', true);
+  });
+  document.getElementById('processSections').addEventListener('input', function(e){
+    if(e.target.closest('.checklist-edit-block')) TenderReferences.setDirty('checklistEdit', true);
   });
 
   var clAddOverlay = document.getElementById('clAddOverlay');
   var clAddText = document.getElementById('clAddText');
   var clAddDue = document.getElementById('clAddDue');
   var clAddAssignee = document.getElementById('clAddAssignee');
-  function closeClAddOverlay(){ clAddOverlay.classList.remove('is-open'); TenderReferences.setDirty('clAdd', false); }
-  document.getElementById('clAddOpen').addEventListener('click', function(){
+  var pendingChecklistAddSectionId = null;
+  function closeClAddOverlay(){ clAddOverlay.classList.remove('is-open'); TenderReferences.setDirty('clAdd', false); pendingChecklistAddSectionId = null; }
+  function openChecklistAdd(section){
     if(!tender) return;
+    pendingChecklistAddSectionId = section.id;
     clAddText.value = '';
     clAddDue.value = defaultChecklistDueDate(tender.deadline);
     clAddAssignee.innerHTML = participantOptions(tender, tender.manager || '');
     clAddOverlay.classList.add('is-open'); clAddText.focus();
     TenderReferences.setDirty('clAdd', false);
-  });
+  }
   clAddOverlay.addEventListener('input', function(){ TenderReferences.setDirty('clAdd', true); });
   clAddOverlay.addEventListener('change', function(){ TenderReferences.setDirty('clAdd', true); });
   document.getElementById('clAddCancel').addEventListener('click', function(){
@@ -2694,18 +2758,20 @@
     if(e.target === clAddOverlay) TenderReferences.guardedClose('clAdd', closeClAddOverlay, function(){ document.getElementById('clAddSave').click(); });
   });
   document.getElementById('clAddSave').addEventListener('click', function(){
-    if(!tender) return;
+    if(!tender || !pendingChecklistAddSectionId) return;
+    var section = tender.tenderSections.find(function(s){ return s.id === pendingChecklistAddSectionId; });
+    if(!section) return;
     var text = clAddText.value.trim();
     if(!text){ clAddText.focus(); return; }
     if(!clAddDue.value){ clAddDue.focus(); return; }
     if(!clAddAssignee.value){ clAddAssignee.focus(); return; }
-    var item = {id:nextChecklistId(tender), text:text, due:clAddDue.value, assignee:clAddAssignee.value, done:false};
-    checklistOf(tender).push(item);
+    var item = {id:nextChecklistId(section), text:text, due:clAddDue.value, assignee:clAddAssignee.value, done:false};
+    checklistOf(section).push(item);
     assignChecklistTask(tender, item);
     saveTenders(tenders);
     TenderReferences.setDirty('clAdd', false);
     closeClAddOverlay();
-    applyTenderData();
+    renderProcessSections(tender);
     showToast('Пункт добавлен, задача поставлена: '+item.assignee+'.');
   });
 
@@ -2828,6 +2894,15 @@
     TenderReferences.setDirty('taskEdit', false);
   });
   taskEditBox.addEventListener('input', function(){ TenderReferences.setDirty('taskEdit', true); });
+  function closeTaskEdit(){
+    TenderReferences.setDirty('taskEdit', false);
+    taskView.hidden = false; taskProgressLine.hidden = false;
+    taskEditBox.hidden = true;
+    renderTaskView(tender);
+  }
+  document.getElementById('taskCancelEdit').addEventListener('click', function(){
+    TenderReferences.guardedClose('taskEdit', closeTaskEdit, function(){ document.getElementById('taskSaveEdit').click(); });
+  });
   document.getElementById('taskSaveEdit').addEventListener('click', function(){
     if(!tender) return;
     taskEditRows.querySelectorAll('tr').forEach(function(tr){
@@ -2917,52 +2992,6 @@
     return '<button type="button" class="doc-download"'+data+' title="Скачать '+escSynced(name)+'">'
       +DOWNLOAD_SVG+'<span>'+escSynced(name)+'</span></button>';
   }
-  function renderDocuments(t){
-    var library = loadDocumentLibrary();
-    var founderLibraryDocs = library.filter(function(item){ return item.folder === 'Учредительные документы'; });
-    var founderDocs = founderLibraryDocs.map(function(item){
-      return {name:item.name, author:item.uploadedBy || 'Оксана Денисенко', date:fmtDate(item.uploadedAt || item.issueDate || '')};
-    });
-    // документы, прикреплённые из Копилки к пунктам чек-листа этого тендера, — тоже попадают в пакет учредительных
-    var checklistAttached = t ? checklistOf(t)
-      .filter(function(item){ return item.attachedDocument; })
-      .map(function(item){ return item.attachedDocument; })
-      .filter(function(doc){ return !founderDocs.some(function(f){ return f.name === doc.name; }); }) : [];
-    founderDocs = founderDocs.concat(checklistAttached.map(function(doc){
-      return {name:doc.name, author:'Из Копилки (чек-лист)', date:fmtDate(t && t.rowCreated)};
-    }));
-    document.getElementById('founderDocuments').innerHTML = founderDocs.length
-      ? founderDocs.map(function(doc){
-          return '<tr><td>'+documentButton(doc.name, 0, true)+'</td><td>'+escSynced(doc.author)
-            +'</td><td class="num">'+escSynced(doc.date)+'</td></tr>';
-        }).join('')
-      : '<tr><td colspan="3" class="empty-note">Документы пока не прикреплены.</td></tr>';
-    var archiveDocs = library.filter(function(item){ return item.folder === 'Архив поданных предложений'; });
-    var archiveCard = document.getElementById('submittedArchiveCard');
-    if(archiveCard){
-      archiveCard.innerHTML = archiveDocs.length
-        ? '<table class="plain"><thead><tr><th>Файл</th><th>Дата</th></tr></thead><tbody>'
-          + archiveDocs.map(function(item){
-              return '<tr><td>'+documentButton(item.name, 0, true)+'</td>'
-                +'<td class="num">'+escSynced(fmtDate(item.uploadedAt || ''))+'</td></tr>';
-            }).join('')
-          + '</tbody></table>'
-        : '<p class="empty-note">Пока пусто — появится после формирования КП.</p>';
-    }
-    var docs = t && Array.isArray(t.documents) ? t.documents : [];
-    document.getElementById('syncedTenderDocuments').innerHTML = docs.length
-      ? docs.map(function(doc,index){
-          var createdAt = doc && typeof doc === 'object' ? doc.createdAt : '';
-          return '<tr><td>'+documentButton(doc,index,false)+'</td><td><span class="tag">Документ</span></td>'
-            +'<td class="num">'+escSynced(fmtDate(createdAt || t.rowCreated))+'</td></tr>';
-        }).join('')
-      : '<tr><td colspan="3" class="empty-note">Документы пока не прикреплены.</td></tr>';
-    document.querySelectorAll('[data-static-doc]').forEach(function(button){
-      if(!button.innerHTML){
-        button.innerHTML = DOWNLOAD_SVG+'<span>'+escSynced(button.dataset.staticDoc)+'</span>';
-      }
-    });
-  }
   var editingProcessSectionId = '';
   var editingProcessDraft = null;
   var processSectionSelects = {};
@@ -2978,6 +3007,8 @@
     }
     var sectionDeadlineInput = sectionNode.querySelector('[data-process-section-deadline]');
     if(sectionDeadlineInput) editingProcessDraft.deadline = sectionDeadlineInput.value;
+    var actualSubmissionInput = sectionNode.querySelector('[data-process-section-actual-submission]');
+    if(actualSubmissionInput) editingProcessDraft.actualSubmissionDate = actualSubmissionInput.value;
   }
   function processLibraryDocumentChips(ids,kind,isEditing,library){
     var documents = uniqueDocumentIds(ids).map(function(id){
@@ -2996,31 +3027,33 @@
           : '')+'</span>';
     }).join('');
   }
+  function processArchiveLinkHtml(hasDocs){
+    return hasDocs
+      ? '<button class="process-archive-link" type="button"'
+        +' data-process-action="download-submission-archive" title="Скачать архивом">'+DOWNLOAD_SVG+'<span>архивом</span></button>'
+      : '';
+  }
   function processEditableDocumentBlock(title,ids,kind,library,withSubmissionActions){
+    var hasDocs = uniqueDocumentIds(ids).length > 0;
     return '<div class="process-documents"><span class="summary-label">'+title+'</span>'
+      +(withSubmissionActions ? processArchiveLinkHtml(hasDocs) : '')
       +'<div class="process-file-row"><span class="process-doc-edit-list">'
       +processLibraryDocumentChips(ids,kind,true,library)+'</span>'
       +'<input type="file" hidden multiple data-process-file-kind="'+kind+'">'
       +'<button class="btn btn-sm process-action-btn" type="button"'
-      +' data-process-action="pick-section-document" data-document-kind="'+kind+'">Добавить</button></div>'
+      +' data-process-action="pick-section-document" data-document-kind="'+kind+'">Добавить</button>'
       +(withSubmissionActions
-        ? '<div class="process-doc-actions">'
-          +'<button class="process-inline-action" type="button"'
-          +' data-process-action="download-submission-archive">Скачать архивом</button>'
-          +'<button class="process-inline-action" type="button"'
-          +' data-process-action="pick-from-kopilka">Выбрать из Копилки</button></div>'
-        : '')+'</div>';
+        ? '<button class="process-inline-action" type="button"'
+          +' data-process-action="pick-from-kopilka">Выбрать из Копилки</button>'
+        : '')+'</div></div>';
   }
   function processReadonlyDocumentBlock(title,ids,kind,library,withArchive){
     return '<div class="process-documents"><span class="summary-label">'+title+'</span>'
+      +(withArchive ? processArchiveLinkHtml(uniqueDocumentIds(ids).length > 0) : '')
       +'<div class="process-document-list">'
-      +processLibraryDocumentChips(ids,kind,false,library)+'</div>'
-      +(withArchive && uniqueDocumentIds(ids).length
-        ? '<div class="process-doc-actions"><button class="process-inline-action" type="button"'
-          +' data-process-action="download-submission-archive">Скачать архивом</button></div>'
-        : '')+'</div>';
+      +processLibraryDocumentChips(ids,kind,false,library)+'</div></div>';
   }
-  function processSectionHtml(section,index,commonDocs,library){
+  function processSectionHtml(t,section,index,commonDocs,library){
     var isEditing = editingProcessSectionId === section.id && !section.completed;
     var view = isEditing && editingProcessDraft
       ? editingProcessDraft
@@ -3028,52 +3061,64 @@
     var sectionDocumentIds = uniqueDocumentIds(view.documentIds);
     var formsDocumentIds = uniqueDocumentIds(view.formsDocumentIds);
     var submissionDocumentIds = uniqueDocumentIds(view.submissionDocumentIds);
+    var readonlyDocs = section.completed;
+    var docsBlock = readonlyDocs
+      ? processReadonlyDocumentBlock('Документы',sectionDocumentIds,'section',library,false)
+      : processEditableDocumentBlock('Документы',sectionDocumentIds,'section',library,false);
+    var formsBlock = readonlyDocs
+      ? processReadonlyDocumentBlock('Формы для заполнения',formsDocumentIds,'forms',library,false)
+      : processEditableDocumentBlock('Формы для заполнения',formsDocumentIds,'forms',library,false);
+    var submissionBlock = readonlyDocs
+      ? processReadonlyDocumentBlock('Документы на подачу',submissionDocumentIds,'submission',library,true)
+      : processEditableDocumentBlock('Документы на подачу',submissionDocumentIds,'submission',library,true);
+    var headingHtml = isEditing
+      ? '<div class="field process-section-name-field"><label>Название этапа</label><div data-process-section-select></div></div>'
+      : '<div><h3 class="process-section-title">'+(index+1)+'. '+escSynced(view.name || 'Название не указано')+'</h3>'
+        +'<div class="process-section-meta"><span class="process-chip">'+escSynced(view.stage || 'Отбор')+'</span>'
+        +'<span class="process-chip">'+escSynced(view.status || 'Статус не указан')+'</span>'
+        +(section.completed ? '<span class="process-chip">Завершена · снимок</span>' : '')+'</div></div>';
+    var leftTop = isEditing
+      ? '<div class="field"><label>Дата подачи</label><input type="datetime-local"'
+        +' data-process-section-deadline value="'+escSynced(String(view.deadline || '').slice(0,16))+'"></div>'
+      : '<div class="fact-row"><span class="k">Дата подачи</span><span class="v">'
+        +(view.deadline ? escSynced(fmtDeadlineDateTime(view.deadline)) : '—')+'</span></div>';
+    var rightTop = isEditing
+      ? '<div class="field"><label>Дата фактической подачи</label><input type="date"'
+        +' data-process-section-actual-submission value="'+escSynced(view.actualSubmissionDate || '')+'"></div>'
+      : '<div class="fact-row"><span class="k">Дата фактической подачи</span><span class="v">'
+        +(view.actualSubmissionDate ? escSynced(fmtDate(view.actualSubmissionDate)) : '—')+'</span></div>';
     return '<section class="card process-section'+(section.completed ? ' is-completed' : '')+'"'
       +' data-process-section-id="'+escSynced(section.id)+'">'
-      +'<div class="process-section-head"><div><h3 class="process-section-title">'
-      +(index+1)+'. '+escSynced(view.name || 'Название не указано')+'</h3>'
-      +'<div class="process-section-meta"><span class="process-chip">'+escSynced(view.stage || 'Отбор')+'</span>'
-      +'<span class="process-chip">'+escSynced(view.status || 'Статус не указан')+'</span>'
-      +(section.completed ? '<span class="process-chip">Завершена · снимок</span>' : '')+'</div></div>'
+      +'<div class="process-section-topbar">'+headingHtml
       +(!section.completed && !isEditing && userCanManageStages()
         ? '<button class="btn btn-sm rail-edit-btn" type="button" data-process-action="edit-section"'
           +' data-section-id="'+escSynced(section.id)+'" title="Редактировать этап" aria-label="Редактировать этап">'
           +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>'
         : '')+'</div>'
-      +(!isEditing && view.description
+      +(view.description
         ? '<div class="process-section-description-block"><span class="summary-label">Описание</span>'
-          +'<p class="process-section-description">'+escSynced(view.description)+'</p></div>' : '')
-      +(isEditing
-        ? '<div class="process-editor"><div class="process-editor-grid">'
-          +'<div class="field"><label>Название этапа</label><div data-process-section-select></div></div>'
-          +'<div class="field"><label>Дедлайн</label><input type="datetime-local"'
-          +' data-process-section-deadline value="'+escSynced(String(view.deadline || '').slice(0,16))+'"></div>'
+          +(isEditing
+            ? '<textarea data-process-section-description placeholder="Например: особенности этого этапа, на что обратить внимание">'+escSynced(view.description || '')+'</textarea>'
+            : '<p class="process-section-description">'+escSynced(view.description)+'</p>')
           +'</div>'
-          +'<div class="field" style="margin-top:16px"><label>Описание</label>'
-          +'<textarea data-process-section-description placeholder="Например: особенности этого этапа, на что обратить внимание">'
-          +escSynced(view.description || '')+'</textarea></div>'
-          +processEditableDocumentBlock('Документы',sectionDocumentIds,'section',library,false)
-          +processEditableDocumentBlock('Формы для заполнения',formsDocumentIds,'forms',library,false)
-          +processEditableDocumentBlock(
-            'Документы на подачу',submissionDocumentIds,'submission',library,true
-          )
-          +processAmountEditorHtml(view)
-          +'<div class="process-actions"><button class="btn" type="button" data-process-action="cancel-section">'
+        : (isEditing
+            ? '<div class="process-section-description-block"><span class="summary-label">Описание</span>'
+              +'<textarea data-process-section-description placeholder="Например: особенности этого этапа, на что обратить внимание"></textarea></div>'
+            : ''))
+      +'<div class="process-columns">'
+        +'<div class="process-column">'+leftTop+docsBlock+formsBlock+'</div>'
+        +'<div class="process-column">'+rightTop+processAmountEditorOrViewHtml(view,isEditing)+submissionBlock+'</div>'
+      +'</div>'
+      +checklistBlockHtml(t,section)
+      +(isEditing
+        ? '<div class="process-actions"><button class="btn" type="button" data-process-action="cancel-section">'
           +'Отмена</button><button class="btn btn-primary" type="button" data-process-action="save-section">'
-          +'Сохранить</button></div></div>'
-        : (section.completed
-            ? processReadonlyDocumentBlock('Документы',sectionDocumentIds,'section',library,false)
-              +processReadonlyDocumentBlock('Формы для заполнения',formsDocumentIds,'forms',library,false)
-              +processReadonlyDocumentBlock(
-                'Документы на подачу',submissionDocumentIds,'submission',library,true
-              )
-            : processEditableDocumentBlock('Документы',sectionDocumentIds,'section',library,false)
-              +processEditableDocumentBlock('Формы для заполнения',formsDocumentIds,'forms',library,false)
-              +processEditableDocumentBlock(
-                'Документы на подачу',submissionDocumentIds,'submission',library,true
-              ))
-          +processAmountViewHtml(view))
+          +'Сохранить</button></div>'
+        : '')
       +'</section>';
+  }
+  function processAmountEditorOrViewHtml(view,isEditing){
+    return isEditing ? processAmountEditorHtml(view) : processAmountViewHtml(view);
   }
   function formatMoney2(value){
     var num = Number(value);
@@ -3110,13 +3155,16 @@
     var container = document.getElementById('processSections');
     var commonDocs = Array.isArray(t.documents) ? t.documents : [];
     var library = loadDocumentLibrary();
-    t.tenderSections.forEach(function(section){
+    t.tenderSections.forEach(function(section,index){
       ensureLegacySectionDocumentIds(t,section);
       if(section.snapshot) ensureLegacySectionDocumentIds(t,section.snapshot);
+      ensureSectionChecklist(t,section,index===0);
+      if(section.snapshot) ensureSectionChecklist(t,section.snapshot,false);
     });
     container.innerHTML = t.tenderSections.map(function(section,index){
-      return processSectionHtml(section,index,commonDocs,library);
+      return processSectionHtml(t,section,index,commonDocs,library);
     }).join('');
+    renderHeaderChecklistProgress(t);
     processSectionSelects = {};
     if(editingProcessSectionId && editingProcessDraft){
       var editSection = container.querySelector('[data-process-section-id="'+editingProcessSectionId+'"]');
@@ -3205,10 +3253,6 @@
     var recommendation = document.getElementById('overviewAiRecommendation');
     recommendation.textContent = t.aiComment || 'Рекомендация ИИ пока не сформирована.';
     recommendation.classList.toggle('is-empty', !t.aiComment);
-    var docs = Array.isArray(t.documents) ? t.documents : [];
-    document.getElementById('overviewDocuments').innerHTML = docs.length
-      ? docs.map(function(doc,index){ return documentButton(doc,index,false); }).join('')
-      : '<span class="process-empty">Документы пока не прикреплены.</span>';
   }
   function renderReport(t){
     var latest = latestReportEntry(t);
@@ -3280,12 +3324,11 @@
     renderPlatform(tender);
     renderDirections(tender);
     renderResponsibles(tender);
-    if(!checklistEditBox || checklistEditBox.hidden) renderChecklistView(tender);
     if(!taskEditBox || taskEditBox.hidden) renderTaskView(tender);
 
     renderReport(tender);
     renderChat(tender);
-    renderDocuments(tender);
+    renderManualEvents(tender);
     renderOverviewDetails(tender);
     renderProcessSections(tender);
     applyOverviewCollapsedState();
@@ -3593,7 +3636,7 @@
       library
     );
     attachDocumentToSection(upload.kind,added.id,upload.sectionId);
-    checkDocumentAgainstChecklist(tender, added);
+    checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added);
     renderProcessSections(tender);
     continueSectionUploadQueue();
   }
@@ -3621,7 +3664,7 @@
       library
     );
     attachDocumentToSection(upload.kind,added.id,upload.sectionId);
-    checkDocumentAgainstChecklist(tender, added);
+    checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added);
     pendingDuplicateUpload = null;
     closeDuplicateWarning(false);
     renderProcessSections(tender);

@@ -1002,7 +1002,7 @@
       : '';
     var dupIco = t.rejectReason === 'Дубль' ? '<span class="dup-flag">ДУБЛЬ</span>' : '';
     var b = bucket(t);
-    var nameHref = t.cardUrl || '#';
+    var nameHref = 'kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent(b);
     return '<tr data-id="'+t.id+'">'
       + '<td>'+(canEdit
             ? '<button class="fav-star'+(t.fav?' is-fav':'')+'" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button>'
@@ -1010,7 +1010,7 @@
       + '<td>'+(canEdit
             ? '<select class="cell-select" data-field="manager" data-id="'+t.id+'"><option value="">—</option>'+optionsHtml(MANAGERS, t.manager)+'</select>'
             : esc(t.manager || '—'))+'</td>'
-      + '<td class="name-cell">'+riskIco+'<a class="'+titleClass+'" href="'+nameHref+'" target="_blank" rel="noopener">'+esc(t.name)+'</a>'+dupIco+'</td>'
+      + '<td class="name-cell">'+riskIco+'<a class="'+titleClass+'" href="'+nameHref+'">'+esc(t.name)+'</a>'+dupIco+'</td>'
       + '<td><span class="status-tag '+bucketClass(b)+'"><span class="dot"></span>'+b+'</span></td>'
       + '<td>'+esc(t.customer)+'</td>'
       + '<td class="num">'+fmtNum(t.nmc)+'</td>'
