@@ -144,6 +144,16 @@
   .info-item-label{font-size:12px;color:var(--ink-muted);margin-bottom:3px;}
   .info-item-value{font-size:14px;font-weight:600;color:var(--ink);}
 
+  .settings-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .settings-label{font-size:14px;font-weight:600;color:var(--ink);}
+  .theme-toggle{display:inline-flex;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+    overflow:hidden;}
+  .theme-option{border:none;background:var(--surface);color:var(--ink-muted);font:600 13px var(--font-body);
+    padding:8px 14px;cursor:pointer;}
+  .theme-option+.theme-option{border-left:1px solid var(--border-strong);}
+  .theme-option:hover:not(.is-active){background:var(--surface-2);}
+  .theme-option.is-active{background:var(--accent);color:var(--accent-ink);}
+
   .stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;}
   .stat-tile{text-align:center;}
   .stat-value{font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--ink);}
@@ -287,6 +297,18 @@
         <div>
           <div class="info-item-label">В компании с</div>
           <div class="info-item-value" id="pfSince"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Настройки</h3>
+      <div class="settings-row">
+        <div class="settings-label">Оформление</div>
+        <div class="theme-toggle" id="themeToggle">
+          <button type="button" class="theme-option" data-theme-value="light">Светлая</button>
+          <button type="button" class="theme-option" data-theme-value="dark">Тёмная</button>
+          <button type="button" class="theme-option" data-theme-value="system">Системная</button>
         </div>
       </div>
     </div>
@@ -487,6 +509,20 @@
     document.getElementById('portalNav').classList.toggle('is-collapsed');
     document.querySelector('.app').classList.toggle('nav-collapsed');
   });
+
+  function renderThemeToggle(){
+    var current = TenderReferences.getTheme();
+    document.querySelectorAll('.theme-option').forEach(function(btn){
+      btn.classList.toggle('is-active', btn.dataset.themeValue === current);
+    });
+  }
+  document.querySelectorAll('.theme-option').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      TenderReferences.setTheme(btn.dataset.themeValue);
+      renderThemeToggle();
+    });
+  });
+  renderThemeToggle();
 
   TenderReferences.applyAdminOnlyNav();
   renderProfile();

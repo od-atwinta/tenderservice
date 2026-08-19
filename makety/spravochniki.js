@@ -19,6 +19,7 @@
   // справочник доступов площадок (Настройки → Автоматизация) — независим от
   // списка площадок на странице "Платежи" (там тарифы/депозиты, здесь доступ)
   var ACCESS_DIRECTORY_KEY = 'atvinta_access_directory_v1';
+  var THEME_KEY = 'atvinta_theme_v1';
   var SYSTEM_ROLES = ['Суперадмин','Админ','Наблюдатель','Менеджер','Руководитель отдела','Сотрудник отдела'];
   var SECTION_ORDER = ['Новые','Ожидают решения','В работе','Заявки','Архив'];
   // статусы-исходы отказа/проигрыша, ведущие в Архив (без "Выиграли" — это не отказ);
@@ -811,6 +812,32 @@
     currentSection = displaySection(currentSection);
     return rule.type === 'through' ? currentSection : (rule.sections[0] || currentSection);
   }
+  // оформление (Профиль → настройка темы): 'light' | 'dark' | 'system'.
+  // 'system' — не ставим атрибут вообще, тогда работает CSS-медиазапрос
+  // prefers-color-scheme, уже готовый в каждом макете; light/dark ставят
+  // data-theme на <html>, что переопределяет медиазапрос через отдельные
+  // CSS-правила :root[data-theme="light"/"dark"], тоже уже готовые.
+  function getTheme(){
+    try{ return localStorage.getItem(THEME_KEY) || 'system'; }catch(e){ return 'system'; }
+  }
+  function applyTheme(value){
+    if(typeof document === 'undefined') return;
+    if(value === 'light' || value === 'dark'){
+      document.documentElement.setAttribute('data-theme', value);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }
+  function setTheme(value){
+    try{ localStorage.setItem(THEME_KEY, value); }catch(e){}
+    applyTheme(value);
+  }
+  applyTheme(getTheme());
+  if(typeof window !== 'undefined'){
+    window.addEventListener('storage', function(e){
+      if(e.key === THEME_KEY) applyTheme(getTheme());
+    });
+  }
   // скрывает пункты меню: data-admin-only — для всех кроме Админа/Суперадмина;
   // data-admin-observer-only — для всех кроме Админа/Суперадмина/Наблюдателя
   function applyAdminOnlyNav(){
@@ -944,6 +971,10 @@
     isSuperadminUser: isSuperadminUser,
     hasPermission: hasPermission,
     applyAdminOnlyNav: applyAdminOnlyNav,
+    themeKey: THEME_KEY,
+    getTheme: getTheme,
+    setTheme: setTheme,
+    applyTheme: applyTheme,
     usersKey: USERS_KEY,
     systemRoles: SYSTEM_ROLES.slice(),
     getUsers: loadUsers,
