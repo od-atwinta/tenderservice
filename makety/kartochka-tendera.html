@@ -308,6 +308,8 @@
   .process-panel-head .overview-toggle{margin-top:0;}
   .process-add-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
   .process-add-controls[hidden]{display:none!important;}
+  .process-add-hint{font-size:12.5px;color:var(--ink-muted);}
+  .process-add-hint:empty{display:none;}
   .process-add-select{width:190px;}
   .process-add-controls .btn:disabled,.process-add-controls .xselect-trigger:disabled{
     opacity:.45;cursor:not-allowed;pointer-events:none;
@@ -320,6 +322,11 @@
   .process-section-title{margin:0;font-size:17px;font-weight:700;color:var(--ink);}
   .process-section-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;}
   .process-section-description-block{margin-top:16px;}
+  .process-section-description-block .summary-label{display:block;margin-bottom:6px;}
+  .process-section-description-block textarea{display:block;width:100%;box-sizing:border-box;
+    border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:9px 10px;
+    font-family:var(--font-body);font-size:14px;background:var(--surface);color:var(--ink);
+    resize:vertical;min-height:76px;}
   .process-columns{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:16px;}
   .process-column{min-width:0;display:flex;flex-direction:column;gap:24px;}
   .process-column .fact-row{margin-top:0;}
@@ -374,7 +381,7 @@
   .process-document-option input{width:16px;height:16px;margin:0;accent-color:var(--accent);}
   .process-editor{margin-top:16px;padding-top:16px;border-top:1px solid var(--border);}
   .process-editor-grid{display:grid;grid-template-columns:220px 180px;gap:16px;}
-  .process-actions{display:flex;align-items:center;gap:12px;margin-top:20px;}
+  .process-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:20px;}
   .process-empty{color:var(--ink-muted);font-size:13.5px;}
   @media (max-width:760px){
     .overview-grid,.process-amount-grid,.process-amount-edit-grid,.process-editor-grid{grid-template-columns:1fr;}
@@ -393,10 +400,13 @@
   .report-box strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.03em;
     color:var(--ink-muted);margin:14px 0 4px;}
   .report-box strong:first-child{margin-top:0;}
-  .report-link{display:inline-block;margin-top:12px;font-size:13px;font-weight:600;color:var(--inline-action);
-    text-decoration:none;border:none;background:none;padding:0;font-family:var(--font-body);cursor:pointer;}
+  .report-link{display:inline-flex;align-items:center;gap:6px;margin-top:12px;height:32px;padding:0 12px;
+    font-size:12.5px;font-weight:600;color:var(--accent);text-decoration:none;
+    border:1px solid var(--accent);border-radius:var(--radius-sm);background:var(--accent-wash);
+    font-family:var(--font-body);cursor:pointer;}
+  .report-link svg{width:15px;height:15px;flex:none;}
   .overview-ai-actions .report-link{margin-top:0;}
-  .report-link:hover{text-decoration:underline;}
+  .report-link:hover{background:var(--accent);color:var(--accent-ink);}
   .modal-wide{max-width:640px;}
   .report-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
   .report-modal-head .r-subtitle{margin:0;font-size:13px;color:var(--ink-muted);}
@@ -419,6 +429,7 @@
     color:var(--ink-muted);font-weight:700;margin-bottom:8px;}
   .kopilka-file{display:flex;align-items:center;gap:8px;min-height:32px;font-size:13.5px;cursor:pointer;}
   .kopilka-file input{width:16px;height:16px;margin:0;accent-color:var(--accent);flex:none;}
+  .kopilka-file span{min-width:0;overflow-wrap:anywhere;}
   .kopilka-empty{color:var(--ink-muted);font-size:13.5px;}
 
   table.plain{width:100%;border-collapse:collapse;font-size:14px;}
@@ -453,13 +464,13 @@
   .icon-btn.icon-add:hover{background:var(--accent-wash);}
 
   .checklist{list-style:none;margin:0;padding:0;}
-  .checklist li{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);
-    font-size:14.5px;}
+  .checklist li{display:flex;flex-wrap:wrap;align-items:flex-start;gap:4px 10px;padding:10px 0;
+    border-bottom:1px solid var(--border);font-size:14.5px;}
   .checklist li:last-child{border-bottom:none;}
   .checklist input{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex:none;}
   .checklist li.done .cl-text{color:var(--ink-muted);text-decoration:line-through;}
-  .cl-text{flex:1;}
-  .cl-meta{flex:none;font-size:12px;color:var(--ink-muted);}
+  .cl-text{flex:1 1 200px;min-width:0;overflow-wrap:anywhere;}
+  .cl-meta{flex:1 1 200px;min-width:0;overflow-wrap:anywhere;font-size:12px;color:var(--ink-muted);}
   .progress-line{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
   .progress-track{flex:1;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden;}
   .progress-fill{height:100%;background:var(--success);}
@@ -469,13 +480,14 @@
   .edit-table{width:100%;border-collapse:collapse;font-size:13.5px;}
   .edit-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.03em;
     color:var(--ink-muted);font-weight:700;padding:0 8px 8px 0;}
-  .edit-table td{padding:5px 8px 5px 0;vertical-align:middle;}
+  .edit-table td{padding:5px 8px 5px 0;vertical-align:top;}
   .edit-table input[type="text"],.edit-table input[type="date"],.edit-table select{
     width:100%;height:32px;border:1px solid var(--border-strong);border-radius:6px;padding:0 8px;
     font-family:var(--font-body);font-size:13.5px;background:var(--surface);color:var(--ink);}
   .edit-table td:last-child{width:36px;padding-right:0;}
-  .cl-kopilka-match,.cl-kopilka-attached{margin-top:4px;font-size:12px;}
+  .cl-kopilka-match,.cl-kopilka-attached,.cl-dup-hint{margin-top:4px;font-size:12px;}
   .cl-kopilka-attached{color:var(--success);display:flex;align-items:center;gap:8px;}
+  .cl-dup-hint{color:var(--warning);}
 
   .timeline{list-style:none;margin:0;padding:0;}
   .timeline li{position:relative;padding:0 0 20px 22px;border-left:2px solid var(--border);}
@@ -744,7 +756,7 @@
     </header>
 
     <div class="checklist-progress-banner" id="checklistProgressBanner">
-      <span class="checklist-progress-label">Готовность документов</span>
+      <span class="checklist-progress-label">Готовность к подаче</span>
       <div class="checklist-progress-track"><div class="checklist-progress-fill" id="headerChecklistFill"></div></div>
       <span class="checklist-progress-percent" id="headerChecklistText">0%</span>
     </div>
@@ -831,7 +843,7 @@
             </div>
             <div class="overview-card-body" data-overview-body="ai">
               <div class="overview-ai-actions">
-                <button class="report-link" type="button" id="overviewReportLink">Отчёт ИИ</button>
+                <button class="report-link" type="button" id="overviewReportLink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span>Отчёт ИИ</span></button>
                 <span class="overview-value is-empty" id="overviewReportEmpty">Отчёт ИИ пока не готов.</span>
                 <button class="btn btn-sm btn-ai" type="button"
                   id="generateOverviewReport">Сгенерировать отчёт</button>
@@ -900,6 +912,7 @@
               <span>Многоэтапный</span>
             </label>
             <div class="process-add-controls" id="processAddControls">
+              <span class="process-add-hint" id="addProcessSectionHint"></span>
               <button class="btn btn-primary" type="button" id="addProcessSection">Добавить этап</button>
             </div>
           </div>
@@ -1319,6 +1332,23 @@
   </div>
 </div>
 
+<!-- CHECKLIST → KOPILKA MATCHES MODAL -->
+<div class="overlay" id="checklistKopilkaOverlay">
+  <div class="modal kopilka-modal">
+    <div class="modal-title-row">
+      <h4>Совпадения в Копилке</h4>
+      <button class="modal-close" type="button" id="checklistKopilkaClose"
+        aria-label="Закрыть">✕</button>
+    </div>
+    <p class="hint">Для новых пунктов чек-листа найдены похожие документы в Копилке. Отметьте, что нужно прикрепить.</p>
+    <div class="kopilka-folders" id="checklistKopilkaList"></div>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="checklistKopilkaCancel">Отмена</button>
+      <button class="btn btn-primary" type="button" id="checklistKopilkaAttach">Прикрепить выбранные</button>
+    </div>
+  </div>
+</div>
+
 <!-- TASK QUICK-ADD MODAL -->
 <div class="overlay" id="taskAddOverlay">
   <div class="modal">
@@ -1722,7 +1752,7 @@
     document.getElementById('toastText').textContent = text;
     toast.classList.add('is-open');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(function(){ toast.classList.remove('is-open'); }, 6000);
+    showToast._t = setTimeout(function(){ toast.classList.remove('is-open'); }, 10000);
   }
   function buildXSelect(values, current, placeholder, preserveOrder){
     values = preserveOrder ? values.slice() : TenderReferences.sortOptions(values);
@@ -2355,31 +2385,24 @@
     {id:3, text:'Справка об исполнении налоговых обязательств', due:'2026-07-20', assignee:'Ваня П.', done:false},
     {id:4, text:'Согласие на обработку персональных данных', due:'', assignee:'Марина Б.', done:false}
   ];
-  // демо-источник для кнопки "Сформировать лист" — реальный источник анализа (отчёт ИИ,
-  // текст документации или другое) пока не определён, см. Открытые вопросы.md
-  var CHECKLIST_AI_SUGGESTIONS = [
-    'Устав организации',
-    'Выписка из ЕГРЮЛ',
-    'Справка об исполнении налоговых обязательств',
-    'Копия лицензии на вид деятельности',
-    'Согласие на обработку персональных данных',
-    'Техническое задание',
-    'Коммерческое предложение',
-    'Банковская гарантия обеспечения заявки'
-  ];
-  // базовый список + пункты, найденные по справочнику "Чек-лист" (Настройки → Автоматизация)
-  // в тексте уже сгенерированного отчёта ИИ ("Требования к поставщику", "Критерии оценки")
-  function checklistSuggestionCandidates(t){
-    var candidates = CHECKLIST_AI_SUGGESTIONS.slice();
-    var report = t.aiReport;
-    if(report){
-      var text = [report.requirements, report.criteria].filter(Boolean).join(' ').toLocaleLowerCase('ru-RU');
-      TenderReferences.getChecklistTerms().forEach(function(term){
-        if(!term.phrase || !term.document) return;
-        if(text.indexOf(term.phrase.toLocaleLowerCase('ru-RU')) === -1) return;
-        if(candidates.indexOf(term.document) === -1) candidates.push(term.document);
-      });
-    }
+  // источник для кнопки "Сформировать лист" — документы этапа ("Документы" + "Формы
+  // для заполнения") и текст описания закупки, сверенные со справочником "Чек-лист"
+  // (Настройки → Автоматизация) по значимым словам; отчёт ИИ сюда намеренно не входит
+  // (решение Оксаны 2026-08-19: отчёт ИИ и формирование чек-листа не связывать напрямую)
+  function checklistSuggestionCandidates(t, section){
+    var library = loadDocumentLibrary();
+    var ids = uniqueDocumentIds((section.documentIds || []).concat(section.formsDocumentIds || []));
+    var docNames = ids.map(function(id){
+      var doc = library.find(function(d){ return d.id === id; });
+      return doc ? documentName(doc) : '';
+    }).filter(Boolean);
+    var text = (docNames.join(' ') + ' ' + (t.description || '')).toLocaleLowerCase('ru-RU');
+    var candidates = [];
+    TenderReferences.getChecklistTerms().forEach(function(term){
+      if(!term.phrase || !term.document) return;
+      if(text.indexOf(term.phrase.toLocaleLowerCase('ru-RU')) === -1) return;
+      if(candidates.indexOf(term.document) === -1) candidates.push(term.document);
+    });
     return candidates;
   }
   // ---- срок пункта чек-листа по умолчанию: дата подачи минус 3 дня, но не раньше сегодня ----
@@ -2445,8 +2468,17 @@
     var docWords = checklistSignificantWords(docName);
     return itemWords.some(function(w){ return docWords.indexOf(w) !== -1; });
   }
-  // при загрузке документа в карточку — проверяем чек-лист: если похожий пункт уже есть и ещё
-  // не отмечен, предлагаем отметить выполненным; если похожего пункта нет, предлагаем добавить
+  // похожесть двух пунктов чек-листа между собой (для подсказки "кажется, такой пункт уже есть"
+  // при "Сформировать лист" — сгенерированные пункты больше не пропускаются молча)
+  function checklistTextsAreSimilar(a, b){
+    var wordsA = checklistSignificantWords(a);
+    var wordsB = checklistSignificantWords(b);
+    return wordsA.some(function(w){ return wordsB.indexOf(w) !== -1; });
+  }
+  // при загрузке документа в "Документы на подачу" — проверяем чек-лист этого же этапа: если
+  // похожий пункт уже есть и ещё не отмечен, предлагаем отметить выполненным; если похожего
+  // пункта нет, предлагаем добавить (решение Оксаны 2026-08-19: сравниваем только "Документы
+  // на подачу", "Документы" и "Формы для заполнения" в это сравнение не входят)
   function checkDocumentAgainstChecklist(t, section, document){
     if(!section) return;
     var docName = documentName(document);
@@ -2458,7 +2490,7 @@
       if(matchedItem.done) return;
       if(!confirm('Загруженный документ «'+docName+'» похож на пункт чек-листа «'+matchedItem.text+'».\nОтметить этот пункт как выполненный?')) return;
       matchedItem.done = true;
-      matchedItem.attachedDocument = {name:docName, source:'Документы'};
+      matchedItem.attachedDocument = {name:docName, source:'Документы на подачу'};
       t.events = t.events || [];
       t.events.push({
         date:eventDate(),
@@ -2470,7 +2502,7 @@
       var newItem = {
         id:nextChecklistId(section), text:docName.replace(/\.[^.]+$/,''),
         due:defaultChecklistDueDate(t.deadline), assignee:t.manager || '', done:true,
-        attachedDocument:{name:docName, source:'Документы'}
+        attachedDocument:{name:docName, source:'Документы на подачу'}
       };
       checklistOf(section).push(newItem);
       t.events = t.events || [];
@@ -2482,6 +2514,31 @@
     }
     saveTenders(tenders);
     renderProcessSections(t);
+  }
+  // обратное направление: новый пункт чек-листа создан вручную — проверяем, нет ли уже среди
+  // загруженных "Документов на подачу" этого этапа документа с похожим названием; если есть,
+  // предлагаем сразу отметить пункт выполненным. Возвращает true, если пункт был отмечен —
+  // тогда проверку совпадений в Копилке для этого пункта уже можно не показывать.
+  function checkNewChecklistItemAgainstSubmissionDocs(t, section, item){
+    var library = loadDocumentLibrary();
+    var docs = uniqueDocumentIds(section.submissionDocumentIds)
+      .map(function(id){ return library.find(function(d){ return d.id === id; }); })
+      .filter(Boolean);
+    var matchedDoc = docs.find(function(doc){
+      return checklistItemMatchesDocumentName(item.text, documentName(doc));
+    });
+    if(!matchedDoc) return false;
+    var docName = documentName(matchedDoc);
+    if(!confirm('В "Документах на подачу" уже есть похожий документ «'+docName+'».\nОтметить пункт «'+item.text+'» как выполненный?')) return false;
+    item.done = true;
+    item.attachedDocument = {name:docName, source:'Документы на подачу'};
+    t.events = t.events || [];
+    t.events.push({
+      date:eventDate(),
+      text:'Пункт чек-листа «'+item.text+'» отмечен выполненным — совпадение с уже загруженным документом «'+docName+'».',
+      actor:CURRENT_USER.name
+    });
+    return true;
   }
   function checklistAssignees(t){
     var names = eligibleParticipants(t);
@@ -2496,17 +2553,16 @@
     }).join('');
   }
 
-  // сводная готовность документов по всем этапам тендера сразу — не по одному этапу
+  // готовность документов считается только по чек-листу активного этапа — у каждого
+  // этапа свой чек-лист, суммировать по всем этапам сразу не нужно (решение Оксаны 2026-08-19)
   function renderHeaderChecklistProgress(t){
     var fill = document.getElementById('headerChecklistFill');
     var text = document.getElementById('headerChecklistText');
     if(!fill || !text) return;
-    var total = 0, done = 0;
-    (t.tenderSections || []).forEach(function(section){
-      var data = checklistOf(section);
-      total += data.length;
-      done += data.filter(function(item){ return item.done; }).length;
-    });
+    var activeSection = TenderReferences.activeTenderSection(t);
+    var data = activeSection ? checklistOf(activeSection) : [];
+    var total = data.length;
+    var done = data.filter(function(item){ return item.done; }).length;
     var percent = total ? Math.round(done/total*100) : 0;
     fill.style.width = percent + '%';
     text.textContent = percent + '%';
@@ -2546,8 +2602,11 @@
     } else if(findKopilkaMatches(item.text).length){
       kopilkaHtml = '<div class="cl-kopilka-match"><button type="button" class="process-inline-action" data-checklist-action="attach-kopilka" data-item-id="'+item.id+'">📎 Есть в Копилке — прикрепить?</button></div>';
     }
+    var dupHtml = item.similarTo
+      ? '<div class="cl-dup-hint">Кажется, такой пункт уже есть: «'+escSynced(item.similarTo)+'»</div>'
+      : '';
     return '<tr data-item-id="'+item.id+'">'
-      +'<td><input type="text" class="edit-text" value="'+escSynced(item.text)+'">'+kopilkaHtml+'</td>'
+      +'<td><input type="text" class="edit-text" value="'+escSynced(item.text)+'">'+dupHtml+kopilkaHtml+'</td>'
       +'<td><input type="date" class="edit-date" value="'+escSynced(item.due)+'"></td>'
       +'<td><select class="edit-assignee">'+participantOptions(t, item.assignee)+'</select></td>'
       +'<td><button class="icon-btn icon-danger" type="button" data-checklist-action="delete-item" data-item-id="'+item.id+'" title="Удалить" aria-label="Удалить">'+CL_DELETE_ICON_SVG+'</button></td>'
@@ -2585,6 +2644,58 @@
     editingChecklistSectionId = null;
     renderProcessSections(tender);
   }
+
+  // ---- проверка совпадений в Копилке сразу при создании пункта(ов) чек-листа ----
+  // (и при ручном добавлении, и при "Сформировать лист") — показывает модальное окно
+  // со списком найденных документов и чекбоксами, а не тихую построчную подсказку
+  var checklistKopilkaOverlay = document.getElementById('checklistKopilkaOverlay');
+  var pendingChecklistKopilkaSuggestions = [];
+  function openChecklistKopilkaModal(items){
+    var suggestions = [];
+    items.forEach(function(item){
+      var matches = findKopilkaMatches(item.text);
+      if(matches.length) suggestions.push({item:item, match:matches[0]});
+    });
+    if(!suggestions.length) return false;
+    pendingChecklistKopilkaSuggestions = suggestions;
+    document.getElementById('checklistKopilkaList').innerHTML = suggestions.map(function(s, i){
+      return '<label class="kopilka-file"><input type="checkbox" checked data-index="'+i+'">'
+        +'<span>«'+escSynced(s.item.text)+'» → '+escSynced(s.match.name)+' ('+escSynced(s.match.source)+')</span></label>';
+    }).join('');
+    checklistKopilkaOverlay.classList.add('is-open');
+    return true;
+  }
+  function closeChecklistKopilkaModal(){
+    checklistKopilkaOverlay.classList.remove('is-open');
+    pendingChecklistKopilkaSuggestions = [];
+  }
+  document.getElementById('checklistKopilkaClose').addEventListener('click', closeChecklistKopilkaModal);
+  document.getElementById('checklistKopilkaCancel').addEventListener('click', closeChecklistKopilkaModal);
+  checklistKopilkaOverlay.addEventListener('click', function(event){
+    if(event.target === checklistKopilkaOverlay) closeChecklistKopilkaModal();
+  });
+  document.getElementById('checklistKopilkaAttach').addEventListener('click', function(){
+    var checked = document.querySelectorAll('#checklistKopilkaList input[type="checkbox"]:checked');
+    var attachedCount = 0;
+    checked.forEach(function(cb){
+      var suggestion = pendingChecklistKopilkaSuggestions[Number(cb.dataset.index)];
+      if(!suggestion) return;
+      suggestion.item.attachedDocument = {name:suggestion.match.name, source:suggestion.match.source};
+      suggestion.item.done = true;
+      attachedCount++;
+    });
+    if(tender && attachedCount){
+      tender.events = tender.events || [];
+      tender.events.push({
+        date:eventDate(),
+        text:'К пунктам чек-листа прикреплены документы из Копилки: '+attachedCount+'.',
+        actor:CURRENT_USER.name
+      });
+      saveTenders(tenders);
+    }
+    closeChecklistKopilkaModal();
+    renderProcessSections(tender);
+  });
   document.getElementById('processSections').addEventListener('click', function(e){
     if(!tender) return;
     var el = e.target.closest('[data-checklist-action]');
@@ -2673,9 +2784,16 @@
       var newItem = {id:nextChecklistId(section), text:text, due:due, assignee:assignee, done:false};
       checklistOf(section).push(newItem);
       pendingChecklistTaskItems.push(newItem);
+      var matchedOwnDoc = checkNewChecklistItemAgainstSubmissionDocs(tender, section, newItem);
       saveTenders(tenders);
       TenderReferences.setDirty('checklistEdit', true);
       renderProcessSections(tender);
+      if(!matchedOwnDoc) openChecklistKopilkaModal([newItem]);
+      // фокус сразу на новую пустую строку — чтобы добавлять пункты подряд, не нажимая
+      // "Сохранить" после каждого (решение Оксаны 2026-08-19)
+      var freshCard = document.querySelector('[data-process-section-id="'+section.id+'"]');
+      var freshNewInput = freshCard && freshCard.querySelector('.checklist-edit-block tr[data-item-id="new"] .edit-text');
+      if(freshNewInput) freshNewInput.focus();
       return;
     }
     if(action === 'generate'){
@@ -2683,27 +2801,59 @@
       el.disabled = true;
       el.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span>Формируем список…';
       setTimeout(function(){
-        var existingTexts = checklistOf(section).map(function(x){ return x.text.trim(); });
+        var priorItems = checklistOf(section).slice();
         var newItems = [];
         var defaultDue = defaultChecklistDueDate(tender.deadline);
         var defaultAssignee = tender.manager || '';
-        checklistSuggestionCandidates(tender).forEach(function(text){
-          if(existingTexts.indexOf(text) !== -1) return;
+        checklistSuggestionCandidates(tender, section).forEach(function(text){
+          var similar = priorItems.find(function(existing){ return checklistTextsAreSimilar(existing.text, text); });
           var newItem = {id:nextChecklistId(section), text:text, due:defaultDue, assignee:defaultAssignee, done:false};
+          if(similar) newItem.similarTo = similar.text;
           checklistOf(section).push(newItem);
           pendingChecklistTaskItems.push(newItem);
-          existingTexts.push(text);
+          priorItems.push(newItem);
           newItems.push(newItem);
         });
-        if(!newItems.length){
-          showToast('Новых пунктов не найдено — все уже есть в списке.');
-          el.disabled = false;
-          el.textContent = 'Сформировать лист';
-          return;
-        }
+        // сверяем с уже загруженными "Документами на подачу" этого этапа — если для
+        // документа ещё нет подходящего пункта (в т.ч. добавленного через "Выбрать из
+        // Копилки", где такой проверки не было), добавляем пункт сразу выполненным,
+        // без отдельного подтверждения — решение Оксаны 2026-08-19
+        var library = loadDocumentLibrary();
+        uniqueDocumentIds(section.submissionDocumentIds).map(function(id){
+          return library.find(function(d){ return d.id === id; });
+        }).filter(Boolean).forEach(function(doc){
+          var docName = documentName(doc);
+          var alreadyCovered = priorItems.some(function(item){
+            return checklistItemMatchesDocumentName(item.text, docName);
+          });
+          if(alreadyCovered) return;
+          var newItem = {
+            id:nextChecklistId(section), text:docName.replace(/\.[^.]+$/,''),
+            due:defaultDue, assignee:defaultAssignee, done:true,
+            attachedDocument:{name:docName, source:'Документы на подачу'}
+          };
+          checklistOf(section).push(newItem);
+          priorItems.push(newItem);
+          newItems.push(newItem);
+        });
+        // "Предложение" и "Презентация компании" добавляются по умолчанию при каждом
+        // формировании списка, а не только когда больше ничего не найдено — решение
+        // Оксаны 2026-08-19 (похожие уже существующие пункты получают подсказку, как и
+        // остальные найденные пункты, но всё равно добавляются)
+        ['Предложение','Презентация компании'].forEach(function(text){
+          var similar = priorItems.find(function(existing){ return checklistTextsAreSimilar(existing.text, text); });
+          var newItem = {id:nextChecklistId(section), text:text, due:defaultDue, assignee:defaultAssignee, done:false};
+          if(similar) newItem.similarTo = similar.text;
+          checklistOf(section).push(newItem);
+          pendingChecklistTaskItems.push(newItem);
+          priorItems.push(newItem);
+          newItems.push(newItem);
+        });
         editingChecklistSectionId = section.id;
         TenderReferences.setDirty('checklistEdit', true);
         renderProcessSections(tender);
+        var unattachedItems = newItems.filter(function(item){ return !item.attachedDocument; });
+        openChecklistKopilkaModal(unattachedItems);
         showToast('Список сформирован — добавлено новых пунктов: ' + newItems.length + '. Проверьте и нажмите «Сохранить».');
       }, 1400);
       return;
@@ -2768,11 +2918,13 @@
     var item = {id:nextChecklistId(section), text:text, due:clAddDue.value, assignee:clAddAssignee.value, done:false};
     checklistOf(section).push(item);
     assignChecklistTask(tender, item);
+    var matchedOwnDoc = checkNewChecklistItemAgainstSubmissionDocs(tender, section, item);
     saveTenders(tenders);
     TenderReferences.setDirty('clAdd', false);
     closeClAddOverlay();
     renderProcessSections(tender);
     showToast('Пункт добавлен, задача поставлена: '+item.assignee+'.');
+    if(!matchedOwnDoc) openChecklistKopilkaModal([item]);
   });
 
   // ---- tasks state (хранится в tender.tasks, персистентно) ----
@@ -2783,6 +2935,27 @@
   function nextTaskId(t){
     var ids = tasksOf(t).map(function(item){ return Number(item.id) || 0; });
     return (ids.length ? Math.max.apply(null, ids) : 0) + 1;
+  }
+  // создание/обновление автоматической системной задачи (не привязана к конкретному
+  // "поставившему" человеку) — assignedBy = сам ответственный, поэтому когда он же
+  // выполняет свою задачу, уведомление "задача от вас выполнена" не отправляется
+  // (решение Оксаны 2026-08-19). marker — скрытый признак для поиска той же задачи при
+  // повторном срабатывании, чтобы не плодить дубли.
+  function upsertAutoTask(t, marker, text, due, assignee, resetDone){
+    if(!assignee) return;
+    var existing = tasksOf(t).find(function(item){ return item.autoMarker === marker; });
+    if(existing){
+      existing.text = text;
+      existing.due = due;
+      existing.assignee = assignee;
+      existing.assignedBy = assignee;
+      if(resetDone) existing.done = false;
+    } else {
+      tasksOf(t).push({
+        id:nextTaskId(t), text:text, due:due, assignee:assignee, assignedBy:assignee,
+        done:false, autoMarker:marker
+      });
+    }
   }
   // при назначении ответственного на новый пункт чек-листа: ставим ему задачу
   // (та же вкладка "Задачи по тендеру"), отправляем уведомление и фиксируем в "Логи"
@@ -2827,6 +3000,23 @@
       cb.type = 'checkbox'; cb.checked = item.done; cb.dataset.id = item.id;
       cb.addEventListener('change', function(){
         item.done = cb.checked;
+        if(item.done && item.assignedBy && item.assignedBy !== CURRENT_USER.name){
+          var notifications = [];
+          try{ notifications = JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY) || '[]'); }catch(e){}
+          notifications.push({
+            recipient:item.assignedBy,
+            text:'Задача «'+item.text+'» по тендеру «'+t.name+'» выполнена — '+CURRENT_USER.name+'.',
+            date:new Date().toLocaleString('ru-RU'),
+            href:'kartochka-tendera.html?tender='+t.id
+          });
+          try{ localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications.slice(-50))); }catch(e){}
+          t.events = t.events || [];
+          t.events.push({
+            date:eventDate(),
+            text:'Задача «'+item.text+'» отмечена выполненной, автору отправлено уведомление.',
+            actor:CURRENT_USER.name
+          });
+        }
         saveTenders(tenders);
         renderTaskView(t);
       });
@@ -2880,6 +3070,8 @@
       tasksOf(t).push({id:nextTaskId(t), text:text, due:due, assignee:assignee, assignedBy:CURRENT_USER.name, done:false});
       saveTenders(tenders);
       renderTaskEditRows(t);
+      var freshInput = taskEditRows.querySelector('tr[data-id="new"] .edit-text');
+      if(freshInput) freshInput.focus();
     });
   }
 
@@ -3240,6 +3432,13 @@
     var addControls = document.getElementById('processAddControls');
     addControls.hidden = !t.multiStage;
     document.getElementById('addProcessSection').disabled = !canAdd;
+    var addHint = document.getElementById('addProcessSectionHint');
+    var activeSectionForAdd = TenderReferences.activeTenderSection(t);
+    addHint.textContent = canAdd ? '' : !activeSectionForAdd ? ''
+      : activeSectionForAdd.completed ? 'Текущий этап уже завершён — добавлять больше некуда.'
+      : activeSectionForAdd.name === 'Итог' ? 'Этап «Итог» — последний, новый этап после него не добавляется.'
+      : activeSectionForAdd.status !== 'Допущены' ? 'Доступно только после статуса «Допущены» по текущему этапу.'
+      : '';
   }
   function renderOverviewDetails(t){
     var description = document.getElementById('overviewDescription');
@@ -3636,7 +3835,9 @@
       library
     );
     attachDocumentToSection(upload.kind,added.id,upload.sectionId);
-    checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added);
+    if(upload.kind === 'submission'){
+      checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added);
+    }
     renderProcessSections(tender);
     continueSectionUploadQueue();
   }
@@ -3664,7 +3865,9 @@
       library
     );
     attachDocumentToSection(upload.kind,added.id,upload.sectionId);
-    checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added);
+    if(upload.kind === 'submission'){
+      checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added);
+    }
     pendingDuplicateUpload = null;
     closeDuplicateWarning(false);
     renderProcessSections(tender);
@@ -3858,6 +4061,12 @@
         text:'Обновлён этап «'+editingProcessDraft.name+'», дедлайн и документы.',
         actor:CURRENT_USER.name
       });
+      // при известной дате подачи ответственному ставится задача на эту дату — своя у
+      // каждого этапа (маркер по id этапа), без уведомления (решение Оксаны 2026-08-19)
+      if(tender.manager){
+        upsertAutoTask(tender, 'auto-submission-'+editingProcessDraft.id,
+          'Подать заявку по тендеру «'+tender.name+'»', sectionDeadline.slice(0,10), tender.manager, false);
+      }
       editingProcessSectionId = '';
       editingProcessDraft = null;
       TenderReferences.setDirty('processSection', false);
@@ -3917,6 +4126,17 @@
   function closeStatusMoveModal(){
     statusMoveOverlay.classList.remove('is-open');
     pendingStatusChange = null;
+  }
+  function pushAutoTaskNotification(recipient, text){
+    if(!tender) return;
+    var notifications = [];
+    try{ notifications = JSON.parse(localStorage.getItem(NOTIFICATIONS_KEY) || '[]'); }catch(e){}
+    notifications.push({
+      recipient:recipient, text:text,
+      date:new Date().toLocaleString('ru-RU'),
+      href:'kartochka-tendera.html?tender='+tender.id
+    });
+    try{ localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications.slice(-50))); }catch(e){}
   }
   function pushStatusNotification(t, destination){
     var notifications = [];
@@ -4083,6 +4303,11 @@
       comment:change.comment,
       actor:'Оксана Денисенко'
     });
+    if(moved && change.destination === 'Ожидают решения' && tender.manager){
+      upsertAutoTask(tender, 'auto-review',
+        'Изучить документы и принять решение по тендеру «'+tender.name+'»', '', tender.manager, true);
+      pushAutoTaskNotification(tender.manager, 'Изучить документы и принять решение по тендеру «'+tender.name+'»');
+    }
     saveTenders(tenders);
     pushStatusNotification(tender, change.destination);
     closeStatusMoveModal();

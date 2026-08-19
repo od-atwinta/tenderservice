@@ -1242,7 +1242,7 @@
     document.getElementById('toastText').textContent = text;
     toast.classList.add('is-open');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(function(){ toast.classList.remove('is-open'); }, 6000);
+    showToast._t = setTimeout(function(){ toast.classList.remove('is-open'); }, 10000);
   }
   document.getElementById('toastClose').addEventListener('click', function(){
     document.getElementById('saveToast').classList.remove('is-open');
@@ -1510,6 +1510,23 @@
       t.depts = depts;
       t.dept = depts[0] || '';
       t.manager = manager;
+      // переходная задача для ответственного при переходе в "Ожидают решения" —
+      // тот же текст уходит и задачей, и уведомлением (решение Оксаны 2026-08-19)
+      var reviewTaskText = 'Изучить документы и принять решение по тендеру «'+t.name+'»';
+      t.tasks = Array.isArray(t.tasks) ? t.tasks : [];
+      var reviewTaskIds = t.tasks.map(function(item){ return Number(item.id) || 0; });
+      t.tasks.push({
+        id:(reviewTaskIds.length ? Math.max.apply(null, reviewTaskIds) : 0) + 1,
+        text:reviewTaskText, due:'', assignee:manager, assignedBy:manager, done:false
+      });
+      var acceptNotifications = [];
+      try{ acceptNotifications = JSON.parse(localStorage.getItem('atvinta_notifications_v1') || '[]'); }catch(e){}
+      acceptNotifications.push({
+        recipient:manager, text:reviewTaskText,
+        date:new Date().toLocaleString('ru-RU'),
+        href:'kartochka-tendera.html?tender='+t.id
+      });
+      try{ localStorage.setItem('atvinta_notifications_v1', JSON.stringify(acceptNotifications.slice(-50))); }catch(e){}
       TenderReferences.setDirty('accept-'+id, false);
       resolveCard(id, 'Передано в работу.');
       return;

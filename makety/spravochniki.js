@@ -582,6 +582,8 @@
         submissionDocumentIds:Array.isArray(normalized.submissionDocumentIds)
           ? normalized.submissionDocumentIds.slice()
           : [],
+        actualSubmissionDate:normalized.actualSubmissionDate || '',
+        checklist:Array.isArray(normalized.checklist) ? normalized.checklist : undefined,
         completed:!!normalized.completed,
         completedAt:normalized.completedAt || ''
       };

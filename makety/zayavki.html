@@ -1010,7 +1010,7 @@
     document.getElementById('toastText').textContent = text;
     toast.classList.add('is-open');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(function(){ toast.classList.remove('is-open'); }, 6000);
+    showToast._t = setTimeout(function(){ toast.classList.remove('is-open'); }, 10000);
   }
   document.getElementById('toastClose').addEventListener('click', function(){
     document.getElementById('saveToast').classList.remove('is-open');
@@ -1094,6 +1094,34 @@
       comment:change.comment,
       actor:'Оксана Денисенко'
     });
+    if(moved && change.destination === 'Ожидают решения' && t.manager){
+      // переходная задача для ответственного при переходе в "Ожидают решения" —
+      // тот же текст уходит и задачей, и уведомлением (решение Оксаны 2026-08-19)
+      var reviewTaskText = 'Изучить документы и принять решение по тендеру «'+t.name+'»';
+      t.tasks = Array.isArray(t.tasks) ? t.tasks : [];
+      var existingReviewTask = t.tasks.find(function(item){ return item.autoMarker === 'auto-review'; });
+      if(existingReviewTask){
+        existingReviewTask.text = reviewTaskText;
+        existingReviewTask.assignee = t.manager;
+        existingReviewTask.assignedBy = t.manager;
+        existingReviewTask.done = false;
+      } else {
+        var reviewTaskIds = t.tasks.map(function(item){ return Number(item.id) || 0; });
+        t.tasks.push({
+          id:(reviewTaskIds.length ? Math.max.apply(null, reviewTaskIds) : 0) + 1,
+          text:reviewTaskText, due:'', assignee:t.manager, assignedBy:t.manager, done:false,
+          autoMarker:'auto-review'
+        });
+      }
+      var reviewNotifications = [];
+      try{ reviewNotifications = JSON.parse(localStorage.getItem('atvinta_notifications_v1') || '[]'); }catch(e){}
+      reviewNotifications.push({
+        recipient:t.manager, text:reviewTaskText,
+        date:new Date().toLocaleString('ru-RU'),
+        href:'kartochka-tendera.html?tender='+t.id
+      });
+      try{ localStorage.setItem('atvinta_notifications_v1', JSON.stringify(reviewNotifications.slice(-50))); }catch(e){}
+    }
     saveTenders(tenders);
     pushStatusNotification(t, change.destination);
     closeStatusMoveModal();

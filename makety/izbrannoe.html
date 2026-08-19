@@ -1110,7 +1110,7 @@
     document.getElementById('toastText').textContent = text;
     toast.classList.add('is-open');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(function(){ toast.classList.remove('is-open'); }, 6000);
+    showToast._t = setTimeout(function(){ toast.classList.remove('is-open'); }, 10000);
   }
   document.getElementById('toastClose').addEventListener('click', function(){
     document.getElementById('saveToast').classList.remove('is-open');
