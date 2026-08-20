@@ -1,5 +1,6 @@
 <html lang="ru">
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <title>Площадки — справочник доступов</title>
 <style>
   :root{
@@ -587,11 +588,14 @@
     if(deleteEl){
       if(!TenderReferences.isSuperadminUser(current)) return;
       var toDelete = platforms.find(function(x){ return x.id === deleteEl.dataset.id; });
-      if(toDelete && confirm('Удалить площадку «'+toDelete.name+'» из справочника доступов? Это действие нельзя отменить.')){
-        platforms = platforms.filter(function(x){ return x.id !== deleteEl.dataset.id; });
-        persist();
-        render();
-        showToast('Площадка удалена.');
+      if(toDelete){
+        TenderReferences.confirmDialog('Удалить площадку «'+toDelete.name+'» из справочника доступов? Это действие нельзя отменить.', function(ok){
+          if(!ok) return;
+          platforms = platforms.filter(function(x){ return x.id !== deleteEl.dataset.id; });
+          persist();
+          render();
+          showToast('Площадка удалена.');
+        });
       }
     }
   });

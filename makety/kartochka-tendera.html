@@ -1,5 +1,6 @@
 <html lang="ru">
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <style>
   :root{
     --bg:#faf8f9;
@@ -1501,10 +1502,12 @@
       eventOverlay.classList.add('is-open'); evText.focus();
       TenderReferences.setDirty('event', false);
     } else if(el.dataset.action === 'delete-event'){
-      if(!confirm('Удалить событие «'+item.text+'»?')) return;
-      tender.manualEvents = manualEventsOf(tender).filter(function(x){ return x.id !== id; });
-      saveTenders(tenders);
-      renderManualEvents(tender);
+      TenderReferences.confirmDialog('Удалить событие «'+item.text+'»?', function(ok){
+        if(!ok) return;
+        tender.manualEvents = manualEventsOf(tender).filter(function(x){ return x.id !== id; });
+        saveTenders(tenders);
+        renderManualEvents(tender);
+      });
     }
   });
 
@@ -2425,6 +2428,14 @@
     var candidate = addDaysToDateString(deadlineDate, -3);
     return candidate < today ? today : candidate;
   }
+  // срок выполнения пункта чек-листа не может быть позднее даты подачи этапа,
+  // которому принадлежит чек-лист (решение Оксаны 2026-08-19)
+  function checklistDueDateExceedsDeadline(section, dueValue){
+    var deadlineDate = isoDateOnly(section && section.deadline);
+    if(!dueValue || !deadlineDate) return false;
+    return dueValue > deadlineDate;
+  }
+  var CHECKLIST_DATE_ERROR = 'Дата выполнения пункта не может быть позднее даты подачи тендера.';
   // ---- поиск совпадений в Копилке (Документы + Шаблоны) по значимым словам названия пункта ----
   var CHECKLIST_MATCH_STOP_WORDS = ['для','при','под','или','что','как','это','эти','его','нее','нее','обо','про'];
   function checklistSignificantWords(text){
@@ -2479,47 +2490,62 @@
   // похожий пункт уже есть и ещё не отмечен, предлагаем отметить выполненным; если похожего
   // пункта нет, предлагаем добавить (решение Оксаны 2026-08-19: сравниваем только "Документы
   // на подачу", "Документы" и "Формы для заполнения" в это сравнение не входят)
-  function checkDocumentAgainstChecklist(t, section, document){
-    if(!section) return;
+  function checkDocumentAgainstChecklist(t, section, document, onDone){
+    onDone = onDone || function(){};
+    if(!section) return onDone();
     var docName = documentName(document);
-    if(!checklistSignificantWords(docName).length) return;
+    if(!checklistSignificantWords(docName).length) return onDone();
     var matchedItem = checklistOf(section).find(function(item){
       return checklistItemMatchesDocumentName(item.text, docName);
     });
+    if(matchedItem && matchedItem.done) return onDone();
     if(matchedItem){
-      if(matchedItem.done) return;
-      if(!confirm('Загруженный документ «'+docName+'» похож на пункт чек-листа «'+matchedItem.text+'».\nОтметить этот пункт как выполненный?')) return;
-      matchedItem.done = true;
-      matchedItem.attachedDocument = {name:docName, source:'Документы на подачу'};
-      t.events = t.events || [];
-      t.events.push({
-        date:eventDate(),
-        text:'Пункт чек-листа «'+matchedItem.text+'» отмечен выполненным — загружен документ «'+docName+'».',
-        actor:CURRENT_USER.name
-      });
+      TenderReferences.confirmDialog(
+        'Загруженный документ «'+docName+'» похож на пункт чек-листа «'+matchedItem.text+'».\nОтметить этот пункт как выполненный?',
+        function(ok){
+          if(ok){
+            matchedItem.done = true;
+            matchedItem.attachedDocument = {name:docName, source:'Документы на подачу'};
+            t.events = t.events || [];
+            t.events.push({
+              date:eventDate(),
+              text:'Пункт чек-листа «'+matchedItem.text+'» отмечен выполненным — загружен документ «'+docName+'».',
+              actor:CURRENT_USER.name
+            });
+            saveTenders(tenders);
+          }
+          onDone();
+        }
+      );
     } else {
-      if(!confirm('В чек-листе нет пункта, похожего на загруженный документ «'+docName+'».\nДобавить его в чек-лист как новый (уже выполненный) пункт?')) return;
-      var newItem = {
-        id:nextChecklistId(section), text:docName.replace(/\.[^.]+$/,''),
-        due:defaultChecklistDueDate(t.deadline), assignee:t.manager || '', done:true,
-        attachedDocument:{name:docName, source:'Документы на подачу'}
-      };
-      checklistOf(section).push(newItem);
-      t.events = t.events || [];
-      t.events.push({
-        date:eventDate(),
-        text:'В чек-лист автоматически добавлен пункт «'+newItem.text+'» по загруженному документу.',
-        actor:CURRENT_USER.name
-      });
+      TenderReferences.confirmDialog(
+        'В чек-листе нет пункта, похожего на загруженный документ «'+docName+'».\nДобавить его в чек-лист как новый (уже выполненный) пункт?',
+        function(ok){
+          if(ok){
+            var newItem = {
+              id:nextChecklistId(section), text:docName.replace(/\.[^.]+$/,''),
+              due:defaultChecklistDueDate(t.deadline), assignee:t.manager || '', done:true,
+              attachedDocument:{name:docName, source:'Документы на подачу'}
+            };
+            checklistOf(section).push(newItem);
+            t.events = t.events || [];
+            t.events.push({
+              date:eventDate(),
+              text:'В чек-лист автоматически добавлен пункт «'+newItem.text+'» по загруженному документу.',
+              actor:CURRENT_USER.name
+            });
+            saveTenders(tenders);
+          }
+          onDone();
+        }
+      );
     }
-    saveTenders(tenders);
-    renderProcessSections(t);
   }
   // обратное направление: новый пункт чек-листа создан вручную — проверяем, нет ли уже среди
   // загруженных "Документов на подачу" этого этапа документа с похожим названием; если есть,
-  // предлагаем сразу отметить пункт выполненным. Возвращает true, если пункт был отмечен —
-  // тогда проверку совпадений в Копилке для этого пункта уже можно не показывать.
-  function checkNewChecklistItemAgainstSubmissionDocs(t, section, item){
+  // предлагаем сразу отметить пункт выполненным. onDone(matched) — matched=true, если пункт
+  // был отмечен, тогда проверку совпадений в Копилке для этого пункта уже можно не показывать.
+  function checkNewChecklistItemAgainstSubmissionDocs(t, section, item, onDone){
     var library = loadDocumentLibrary();
     var docs = uniqueDocumentIds(section.submissionDocumentIds)
       .map(function(id){ return library.find(function(d){ return d.id === id; }); })
@@ -2527,18 +2553,23 @@
     var matchedDoc = docs.find(function(doc){
       return checklistItemMatchesDocumentName(item.text, documentName(doc));
     });
-    if(!matchedDoc) return false;
+    if(!matchedDoc) return onDone(false);
     var docName = documentName(matchedDoc);
-    if(!confirm('В "Документах на подачу" уже есть похожий документ «'+docName+'».\nОтметить пункт «'+item.text+'» как выполненный?')) return false;
-    item.done = true;
-    item.attachedDocument = {name:docName, source:'Документы на подачу'};
-    t.events = t.events || [];
-    t.events.push({
-      date:eventDate(),
-      text:'Пункт чек-листа «'+item.text+'» отмечен выполненным — совпадение с уже загруженным документом «'+docName+'».',
-      actor:CURRENT_USER.name
-    });
-    return true;
+    TenderReferences.confirmDialog(
+      'В "Документах на подачу" уже есть похожий документ «'+docName+'».\nОтметить пункт «'+item.text+'» как выполненный?',
+      function(ok){
+        if(!ok) return onDone(false);
+        item.done = true;
+        item.attachedDocument = {name:docName, source:'Документы на подачу'};
+        t.events = t.events || [];
+        t.events.push({
+          date:eventDate(),
+          text:'Пункт чек-листа «'+item.text+'» отмечен выполненным — совпадение с уже загруженным документом «'+docName+'».',
+          actor:CURRENT_USER.name
+        });
+        onDone(true);
+      }
+    );
   }
   function checklistAssignees(t){
     var names = eligibleParticipants(t);
@@ -2724,6 +2755,17 @@
       return;
     }
     if(action === 'save-edit'){
+      var invalidDateInput = null;
+      sectionCard.querySelectorAll('.checklist-edit-block tr[data-item-id]').forEach(function(tr){
+        if(tr.dataset.itemId === 'new' || invalidDateInput) return;
+        var dateInput = tr.querySelector('.edit-date');
+        if(checklistDueDateExceedsDeadline(section, dateInput.value)) invalidDateInput = dateInput;
+      });
+      if(invalidDateInput){
+        invalidDateInput.style.borderColor = 'var(--danger)';
+        showToast(CHECKLIST_DATE_ERROR);
+        return;
+      }
       sectionCard.querySelectorAll('.checklist-edit-block tr[data-item-id]').forEach(function(tr){
         if(tr.dataset.itemId === 'new') return;
         var rowItem = checklistOf(section).find(function(d){ return String(d.id) === tr.dataset.itemId; });
@@ -2761,11 +2803,16 @@
       var matches = findKopilkaMatches(item.text);
       if(!matches.length) return;
       var match = matches[0];
-      if(!confirm('Найден документ в Копилке («'+match.source+'»): «'+match.name+'».\nПрикрепить его к пункту «'+item.text+'»?')) return;
-      item.attachedDocument = {name:match.name, source:match.source};
-      item.done = true;
-      TenderReferences.setDirty('checklistEdit', true);
-      renderProcessSections(tender);
+      TenderReferences.confirmDialog(
+        'Найден документ в Копилке («'+match.source+'»): «'+match.name+'».\nПрикрепить его к пункту «'+item.text+'»?',
+        function(ok){
+          if(!ok) return;
+          item.attachedDocument = {name:match.name, source:match.source};
+          item.done = true;
+          TenderReferences.setDirty('checklistEdit', true);
+          renderProcessSections(tender);
+        }
+      );
       return;
     }
     if(action === 'detach-kopilka' && item){
@@ -2779,21 +2826,28 @@
       var trNew = sectionCard.querySelector('.checklist-edit-block tr[data-item-id="new"]');
       var text = trNew.querySelector('.edit-text').value.trim();
       if(!text) return;
-      var due = trNew.querySelector('.edit-date').value;
+      var dateInput = trNew.querySelector('.edit-date');
+      var due = dateInput.value;
+      if(checklistDueDateExceedsDeadline(section, due)){
+        dateInput.style.borderColor = 'var(--danger)';
+        showToast(CHECKLIST_DATE_ERROR);
+        return;
+      }
       var assignee = trNew.querySelector('.edit-assignee').value;
       var newItem = {id:nextChecklistId(section), text:text, due:due, assignee:assignee, done:false};
       checklistOf(section).push(newItem);
       pendingChecklistTaskItems.push(newItem);
-      var matchedOwnDoc = checkNewChecklistItemAgainstSubmissionDocs(tender, section, newItem);
-      saveTenders(tenders);
-      TenderReferences.setDirty('checklistEdit', true);
-      renderProcessSections(tender);
-      if(!matchedOwnDoc) openChecklistKopilkaModal([newItem]);
-      // фокус сразу на новую пустую строку — чтобы добавлять пункты подряд, не нажимая
-      // "Сохранить" после каждого (решение Оксаны 2026-08-19)
-      var freshCard = document.querySelector('[data-process-section-id="'+section.id+'"]');
-      var freshNewInput = freshCard && freshCard.querySelector('.checklist-edit-block tr[data-item-id="new"] .edit-text');
-      if(freshNewInput) freshNewInput.focus();
+      checkNewChecklistItemAgainstSubmissionDocs(tender, section, newItem, function(matchedOwnDoc){
+        saveTenders(tenders);
+        TenderReferences.setDirty('checklistEdit', true);
+        renderProcessSections(tender);
+        if(!matchedOwnDoc) openChecklistKopilkaModal([newItem]);
+        // фокус сразу на новую пустую строку — чтобы добавлять пункты подряд, не нажимая
+        // "Сохранить" после каждого (решение Оксаны 2026-08-19)
+        var freshCard = document.querySelector('[data-process-section-id="'+section.id+'"]');
+        var freshNewInput = freshCard && freshCard.querySelector('.checklist-edit-block tr[data-item-id="new"] .edit-text');
+        if(freshNewInput) freshNewInput.focus();
+      });
       return;
     }
     if(action === 'generate'){
@@ -2895,6 +2949,7 @@
     pendingChecklistAddSectionId = section.id;
     clAddText.value = '';
     clAddDue.value = defaultChecklistDueDate(tender.deadline);
+    clAddDue.style.borderColor = '';
     clAddAssignee.innerHTML = participantOptions(tender, tender.manager || '');
     clAddOverlay.classList.add('is-open'); clAddText.focus();
     TenderReferences.setDirty('clAdd', false);
@@ -2915,16 +2970,22 @@
     if(!text){ clAddText.focus(); return; }
     if(!clAddDue.value){ clAddDue.focus(); return; }
     if(!clAddAssignee.value){ clAddAssignee.focus(); return; }
+    if(checklistDueDateExceedsDeadline(section, clAddDue.value)){
+      clAddDue.style.borderColor = 'var(--danger)';
+      showToast(CHECKLIST_DATE_ERROR);
+      return;
+    }
     var item = {id:nextChecklistId(section), text:text, due:clAddDue.value, assignee:clAddAssignee.value, done:false};
     checklistOf(section).push(item);
     assignChecklistTask(tender, item);
-    var matchedOwnDoc = checkNewChecklistItemAgainstSubmissionDocs(tender, section, item);
-    saveTenders(tenders);
     TenderReferences.setDirty('clAdd', false);
     closeClAddOverlay();
-    renderProcessSections(tender);
-    showToast('Пункт добавлен, задача поставлена: '+item.assignee+'.');
-    if(!matchedOwnDoc) openChecklistKopilkaModal([item]);
+    checkNewChecklistItemAgainstSubmissionDocs(tender, section, item, function(matchedOwnDoc){
+      saveTenders(tenders);
+      renderProcessSections(tender);
+      showToast('Пункт добавлен, задача поставлена: '+item.assignee+'.');
+      if(!matchedOwnDoc) openChecklistKopilkaModal([item]);
+    });
   });
 
   // ---- tasks state (хранится в tender.tasks, персистентно) ----
@@ -3836,10 +3897,14 @@
     );
     attachDocumentToSection(upload.kind,added.id,upload.sectionId);
     if(upload.kind === 'submission'){
-      checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added);
+      checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added, function(){
+        renderProcessSections(tender);
+        continueSectionUploadQueue();
+      });
+    } else {
+      renderProcessSections(tender);
+      continueSectionUploadQueue();
     }
-    renderProcessSections(tender);
-    continueSectionUploadQueue();
   }
   function closeDuplicateWarning(skipCurrent){
     documentDuplicateOverlay.classList.remove('is-open');
@@ -3865,13 +3930,17 @@
       library
     );
     attachDocumentToSection(upload.kind,added.id,upload.sectionId);
-    if(upload.kind === 'submission'){
-      checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added);
-    }
     pendingDuplicateUpload = null;
     closeDuplicateWarning(false);
-    renderProcessSections(tender);
-    continueSectionUploadQueue();
+    if(upload.kind === 'submission'){
+      checkDocumentAgainstChecklist(tender, tender.tenderSections.find(function(s){ return s.id === upload.sectionId; }), added, function(){
+        renderProcessSections(tender);
+        continueSectionUploadQueue();
+      });
+    } else {
+      renderProcessSections(tender);
+      continueSectionUploadQueue();
+    }
   });
   function renderKopilka(){
     var library = loadDocumentLibrary();

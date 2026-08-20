@@ -1,5 +1,6 @@
 <html lang="ru">
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <title>Копилка</title>
 <style>
   /* атрибут hidden должен всегда побеждать display, заданный классами (.btn, .filter-bar и т.д.) */
@@ -1356,11 +1357,14 @@
     if(el.dataset.action === 'delete-doc'){
       if(!TenderReferences.hasPermission('kopilkaDeleteDocs', current, ['superadmin','admin'])) return;
       var toDeleteDoc = library.find(function(d){ return d.id === el.dataset.id; });
-      if(toDeleteDoc && confirm('Удалить документ «'+toDeleteDoc.name+'» из Копилки? Это действие нельзя отменить.')){
-        library = library.filter(function(d){ return d.id !== el.dataset.id; });
-        saveLibrary(library);
-        render();
-        showToast('Документ удалён.');
+      if(toDeleteDoc){
+        TenderReferences.confirmDialog('Удалить документ «'+toDeleteDoc.name+'» из Копилки? Это действие нельзя отменить.', function(ok){
+          if(!ok) return;
+          library = library.filter(function(d){ return d.id !== el.dataset.id; });
+          saveLibrary(library);
+          render();
+          showToast('Документ удалён.');
+        });
       }
     }
     if(el.dataset.action === 'preview-doc'){
@@ -1379,11 +1383,14 @@
     if(el.dataset.action === 'delete-staff'){
       if(!TenderReferences.hasPermission('kopilkaDeleteStaff', current, ['superadmin','admin'])) return;
       var toDelete = staff.find(function(s){ return s.id === el.dataset.id; });
-      if(toDelete && confirm('Удалить сотрудника «'+toDelete.name+'» из справочника? Это действие нельзя отменить.')){
-        staff = staff.filter(function(s){ return s.id !== el.dataset.id; });
-        saveStaff(staff);
-        render();
-        showToast('Сотрудник удалён.');
+      if(toDelete){
+        TenderReferences.confirmDialog('Удалить сотрудника «'+toDelete.name+'» из справочника? Это действие нельзя отменить.', function(ok){
+          if(!ok) return;
+          staff = staff.filter(function(s){ return s.id !== el.dataset.id; });
+          saveStaff(staff);
+          render();
+          showToast('Сотрудник удалён.');
+        });
       }
     }
     if(el.dataset.action === 'edit-exp'){
@@ -1394,11 +1401,14 @@
     if(el.dataset.action === 'delete-exp'){
       if(!TenderReferences.hasPermission('kopilkaDeleteExp', current, ['superadmin','admin'])) return;
       var toDeleteExp = experience.find(function(x){ return x.id === el.dataset.id; });
-      if(toDeleteExp && confirm('Удалить контракт с «'+toDeleteExp.contractor+'» из справочника? Это действие нельзя отменить.')){
-        experience = experience.filter(function(x){ return x.id !== el.dataset.id; });
-        saveExperience(experience);
-        render();
-        showToast('Контракт удалён.');
+      if(toDeleteExp){
+        TenderReferences.confirmDialog('Удалить контракт с «'+toDeleteExp.contractor+'» из справочника? Это действие нельзя отменить.', function(ok){
+          if(!ok) return;
+          experience = experience.filter(function(x){ return x.id !== el.dataset.id; });
+          saveExperience(experience);
+          render();
+          showToast('Контракт удалён.');
+        });
       }
     }
     if(el.dataset.action === 'view-smeta'){
@@ -1413,11 +1423,14 @@
     if(el.dataset.action === 'delete-template'){
       if(!TenderReferences.hasPermission('kopilkaDeleteTemplates', current, ['superadmin','admin'])) return;
       var toDeleteTpl = templates.find(function(t){ return t.id === el.dataset.id; });
-      if(toDeleteTpl && confirm('Удалить шаблон «'+toDeleteTpl.name+'» из Копилки? Это действие нельзя отменить.')){
-        templates = templates.filter(function(t){ return t.id !== el.dataset.id; });
-        saveTemplates(templates);
-        render();
-        showToast('Шаблон удалён.');
+      if(toDeleteTpl){
+        TenderReferences.confirmDialog('Удалить шаблон «'+toDeleteTpl.name+'» из Копилки? Это действие нельзя отменить.', function(ok){
+          if(!ok) return;
+          templates = templates.filter(function(t){ return t.id !== el.dataset.id; });
+          saveTemplates(templates);
+          render();
+          showToast('Шаблон удалён.');
+        });
       }
     }
     if(el.dataset.action === 'preview-template'){

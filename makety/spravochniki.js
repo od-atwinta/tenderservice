@@ -14,6 +14,7 @@
   var USERS_KEY = 'atvinta_users_v1';
   var USERS_SEED_MIGRATION_KEY = 'atvinta_users_seeded_v1';
   var CHECKLIST_TERMS_KEY = 'atvinta_checklist_terms_v1';
+  var RATES_KEY = 'atvinta_rates_v1';
   var EXPERIENCE_KEY = 'atvinta_experience_v1';
   var DEPARTMENT_COLORS_KEY = 'atvinta_department_colors_v1';
   // справочник доступов площадок (Настройки → Автоматизация) — независим от
@@ -108,6 +109,9 @@
     {phrase:'СРО', document:'Выписка из реестра СРО'},
     {phrase:'аккредитация', document:'Свидетельство об аккредитации'}
   ];
+  // ставки (Настройки → Автоматизация): почасовая ставка стандартной разработки
+  // (одно число) + список специалистов Time&Material со своими ставками
+  var DEFAULT_RATES = {standardHourlyRate:3500, timeMaterial:[]};
   // цвет плашки направления (Дизайн-система.md): 6 текущих значений не меняются;
   // остальные 12 — согласованный резерв пастельных тонов для новых направлений
   var DEFAULT_DEPARTMENT_COLORS = {
@@ -333,6 +337,29 @@
       return {phrase:String((item && item.phrase) || '').trim(), document:String((item && item.document) || '').trim()};
     }).filter(function(item){ return item.phrase && item.document; });
     localStorage.setItem(CHECKLIST_TERMS_KEY, JSON.stringify(clean));
+    return clean;
+  }
+  function loadRates(){
+    var stored = null;
+    try{ stored = JSON.parse(localStorage.getItem(RATES_KEY)); }catch(error){}
+    if(!stored || typeof stored !== 'object'){
+      stored = clone(DEFAULT_RATES);
+      localStorage.setItem(RATES_KEY, JSON.stringify(stored));
+    }
+    return {
+      standardHourlyRate: stored.standardHourlyRate != null ? stored.standardHourlyRate : DEFAULT_RATES.standardHourlyRate,
+      timeMaterial: Array.isArray(stored.timeMaterial) ? stored.timeMaterial : []
+    };
+  }
+  function saveRates(rates){
+    var clean = {
+      standardHourlyRate: (rates && rates.standardHourlyRate !== '' && rates.standardHourlyRate != null && !isNaN(rates.standardHourlyRate))
+        ? Number(rates.standardHourlyRate) : null,
+      timeMaterial: (Array.isArray(rates && rates.timeMaterial) ? rates.timeMaterial : []).map(function(item){
+        return {specialist:String((item && item.specialist) || '').trim(), rate:Number((item && item.rate) || 0)};
+      }).filter(function(item){ return item.specialist && item.rate; })
+    };
+    localStorage.setItem(RATES_KEY, JSON.stringify(clean));
     return clean;
   }
   function loadDepartmentColors(){
@@ -913,9 +940,51 @@
     overlay.addEventListener('click', onClick);
   }
 
+  // общее диалоговое окно подтверждения (да/нет) взамен браузерного confirm() —
+  // тот же принцип, что и у unsavedGuardModal выше: переиспользует .overlay/.modal,
+  // создаётся один раз на страницу и добавляется в document.body, поэтому доступно
+  // сразу на любой странице сервиса без отдельной разметки в каждом макете.
+  // callback(confirmed) — confirmed это true/false. options: {okLabel, cancelLabel}
+  var confirmDialogOverlay = null;
+  function confirmDialogModal(){
+    if(confirmDialogOverlay) return confirmDialogOverlay;
+    var overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.id = 'confirmDialogOverlay';
+    overlay.style.zIndex = '60';
+    overlay.innerHTML = '<div class="modal" style="max-width:400px;">'
+      + '<h4 data-confirm-dialog-title>Подтверждение</h4>'
+      + '<p class="hint" data-confirm-dialog-text style="margin:8px 0 0;font-size:13px;color:var(--ink-muted);white-space:pre-line;"></p>'
+      + '<div class="modal-actions">'
+      + '<button type="button" class="btn" data-confirm-dialog="cancel">Отмена</button>'
+      + '<button type="button" class="btn btn-primary" data-confirm-dialog="ok">Подтвердить</button>'
+      + '</div></div>';
+    document.body.appendChild(overlay);
+    confirmDialogOverlay = overlay;
+    return overlay;
+  }
+  function confirmDialog(text, callback, options){
+    options = options || {};
+    var overlay = confirmDialogModal();
+    overlay.querySelector('[data-confirm-dialog-title]').textContent = options.title || 'Подтверждение';
+    overlay.querySelector('[data-confirm-dialog-text]').textContent = text;
+    overlay.querySelector('[data-confirm-dialog="ok"]').textContent = options.okLabel || 'Подтвердить';
+    overlay.querySelector('[data-confirm-dialog="cancel"]').textContent = options.cancelLabel || 'Отмена';
+    overlay.classList.add('is-open');
+    function onClick(e){
+      var btn = e.target.closest('[data-confirm-dialog]');
+      if(!btn && e.target !== overlay) return;
+      overlay.classList.remove('is-open');
+      overlay.removeEventListener('click', onClick);
+      callback(!!btn && btn.dataset.confirmDialog === 'ok');
+    }
+    overlay.addEventListener('click', onClick);
+  }
+
   global.TenderReferences = {
     key: STORAGE_KEY,
     confirmUnsavedExit: confirmUnsavedExit,
+    confirmDialog: confirmDialog,
     setDirty: setDirty,
     isDirty: isDirty,
     guardedClose: guardedClose,
@@ -937,6 +1006,9 @@
     checklistTermsKey: CHECKLIST_TERMS_KEY,
     getChecklistTerms: loadChecklistTerms,
     saveChecklistTerms: saveChecklistTerms,
+    ratesKey: RATES_KEY,
+    getRates: loadRates,
+    saveRates: saveRates,
     departmentColorsKey: DEPARTMENT_COLORS_KEY,
     departmentColorPalette: DEPARTMENT_COLOR_PALETTE.slice(),
     departmentNeutralColor: DEPARTMENT_NEUTRAL_COLOR,

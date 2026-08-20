@@ -1,5 +1,6 @@
 <html lang="ru">
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <title>Настройки — Справочники</title>
 <style>
   :root{
@@ -509,6 +510,9 @@
   .checklist-terms-row:first-child{border-top:0;}
   .checklist-terms-row input{height:32px;margin:8px 10px 8px 0;}
   .checklist-terms-delete{width:32px;padding:0;color:var(--danger);}
+  .rates-block{margin-bottom:20px;}
+  .rates-block:last-child{margin-bottom:0;}
+  .rates-block-title{margin:0 0 12px;font-size:14px;font-weight:700;color:var(--ink);}
   .access-card{background:var(--surface);border:1px solid var(--border);
     border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:18px 20px;}
   .access-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;
@@ -762,6 +766,13 @@
           <div class="reference-values" id="accessDirValues"></div>
           <a class="link-ico" id="accessDirSeeAll" href="nastroyki-ploshchadki.html" hidden>Смотреть все ↗</a>
         </section>
+        <section class="card reference-card">
+          <div class="reference-head">
+            <h2 class="reference-title">Ставки</h2>
+            <button class="btn" type="button" id="ratesEditOpen">Редактировать</button>
+          </div>
+          <p class="reference-hint">Ставка часа для стандартной разработки и ставки специалистов для Time&amp;Material.</p>
+        </section>
       </div>
     </div>
     <p class="list-meta" id="listMeta" hidden></p>
@@ -946,6 +957,36 @@
     <div class="modal-actions">
       <button class="btn" type="button" id="checklistTermsCancel">Отмена</button>
       <button class="btn btn-primary" type="button" id="checklistTermsSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT RATES MODAL -->
+<div class="overlay" id="ratesOverlay">
+  <div class="modal modal-wide" id="ratesModal">
+    <h4>Редактировать «Ставки»</h4>
+    <div class="rates-block">
+      <h5 class="rates-block-title">Стандартная разработка</h5>
+      <div class="field">
+        <label for="rateStandardHourly">Ставка часа, ₽</label>
+        <input type="number" id="rateStandardHourly" min="0" step="1">
+      </div>
+    </div>
+    <div class="rates-block">
+      <h5 class="rates-block-title">Time&amp;Material</h5>
+      <div class="checklist-terms-table">
+        <div class="checklist-terms-head">
+          <span>Специалист</span>
+          <span>Ставка, ₽</span>
+          <span></span>
+        </div>
+        <div id="ratesTmRows"></div>
+      </div>
+      <button class="btn reference-add" type="button" id="ratesTmAdd">Добавить строку</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="ratesCancel">Отмена</button>
+      <button class="btn btn-primary" type="button" id="ratesSave">Сохранить</button>
     </div>
   </div>
 </div>
@@ -2861,6 +2902,66 @@
     TenderReferences.setDirty('checklistTerms', false);
     closeChecklistTermsEditor();
     showReferenceToast('Справочник «Чек-лист» сохранён.');
+  });
+
+  // ---- справочник "Ставки" (Автоматизация): почасовая ставка стандартной разработки + список специалистов Time&Material ----
+  var ratesOverlay = document.getElementById('ratesOverlay');
+  var ratesTmRows = document.getElementById('ratesTmRows');
+  function addRatesTmRow(row){
+    var el = document.createElement('div');
+    el.className = 'checklist-terms-row';
+    el.innerHTML = '<input type="text" class="rt-specialist" value="'+escRef((row && row.specialist) || '')+'" placeholder="Например: Backend-разработчик">'
+      +'<input type="number" class="rt-rate" min="0" step="1" value="'+escRef(row && row.rate != null ? row.rate : '')+'" placeholder="Например: 4000">'
+      +'<button class="btn checklist-terms-delete" type="button" title="Удалить" aria-label="Удалить">'
+      +'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button>';
+    el.querySelector('.checklist-terms-delete').addEventListener('click', function(){
+      el.remove();
+      TenderReferences.setDirty('rates', true);
+    });
+    ratesTmRows.appendChild(el);
+  }
+  function openRatesEditor(){
+    var rates = TenderReferences.getRates();
+    document.getElementById('rateStandardHourly').value = rates.standardHourlyRate != null ? rates.standardHourlyRate : '';
+    ratesTmRows.innerHTML = '';
+    rates.timeMaterial.forEach(addRatesTmRow);
+    ratesOverlay.classList.add('is-open');
+    TenderReferences.setDirty('rates', false);
+  }
+  function closeRatesEditor(){
+    ratesOverlay.classList.remove('is-open');
+    TenderReferences.setDirty('rates', false);
+  }
+  document.getElementById('ratesEditOpen').addEventListener('click', openRatesEditor);
+  ratesOverlay.addEventListener('input', function(){ TenderReferences.setDirty('rates', true); });
+  document.getElementById('ratesTmAdd').addEventListener('click', function(){
+    addRatesTmRow(null);
+    TenderReferences.setDirty('rates', true);
+    var inputs = ratesTmRows.querySelectorAll('.rt-specialist');
+    inputs[inputs.length - 1].focus();
+  });
+  document.getElementById('ratesCancel').addEventListener('click', function(){
+    TenderReferences.guardedClose('rates', closeRatesEditor, function(){ document.getElementById('ratesSave').click(); });
+  });
+  ratesOverlay.addEventListener('click', function(event){
+    if(event.target === ratesOverlay){
+      TenderReferences.guardedClose('rates', closeRatesEditor, function(){ document.getElementById('ratesSave').click(); });
+    }
+  });
+  document.getElementById('ratesSave').addEventListener('click', function(){
+    var timeMaterial = Array.from(ratesTmRows.querySelectorAll('.checklist-terms-row')).map(function(row){
+      return {
+        specialist: row.querySelector('.rt-specialist').value.trim(),
+        rate: row.querySelector('.rt-rate').value.trim()
+      };
+    }).filter(function(item){ return item.specialist && item.rate; });
+    TenderReferences.saveRates({
+      standardHourlyRate: document.getElementById('rateStandardHourly').value,
+      timeMaterial: timeMaterial
+    });
+    TenderReferences.setDirty('rates', false);
+    closeRatesEditor();
+    showReferenceToast('Справочник «Ставки» сохранён.');
   });
 
   // ---- справочник "Площадки" (Автоматизация): сводка на карточке, полный список — на nastroyki-ploshchadki.html ----

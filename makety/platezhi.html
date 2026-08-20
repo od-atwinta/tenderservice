@@ -1,5 +1,6 @@
 <html lang="ru">
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <title>Платежи</title>
 <style>
   [hidden]{display:none !important;}
@@ -602,11 +603,14 @@
     if(deleteEl){
       if(!canEdit) return;
       var toDelete = platforms.find(function(x){ return x.id === deleteEl.dataset.id; });
-      if(toDelete && confirm('Удалить площадку «'+toDelete.name+'» из списка? Это действие нельзя отменить.')){
-        platforms = platforms.filter(function(x){ return x.id !== deleteEl.dataset.id; });
-        savePlatforms(platforms);
-        render();
-        showToast('Площадка удалена.');
+      if(toDelete){
+        TenderReferences.confirmDialog('Удалить площадку «'+toDelete.name+'» из списка? Это действие нельзя отменить.', function(ok){
+          if(!ok) return;
+          platforms = platforms.filter(function(x){ return x.id !== deleteEl.dataset.id; });
+          savePlatforms(platforms);
+          render();
+          showToast('Площадка удалена.');
+        });
       }
     }
   });
