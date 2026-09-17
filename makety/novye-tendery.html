@@ -580,6 +580,7 @@
   </div>
 </div>
 
+<script src="tendery-dannye.js"></script>
 <script src="spravochniki.js"></script>
 <script>
 (function(){
@@ -592,7 +593,7 @@
       navToday.hidden = !count;
     }
   })();
-  var TODAY = '2026-07-17';
+  var TODAY = TenderReferences.todayIso();
   var DEPTS = TenderReferences.get('departments');
   var REASONS = TenderReferences.get('rejectionReasons');
   var MANAGERS = TenderReferences.managerNames();
@@ -641,29 +642,8 @@
   }
   var DEMO_NEW_MIGRATION_KEY = 'atvinta_demo_new_20260727_v1';
   function ensureDemoNewTenders(list){
-    var additions = [
-      {demoKey:'new-20260727-1', manager:'', name:'Разработка и техническая поддержка корпоративного портала',
-       customer:'АО «Региональные цифровые сервисы»', nmc:4800000, currencies:['₽'],
-       pub:'2026-07-27', deadline:'2026-08-05T12:00:00', dept:'', depts:[], decision:'',
-       rejectReason:'', rejectComment:'', appStatus:null, rowCreated:'2026-07-27',
-       source:'Госзакупки', sourceLink:'#', unread:true, risk:false, fav:false,
-       law:'44-ФЗ', procType:'Электронный аукцион', checkoVerified:false, aiReport:null,
-       description:'', aiVerdict:null, aiComment:'', managerComment:'', documents:[]},
-      {demoKey:'new-20260727-2', manager:'', name:'Продвижение бренда в поисковых системах и социальных сетях',
-       customer:'ООО «Север Маркет»', nmc:1650000, currencies:['₽'],
-       pub:'2026-07-27', deadline:'2026-08-07T15:00:00', dept:'', depts:[], decision:'',
-       rejectReason:'', rejectComment:'', appStatus:null, rowCreated:'2026-07-27',
-       source:'Коммерческая площадка', sourceLink:'#', unread:true, risk:false, fav:false,
-       law:null, procType:'Запрос предложений', checkoVerified:false, aiReport:null,
-       description:'', aiVerdict:null, aiComment:'', managerComment:'', documents:[]},
-      {demoKey:'new-20260727-3', manager:'', name:'Проектирование дизайна и разработка мобильного приложения',
-       customer:'ГБУ «Городские проекты»', nmc:7200000, currencies:['₽'],
-       pub:'2026-07-27', deadline:'2026-08-10T10:00:00', dept:'', depts:[], decision:'',
-       rejectReason:'', rejectComment:'', appStatus:null, rowCreated:'2026-07-27',
-       source:'Госзакупки', sourceLink:'#', unread:true, risk:true, fav:false,
-       law:'223-ФЗ', procType:'Конкурс', checkoVerified:false, aiReport:null,
-       description:'', aiVerdict:null, aiComment:'', managerComment:'', documents:[]}
-    ];
+    // демо-тендеры удалены: в сервисе реальные данные (решение Оксаны 2026-09-17)
+    var additions = [];
     var known = {};
     list.forEach(function(t){ if(t.demoKey) known[t.demoKey] = true; });
     var nextId = list.length ? Math.max.apply(null, list.map(function(t){ return Number(t.id) || 0; })) + 1 : 1;
@@ -679,143 +659,9 @@
     return list;
   }
 
+  // реальные тендеры — общий файл tendery-dannye.js (см. spravochniki.js → applyTenderSeed)
   function seedTenders(){
-    return [
-    {id:1, manager:'Оксана Денисенко', name:'Техническое сопровождение сайта tsosmz.ru на 2026 год',
-     customer:'АО «СМЗ»', nmc:null, currencies:['₽'], pub:'2026-07-12', deadline:'2026-07-16',
-     dept:'Техническая поддержка', depts:['Техническая поддержка'], decision:'Участвуем', rejectReason:'', rejectComment:'',
-     appStatus:null, rowCreated:'2026-07-12', source:'Госзакупки', sourceLink:'', unread:true, risk:true,
-     fav:true, cardUrl:CARD_URL,
-     law:null, procType:null, checkoVerified:false, aiReport:null, description:'', aiVerdict:null, aiComment:'', documents:[]},
-
-    {id:2, manager:'Оксана Денисенко', name:'NZAK-2741_Продвижение мобильного приложения посредством рекламных источников — Inapp',
-     customer:'О2О ХОЛДИНГ', nmc:null, currencies:['₽'], pub:'2026-07-10', deadline:'2026-07-16',
-     dept:'Разработка', depts:['Разработка'], decision:'Участвуем', rejectReason:'', rejectComment:'',
-     appStatus:null, rowCreated:'2026-07-10', source:'Госзакупки', sourceLink:'', unread:true, risk:false, fav:false,
-     law:null, procType:null, checkoVerified:false, aiReport:null, description:'', aiVerdict:null, aiComment:'', documents:[]},
-
-    {id:3, manager:'Игорь Соколов', name:'Закупка услуг по продвижению сайта Института Ядерной медицины INUCLEAR.RU в поисковых системах',
-     customer:'АО «МЕДИЦИНА»', nmc:null, currencies:['₽'], pub:'2026-07-12', deadline:'2026-07-28',
-     dept:'Продвижение', depts:['Продвижение'], decision:'Участвуем', rejectReason:'', rejectComment:'',
-     appStatus:null, rowCreated:'2026-07-12', source:'Госзакупки', sourceLink:'', unread:false, risk:false, fav:false,
-     law:null, procType:null, checkoVerified:false, aiReport:null, description:'', aiVerdict:null, aiComment:'', documents:[]},
-
-    {id:4, manager:'Оксана Денисенко', name:'Оказание услуг по разработке корпоративного сайта «Библиотека нового поколения»',
-     customer:'ФГБУ «РГБ»', nmc:6850000, currencies:['₽'], pub:'2026-06-18', deadline:'2026-07-01',
-     dept:'Разработка', depts:['Разработка'], decision:'На рассмотрении', rejectReason:'', rejectComment:'',
-     appStatus:null, rowCreated:'2026-06-18', source:'Госзакупки', sourceLink:'', unread:false, risk:true, fav:false,
-     law:'44-ФЗ', procType:null, checkoVerified:false, aiReport:null, description:'', aiVerdict:null, aiComment:'', documents:[]},
-
-    {id:5, manager:'Оксана Денисенко', name:'Проведение технических аудитов',
-     customer:'АО «Сафьяновская медь»', nmc:null, currencies:['₽'], pub:'2026-04-01', deadline:'2026-05-10',
-     dept:'Техническая поддержка', depts:['Техническая поддержка'], decision:'Участвуем', rejectReason:'', rejectComment:'',
-     appStatus:'Контракт заключен', rowCreated:'2026-04-01', source:'Коммерческая площадка', sourceLink:'', unread:false, risk:false, fav:false,
-     law:null, procType:null, checkoVerified:false, aiReport:null, description:'', aiVerdict:null, aiComment:'', documents:[]},
-
-    {id:6, manager:'Оксана Денисенко', name:'Право заключения договора на настройку и размещение контекстной рекламы для нужд ООО «ТТК-Связь»',
-     customer:'ООО «ТТК-Связь»', nmc:25010000, currencies:['₽'], pub:'2025-12-30', deadline:'2026-01-19',
-     dept:'Продвижение', depts:['Продвижение'], decision:'Отказ', rejectReason:'Не успеваем подготовиться', rejectComment:'',
-     appStatus:null, rowCreated:'2025-12-30', source:'Госзакупки', sourceLink:'', unread:false, risk:true, fav:false,
-     law:'223-ФЗ', procType:null, checkoVerified:false, aiReport:null, description:'', aiVerdict:null, aiComment:'', documents:[]},
-
-    {id:7, manager:'Оксана Денисенко', name:'Оказание услуг по разработке и созданию программного комплекса «Лаборатория телеметрического практикума по физике»',
-     customer:'МО И Н РТ', nmc:null, currencies:['₽'], pub:'2026-06-15', deadline:'2026-06-15',
-     dept:'Разработка', depts:['Разработка'], decision:'Отказ', rejectReason:'Дубль', rejectComment:'',
-     appStatus:null, rowCreated:'2026-06-15', source:'Госзакупки', sourceLink:'', unread:false, risk:false, fav:false,
-     law:null, procType:null, checkoVerified:false, aiReport:null, description:'', aiVerdict:null, aiComment:'', documents:[]},
-
-    {id:8, manager:'Оксана Денисенко', name:'Разработка макета // Креатив. Подписка Бизнес Прайм 2026',
-     customer:'ООО «С-Маркетинг»', nmc:null, currencies:['₽'], pub:'2026-06-20', deadline:'2026-07-02',
-     dept:'Дизайн', depts:['Дизайн'], decision:'Участвуем', rejectReason:'', rejectComment:'',
-     appStatus:'Подали', rowCreated:'2026-06-20', source:'Коммерческая площадка', sourceLink:'', unread:false, risk:false, fav:true,
-     law:null, procType:null, checkoVerified:false, aiReport:null, description:'', aiVerdict:null, aiComment:'', documents:[]},
-
-    {id:9, manager:'Игорь Соколов', name:'Услуги по техническому обслуживанию сайта Музея искусства Санкт-Петербурга XX-XXI веков',
-     customer:'СПб ГБУК «Манеж»', nmc:null, currencies:['₽'], pub:'2026-06-01', deadline:'2026-06-03',
-     dept:'Техническая поддержка', depts:['Техническая поддержка'], decision:'Участвуем', rejectReason:'', rejectComment:'',
-     appStatus:'Переторжка', rowCreated:'2026-06-01', source:'Госзакупки', sourceLink:'', unread:true, risk:false, fav:false,
-     law:null, procType:null, checkoVerified:false, aiReport:null, description:'', aiVerdict:null, aiComment:'', documents:[]},
-
-    {id:10, manager:'', name:'Оказание услуг по администрированию и сопровождению интернет-сайта муниципального учреждения',
-     customer:'МКУ «Информационный центр»', nmc:1250000, currencies:['₽'], pub:'2026-07-14', deadline:'2026-07-17T18:00:00',
-     dept:'', depts:[], decision:'', rejectReason:'', rejectComment:'',
-     appStatus:null, rowCreated:'2026-07-14', source:'Госзакупки', sourceLink:'#', unread:true, risk:false, fav:false,
-     law:'44-ФЗ', procType:'Запрос цен', checkoVerified:false,
-     aiReport:{stack:'Собственная CMS заказчика, доработки на PHP.',
-       requirements:'Опыт технического сопровождения аналогичных сайтов не менее 1 года, наличие в штате не менее 2 специалистов техподдержки.',
-       nmc:'1 250 000 ₽, НДС не облагается.',
-       scope:'Устранение неисправностей, обновление контента, консультации по эксплуатации, время реакции на инцидент — не более 4 часов.',
-       deadlines:'Срок оказания услуг — 12 месяцев с даты заключения контракта.',
-       criteria:'Единственный критерий — цена контракта.',
-       risks:'Рисков не обнаружено.'},
-     description:'Техническое сопровождение сайта муниципального учреждения: устранение неисправностей, обновление контента, консультации по эксплуатации.',
-     aiVerdict:'go', aiComment:'Стек и объём работ подходят направлению технической поддержки, рисков не обнаружено.',
-     documents:['Извещение.pdf','Техническое задание.docx']},
-
-    {id:11, manager:'', name:'Оказание услуг по технической поддержке информационной системы «Электронный архив»',
-     customer:'ГКУ «Архивная служба»', nmc:3400000, currencies:['₽'], pub:'2026-07-15', deadline:'2026-07-18T15:00:00',
-     dept:'', depts:[], decision:'', rejectReason:'', rejectComment:'',
-     appStatus:null, rowCreated:'2026-07-15', source:'Госзакупки', sourceLink:'#', unread:true, risk:true, fav:false,
-     law:'44-ФЗ', procType:null, checkoVerified:false,
-     aiReport:{stack:'1С-Битрикс, файловое хранилище на выделенном сервере заказчика.',
-       requirements:'Наличие лицензии ФСТЭК на техническое обслуживание средств защиты информации.',
-       nmc:'3 400 000 ₽, включает НДС.',
-       scope:'Резервное копирование, устранение сбоев, консультации пользователей, годовое сопровождение.',
-       deadlines:'12 месяцев с даты заключения контракта, начало — не позднее 10 дней после подписания.',
-       criteria:'Цена контракта — 70%, квалификация и опыт участника — 30%.',
-       risks:'В документации предусмотрена поэтапная приёмка по форме договора заказчика — рекомендована консультация юриста перед решением.'},
-     description:'Годовая техническая поддержка электронного архива: резервное копирование, устранение сбоев, консультации пользователей.',
-     aiVerdict:'go', aiComment:'В документации предусмотрена поэтапная приёмка по форме договора заказчика — рекомендована консультация юриста перед решением.',
-     documents:['Контракт (проект).pdf','ТЗ.pdf']},
-
-    {id:12, manager:'', name:'Разработка мобильного приложения для учёта заявок на техническое обслуживание',
-     customer:'ООО «Инжиниринг Сервис»', nmc:520000, currencies:['₽','USD'], pub:'2026-07-13', deadline:'2026-07-24T10:00:00',
-     dept:'', depts:[], decision:'', rejectReason:'', rejectComment:'',
-     appStatus:null, rowCreated:'2026-07-13', source:'Коммерческая площадка', sourceLink:'#', unread:true, risk:false, fav:false,
-     law:null, procType:'RFI', checkoVerified:true,
-     aiReport:{stack:'iOS (Swift) и Android (Kotlin), нативная разработка под обе платформы, интеграция с 1С через REST API.',
-       requirements:'Портфолио с не менее чем 2 опубликованными мобильными приложениями.',
-       nmc:'520 000 ₽ или USD-эквивалент по курсу на дату заключения — заказчик уточняет валюту оплаты после переговоров.',
-       scope:'Разработка приложения на iOS и Android для учёта заявок на техническое обслуживание оборудования, включая административную панель.',
-       deadlines:'45 календарных дней с даты заключения контракта.',
-       criteria:'Цена — 50%, срок реализации — 50%.',
-       risks:'Небольшой заявленный бюджет не покрывает объём кроссплатформенной разработки из ТЗ — требует уточнения у заказчика перед решением.'},
-     description:'Разработка мобильного приложения на iOS и Android для учёта заявок на техническое обслуживание оборудования.',
-     aiVerdict:'no-go', aiComment:'Небольшой заявленный бюджет не покрывает объём кроссплатформенной разработки из ТЗ.',
-     documents:[]},
-
-    {id:13, manager:'', name:'Оказание услуг по продвижению интернет-магазина в социальных сетях',
-     customer:'ООО «Маркет Плюс»', nmc:310000, currencies:['₽'], pub:'2026-07-10', deadline:'2026-07-17T12:00:00',
-     dept:'', depts:[], decision:'', rejectReason:'', rejectComment:'',
-     appStatus:null, rowCreated:'2026-07-10', source:'Коммерческая площадка', sourceLink:'#', unread:false, risk:false, fav:false,
-     law:null, procType:'Запрос цен', checkoVerified:false,
-     aiReport:{stack:'Ведение аккаунтов ВКонтакте и Telegram, таргетированная реклама.',
-       requirements:'Опыт SMM-продвижения интернет-магазинов не менее 1 года.',
-       nmc:'310 000 ₽, НДС не облагается.',
-       scope:'SMM-продвижение интернет-магазина: контент-план, публикации, таргетированная реклама, ежемесячная отчётность.',
-       deadlines:'3 месяца с даты заключения договора.',
-       criteria:'Единственный критерий — цена контракта.',
-       risks:'Рисков не обнаружено.'},
-     description:'SMM-продвижение интернет-магазина в социальных сетях на 3 месяца.',
-     aiVerdict:'go', aiComment:'Понятный объём, подходит направлению продвижения.',
-     documents:['Бриф.docx']},
-
-    {id:14, manager:'', name:'Право на заключение договора оказания услуг по сопровождению 1С:ERP',
-     customer:'АО «Промышленная группа Урал»', nmc:8900000, currencies:['₽'], pub:'2026-07-09', deadline:'2026-07-22T09:00:00',
-     dept:'', depts:[], decision:'', rejectReason:'', rejectComment:'',
-     appStatus:null, rowCreated:'2026-07-09', source:'Госзакупки', sourceLink:'#', unread:false, risk:false, fav:false,
-     law:'223-ФЗ', procType:null, checkoVerified:false,
-     aiReport:{stack:'1С:ERP Управление предприятием 2.4.',
-       requirements:'Статус партнёра 1С или сертифицированные специалисты по 1С:ERP в штате.',
-       nmc:'8 900 000 ₽, включает НДС.',
-       scope:'Консультации, доработки, обновления системы 1С:ERP, годовое сопровождение с гарантированным временем реакции.',
-       deadlines:'12 месяцев с даты заключения контракта.',
-       criteria:'Цена контракта — 40%, квалификация участника — 60%.',
-       risks:'Требует специалиста с опытом 1С — уточнить наличие в направлении разработки перед решением.'},
-     description:'Годовое сопровождение системы 1С:ERP: консультации, доработки, обновления.',
-     aiVerdict:'go', aiComment:'Требует специалиста с опытом 1С — уточнить наличие в направлении разработки.',
-     documents:['Извещение.pdf','Проект договора.pdf']}
-    ];
+    return TenderReferences.seedTenderList();
   }
 
   var tenders = ensureDemoNewTenders(loadTenders(seedTenders));
@@ -829,6 +675,7 @@
   function fmtDateShort(iso){ var d = String(iso).slice(0,10); var p = d.split('-'); return p[2]+'.'+p[1]+'.'+p[0].slice(2); }
   function fmtDeadline(dt){
     var d = new Date(dt);
+    if(!dt || isNaN(d.getTime())) return '—';
     var pad = function(n){ return n<10 ? '0'+n : ''+n; };
     return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+String(d.getFullYear()).slice(2)+' '
       +pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
@@ -1064,7 +911,9 @@
       +         (t.sourceLink ? '<a class="link-ico" href="'+t.sourceLink+'" target="_blank" rel="noopener">Тендерплан ↗</a>' : '<span style="color:var(--ink-muted);font-size:12.5px">Источник не указан</span>')
       +         (latestReport
             ? '<span class="report-trigger"><button class="link-btn" data-action="open-report" data-id="'+t.id+'">Отчёт ИИ</button><button class="icon-btn-xs" data-action="download-report" data-id="'+t.id+'" title="Скачать отчёт" aria-label="Скачать отчёт">'+DOWNLOAD_SVG+'</button></span>'
-            : '<span style="color:var(--ink-muted);font-size:12.5px">Отчёт ИИ не готов</span>')
+            : (t.aiReportUrl
+              ? '<a class="link-ico" href="'+esc(t.aiReportUrl)+'" target="_blank" rel="noopener">Отчёт ИИ ↗</a>'
+              : '<span style="color:var(--ink-muted);font-size:12.5px">Отчёт ИИ не готов</span>'))
       +       '</div>'
       +     '</div>'
       +     '<div class="tcard-right">'

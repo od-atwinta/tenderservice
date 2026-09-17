@@ -26,17 +26,19 @@
   // статусы-исходы отказа/проигрыша, ведущие в Архив (без "Выиграли" — это не отказ);
   // используется общей модалкой "Изменить статус", чтобы спросить причину так же,
   // как это уже делают формы решения на "Новые"/"Ожидают решения"
-  var LOSS_STATUSES = ['Отклонено','Отменено','Без выбора победителя','Завершено без ответа','Не допущены'];
+  var LOSS_STATUSES = ['Отклонено','Отказались сами','Отменено','Без выбора победителя','Завершено без ответа','Не допущены'];
   var PROCESS_STAGES = ['Отбор','Изучение','Подготовка','Подача','Итог'];
   var DEFAULTS = {
-    departments: ['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф'],
+    departments: ['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф',
+      'Медботы','Аналитика/ИИ'],
     rejectionReasons: ['Нейронка плохо определила','Прочее','Не наш стек','Не наш стек/профиль',
       'Не успеваем подготовиться','Не проходим по КТ','Жесткие условия','Малобюджетный',
-      'Нереальные сроки','Отмена заказчиком','Закрытая от нас','Дубль'],
+      'Нереальные сроки','Отмена заказчиком','Закрытая от нас','Дубль','Не успели податься',
+      'Невыполнимые условия'],
     participationDecisions: ['Участвуем','Отказ','На рассмотрении'],
     processSections: ['НДА','ПКО','Основной','Этап 2','Этап 3','Переторжка','RFI'],
     applicationStatuses: ['На рассмотрении','Оценка','Формирование заявки','Готово к подаче',
-      'Подано','Допущены','Отклонено','Отменено','Без выбора победителя',
+      'Подано','Допущены','Отклонено','Отказались сами','Отменено','Без выбора победителя',
       'Завершено без ответа','Не допущены','Выиграли'],
     currencies: ['₽','USD'],
     vatRates: ['5%','10%','20%'],
@@ -55,7 +57,13 @@
     {id:'u9', name:'Илья Фёдоров', login:'ilya.fedorov@atwinta.ru', roles:['Сотрудник отдела'], directions:['Аутстафф'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
     {id:'u10', name:'Анна Смирнова', login:'anna.smirnova@atwinta.ru', roles:['Сотрудник отдела'], directions:['Аналитика'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
     {id:'u11', name:'Роман Васильев', login:'roman.vasilev@atwinta.ru', roles:['Сотрудник отдела'], directions:['Разработка'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u12', name:'Софья Попова', login:'sofya.popova@atwinta.ru', roles:['Сотрудник отдела'], directions:['Дизайн'], status:'active', createdAt:'2026-01-12', mustChangePassword:false}
+    {id:'u12', name:'Софья Попова', login:'sofya.popova@atwinta.ru', roles:['Сотрудник отдела'], directions:['Дизайн'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
+    {id:'u13', name:'Никита Долинин', login:'nikita.dolinin@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u14', name:'Владислав Мильберг', login:'vladislav.milberg@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u15', name:'Дмитрий Юров', login:'dmitry.yurov@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u16', name:'Дарья Щетинина', login:'darya.shchetinina@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u17', name:'Андрей Полковников', login:'andrey.polkovnikov@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u18', name:'Ксения Ельцова', login:'ksenia.eltsova@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false}
   ];
   var DEFAULT_STATUS_RULES = {
     'На рассмотрении':{type:'key',sections:['Ожидают решения']},
@@ -65,6 +73,7 @@
     'Подано':{type:'key',sections:['Заявки']},
     'Допущены':{type:'through',sections:['Ожидают решения','В работе','Заявки']},
     'Отклонено':{type:'key',sections:['Архив']},
+    'Отказались сами':{type:'key',sections:['Архив']},
     'Отменено':{type:'key',sections:['Архив']},
     'Без выбора победителя':{type:'key',sections:['Архив']},
     'Завершено без ответа':{type:'key',sections:['Архив']},
@@ -80,8 +89,7 @@
     'Переторжка':'Подано',
     'Не успели податься':'Завершено без ответа',
     'Контракт заключен':'Выиграли',
-    'Б/выбора победителя':'Без выбора победителя',
-    'Отказались сами':'Отклонено'
+    'Б/выбора победителя':'Без выбора победителя'
   };
   var LEGACY_SECTION_MAP = {
     'ПКО/НДА':'ПКО',
@@ -89,7 +97,6 @@
     'Переторжка':'Переторжка',
     'Контракт заключен':'Итог',
     'Б/выбора победителя':'Итог',
-    'Отказались сами':'Итог',
     'Отменено':'Итог'
   };
   // справочник "Чек-лист" (Настройки → Автоматизация): соответствие ключевой фразы из
@@ -278,7 +285,7 @@
     return clone(normalized);
   }
   function fallbackStatusRule(status){
-    var archiveStatuses = ['Отклонено','Отменено','Без выбора победителя',
+    var archiveStatuses = ['Отклонено','Отказались сами','Отменено','Без выбора победителя',
       'Завершено без ответа','Не допущены','Выиграли'];
     return {
       type:'key',
@@ -518,7 +525,7 @@
     if(status === 'На рассмотрении') return 'Изучение';
     if(status === 'Формирование заявки' || status === 'Готово к подаче') return 'Подготовка';
     if(status === 'Подано' || status === 'Допущены') return 'Подача';
-    if(['Отклонено','Отменено','Без выбора победителя','Завершено без ответа',
+    if(['Отклонено','Отказались сами','Отменено','Без выбора победителя','Завершено без ответа',
       'Не допущены','Выиграли'].indexOf(status) !== -1) return 'Итог';
     return fallback || 'Отбор';
   }
@@ -561,7 +568,7 @@
       tender.decision = 'Участвуем';
       tender.lifecycleSection = 'Заявки';
     }else if(['Не успели податься','Контракт заключен','Б/выбора победителя',
-      'Отказались сами','Отменено'].indexOf(legacyStatus) !== -1){
+      'Отменено'].indexOf(legacyStatus) !== -1){
       tender.decision = legacyStatus === 'Отменено' ? tender.decision : 'Отказ';
       tender.lifecycleSection = 'Архив';
     }
@@ -615,7 +622,7 @@
         completed:!!normalized.completed,
         completedAt:normalized.completedAt || ''
       };
-      if(['Отклонено','Отменено','Без выбора победителя','Завершено без ответа',
+      if(['Отклонено','Отказались сами','Отменено','Без выбора победителя','Завершено без ответа',
         'Не допущены','Выиграли'].indexOf(result.status) !== -1){
         result.completed = true;
         result.completedAt = result.completedAt || new Date().toISOString();
@@ -646,7 +653,7 @@
     active.status = status || '';
     active.stage = stageForStatus(status, active.stage);
     tender.appStatus = status || null;
-    if(['Отклонено','Отменено','Без выбора победителя','Завершено без ответа',
+    if(['Отклонено','Отказались сами','Отменено','Без выбора победителя','Завершено без ответа',
       'Не допущены','Выиграли'].indexOf(status) !== -1){
       active.completed = true;
       active.completedAt = new Date().toISOString();
@@ -877,6 +884,85 @@
     }
   }
 
+  // ---- реальные данные (tendery-dannye.js), решение Оксаны 2026-09-17 ----
+  // одноразово дописывает в сохранённые справочники и пользователей новые значения
+  // (новый статус, причины, отделы, менеджеры), не трогая ручные правки
+  var REAL_DATA_REFS_MIGRATION_KEY = 'atvinta_real_data_refs_v1';
+  var TENDER_SEED_VERSION_KEY = 'atvinta_tenders_seed_version';
+  var NOTIFICATIONS_KEY = 'atvinta_notifications_v1';
+  function migrateRealDataReferences(){
+    if(localStorage.getItem(REAL_DATA_REFS_MIGRATION_KEY)) return;
+    var stored = {};
+    try{ stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }catch(error){ stored = {}; }
+    if(stored && typeof stored === 'object'){
+      [['departments',['Медботы','Аналитика/ИИ']],
+       ['rejectionReasons',['Не успели податься','Невыполнимые условия']]].forEach(function(pair){
+        if(!Array.isArray(stored[pair[0]])) return;
+        pair[1].forEach(function(value){
+          if(stored[pair[0]].indexOf(value) === -1) stored[pair[0]].push(value);
+        });
+      });
+      if(Array.isArray(stored.applicationStatuses) && stored.applicationStatuses.indexOf('Отказались сами') === -1){
+        var after = stored.applicationStatuses.indexOf('Отклонено');
+        stored.applicationStatuses.splice(after === -1 ? stored.applicationStatuses.length : after + 1, 0, 'Отказались сами');
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    }
+    var users = [];
+    try{ users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }catch(error){ users = []; }
+    if(Array.isArray(users) && users.length){
+      DEFAULT_USERS.forEach(function(user){
+        var exists = users.some(function(item){ return item && (item.id === user.id || item.name === user.name); });
+        if(!exists) users.push(clone(user));
+      });
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+    localStorage.setItem(REAL_DATA_REFS_MIGRATION_KEY, '1');
+  }
+  // заменяет сохранённые в браузере тендеры реальными из tendery-dannye.js, когда
+  // меняется TENDER_SEED_VERSION; уведомления по старым (тестовым) тендерам сбрасываются
+  function applyTenderSeed(){
+    var seed = global.TENDER_SEED_DATA;
+    var version = global.TENDER_SEED_VERSION;
+    if(!Array.isArray(seed) || !version) return;
+    if(localStorage.getItem(TENDER_SEED_VERSION_KEY) === version) return;
+    var list = clone(seed);
+    list.forEach(ensureTenderStructure);
+    var payload = JSON.stringify(list);
+    try{
+      // сначала освобождаем место: старые (тестовые) тендеры и уведомления по ним
+      localStorage.removeItem(TENDER_STORAGE_KEY);
+      localStorage.setItem(NOTIFICATIONS_KEY, '[]');
+      localStorage.setItem(TENDER_STORAGE_KEY, payload);
+      localStorage.setItem(TENDER_SEED_VERSION_KEY, version);
+    }catch(error){
+      if(typeof console !== 'undefined') console.error('Не удалось сохранить тендеры в браузере', error);
+      var used = 0;
+      try{
+        for(var i=0;i<localStorage.length;i++){
+          var key = localStorage.key(i);
+          used += key.length + (localStorage.getItem(key) || '').length;
+        }
+      }catch(e){}
+      if(typeof alert === 'function'){
+        alert('Не удалось загрузить реальные тендеры: в памяти браузера не хватает места.\n\n'
+          + 'Нужно примерно ' + Math.round(payload.length / 100000) / 10 + ' млн символов, '
+          + 'другие данные сервиса уже занимают ' + Math.round(used / 100000) / 10 + ' млн.\n'
+          + 'Чаще всего место занимают загруженные файлы (Копилка, документы тендеров).');
+      }
+    }
+  }
+  function seedTenderList(){
+    return Array.isArray(global.TENDER_SEED_DATA) ? clone(global.TENDER_SEED_DATA) : [];
+  }
+  function todayIso(){
+    var d = new Date();
+    var pad = function(n){ return n < 10 ? '0'+n : ''+n; };
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  }
+  try{ migrateRealDataReferences(); }catch(error){}
+  applyTenderSeed();
+
   syncTenderHierarchy();
 
   // ---- подтверждение выхода с несохранёнными изменениями ----
@@ -1056,6 +1142,8 @@
     participantDirectory: participantDirectory,
     sortOptions: sortOptions,
     sortSelect: sortSelect,
+    seedTenderList: seedTenderList,
+    todayIso: todayIso,
     save: save
   };
 })(window);

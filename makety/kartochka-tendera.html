@@ -845,6 +845,7 @@
             <div class="overview-card-body" data-overview-body="ai">
               <div class="overview-ai-actions">
                 <button class="report-link" type="button" id="overviewReportLink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span>Отчёт ИИ</span></button>
+                <a class="report-link" id="overviewReportDoc" target="_blank" rel="noopener" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span>Открыть отчёт ↗</span></a>
                 <span class="overview-value is-empty" id="overviewReportEmpty">Отчёт ИИ пока не готов.</span>
                 <button class="btn btn-sm btn-ai" type="button"
                   id="generateOverviewReport">Сгенерировать отчёт</button>
@@ -1393,6 +1394,7 @@
   </div>
 </aside>
 
+<script src="tendery-dannye.js"></script>
 <script src="spravochniki.js"></script>
 <script>
 (function(){
@@ -2412,7 +2414,7 @@
   // "сегодня" здесь — та же зафиксированная демо-дата, что использует весь остальной сервис
   // (все-тендеры.html, дашборд.html и т.д.), а не реальная дата браузера — иначе на "замороженных"
   // демо-дедлайнах июля 2026 расчёт всегда упирался бы в текущую дату и выглядел бы бессмысленно
-  var CHECKLIST_TODAY = '2026-07-17';
+  var CHECKLIST_TODAY = TenderReferences.todayIso();
   function isoDateOnly(value){ return value ? String(value).slice(0,10) : ''; }
   function realTodayDateString(){ return CHECKLIST_TODAY; }
   function addDaysToDateString(dateStr, days){
@@ -3516,8 +3518,13 @@
   }
   function renderReport(t){
     var latest = latestReportEntry(t);
+    // ссылка на Google-документ с отчётом нейронки (реальные данные, поле aiReportUrl)
+    var docLink = document.getElementById('overviewReportDoc');
+    var docUrl = !latest && t.aiReportUrl ? t.aiReportUrl : '';
     document.getElementById('overviewReportLink').hidden = !latest;
-    document.getElementById('overviewReportEmpty').hidden = !!latest;
+    docLink.hidden = !docUrl;
+    if(docUrl) docLink.href = docUrl; else docLink.removeAttribute('href');
+    document.getElementById('overviewReportEmpty').hidden = !!latest || !!docUrl;
   }
   function loadOverviewCollapsed(){
     try{

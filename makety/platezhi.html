@@ -390,6 +390,7 @@
   </div>
 </div>
 
+<script src="tendery-dannye.js"></script>
 <script src="spravochniki.js"></script>
 <script>
 (function(){
@@ -414,7 +415,7 @@
   // страницу видят все роли; редактирование (добавление/изменение/удаление площадки) — только Админ и Суперадмин
   var canEdit = TenderReferences.isAdminUser(current);
   document.getElementById('addPlatformBtn').hidden = !canEdit;
-  var TODAY = '2026-07-17';
+  var TODAY = TenderReferences.todayIso();
 
   var PLATFORMS_KEY = 'atvinta_finance_platforms_v1';
   function platformsSeed(){

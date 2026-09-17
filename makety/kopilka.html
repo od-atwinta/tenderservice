@@ -680,6 +680,7 @@
   </div>
 </div>
 
+<script src="tendery-dannye.js"></script>
 <script src="spravochniki.js"></script>
 <script>
 (function(){
@@ -1875,7 +1876,7 @@
   togglePopover(document.getElementById('calBtn'), calPop, bellPop);
   document.addEventListener('click', function(){ bellPop.classList.remove('is-open'); calPop.classList.remove('is-open'); });
 
-  var TODAY = '2026-07-17';
+  var TODAY = TenderReferences.todayIso();
   function updateNavDate(){
     var d = new Date(TODAY + 'T00:00:00');
     var str = d.toLocaleDateString('ru-RU', {weekday:'long', day:'numeric', month:'long'});
