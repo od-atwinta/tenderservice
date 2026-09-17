@@ -75,7 +75,8 @@ if empty_dec: log['empty_decision'] = empty_dec
 # ---------- answers ----------
 MANUAL = {4:2226, 12:2212, 90:1152, 62:12, 48:1210, 36:2246, 22:2399, 59:3, 65:4}
 NEW_FROM_ANSWERS = [104]
-SUBMIT_DATE_FROM_STATS = {1565:'2026-04-14'}  # «статистика», 14.04: «Мерси»
+SUBMIT_DATE_FROM_STATS = {1565:'2026-04-14',  # «статистика», 14.04: «Мерси»
+                          1440:'2026-04-15'}  # «статистика», 15.04: «Ламода - аналитика»; в «Ответах» 25.08 — основной этап
 byid = collections.defaultdict(set); byname = collections.defaultdict(set)
 for i, r in rows.items():
     if i in excluded: continue
@@ -115,6 +116,8 @@ ANSWER_STATUS = {'Отказ':'Отклонено','без выбора':'Без
 PROCHEE = {2000:'Отменено',1038:'Отменено',2103:'Отменено',1210:'Без выбора победителя',1821:'Отклонено',
            1917:'Завершено без ответа',2164:'Завершено без ответа'}
 PKO_REFUSED = {1430, 1746, 1841, 2442, 2238}
+# дата победы — из примечаний к столбцу «выиграли» листа «статистика»
+WIN_DATES = {836:'2026-05-14', 1647:'2026-05-15', 1646:'2026-06-22', 2062:'2026-07-09'}
 # этап ПКО/НДА перед основной подачей (примечания «статистики»)
 PRE_STAGE = {1442: ('НДА', '2026-04-06')}
 # первая подача была на ПКО («статистика»: «Дрогери ритейл - ПКО», «ОЗОН игровые механики, подались на ПКО»)
@@ -191,7 +194,7 @@ for i in sorted(rows):
     if dec == 'На рассмотрении' and st_raw == 'ПКО/НДА' and t['deadline']:
         first_actual = t['deadline'][:10]  # дата ПКО из «Тендеров», решение Оксаны
     if submitted:
-        first_actual = t.get('submittedAt') or SUBMIT_DATE_FROM_STATS.get(i) or (t['deadline'][:10] if t['deadline'] else '')
+        first_actual = SUBMIT_DATE_FROM_STATS.get(i) or t.get('submittedAt') or (t['deadline'][:10] if t['deadline'] else '')
         if not first_actual: log['submitted_without_date'].append(i)
     if 'tenderSections' not in t:
         stages = extra.get(i, [])
@@ -216,6 +219,11 @@ for i in sorted(rows):
     for k, sec in enumerate(t['tenderSections']): sec['id'] = 'section-%d-%d' % (nid, k+1)
     if status in FINAL or dec == 'Отказ':
         t['archivedAt'] = t['submittedAt'] if t.get('submittedAt') else t['rowCreated']
+    if status == 'Выиграли':
+        if i in WIN_DATES:
+            t['resultDate'] = WIN_DATES[i]; t['archivedAt'] = WIN_DATES[i]
+        else:
+            log['win_without_date'].append(i)
     out.append(t)
 
 # ---------- new tenders from «Ответы» ----------
@@ -243,7 +251,7 @@ for t in out:
 js = ("// Реальные тендеры из Google-таблицы «Тендеры» (листы «Тендеры», «Ответы», «статистика»).\n"
       "// Сформировано автоматически " + datetime.date.today().isoformat() + ". Дубли не загружены.\n"
       "// Меняя данные в этом файле, увеличьте TENDER_SEED_VERSION — иначе браузер оставит старую копию.\n"
-      "window.TENDER_SEED_VERSION = 'real-2026-09-17-v2';\n"
+      "window.TENDER_SEED_VERSION = 'real-2026-09-17-v4';\n"
       "window.TENDER_SEED_DATA = " + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ";\n")
 open(OUT, 'w').write(js)
 
