@@ -46,24 +46,21 @@
     foundations: ['223-ФЗ','44-ФЗ','Коммерческие закупки','внутренний конкурс','не указано']
   };
   var DEFAULT_USERS = [
-    {id:'u1', name:'Оксана Денисенко', login:'oksana.denisenko@atwinta.ru', roles:['Суперадмин'], directions:[], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u2', name:'Игорь Соколов', login:'igor.sokolov@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u3', name:'Алексей Морозов', login:'alexey.morozov@atwinta.ru', roles:['Сотрудник отдела'], directions:['Техническая поддержка'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u4', name:'Дарья Волкова', login:'darya.volkova@atwinta.ru', roles:['Сотрудник отдела'], directions:['Техническая поддержка'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u5', name:'Павел Орлов', login:'pavel.orlov@atwinta.ru', roles:['Сотрудник отдела'], directions:['Разработка'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u6', name:'Елена Соколова', login:'elena.sokolova@atwinta.ru', roles:['Сотрудник отдела'], directions:['Аналитика'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u7', name:'Никита Лебедев', login:'nikita.lebedev@atwinta.ru', roles:['Сотрудник отдела'], directions:['Дизайн'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u8', name:'Мария Кузнецова', login:'maria.kuznetsova@atwinta.ru', roles:['Сотрудник отдела'], directions:['Продвижение'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u9', name:'Илья Фёдоров', login:'ilya.fedorov@atwinta.ru', roles:['Сотрудник отдела'], directions:['Аутстафф'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u10', name:'Анна Смирнова', login:'anna.smirnova@atwinta.ru', roles:['Сотрудник отдела'], directions:['Аналитика'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u11', name:'Роман Васильев', login:'roman.vasilev@atwinta.ru', roles:['Сотрудник отдела'], directions:['Разработка'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u12', name:'Софья Попова', login:'sofya.popova@atwinta.ru', roles:['Сотрудник отдела'], directions:['Дизайн'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u13', name:'Никита Долинин', login:'nikita.dolinin@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
-    {id:'u14', name:'Владислав Мильберг', login:'vladislav.milberg@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
-    {id:'u15', name:'Дмитрий Юров', login:'dmitry.yurov@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
-    {id:'u16', name:'Дарья Щетинина', login:'darya.shchetinina@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
-    {id:'u17', name:'Андрей Полковников', login:'andrey.polkovnikov@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
-    {id:'u18', name:'Ксения Ельцова', login:'ksenia.eltsova@atwinta.ru', roles:['Менеджер'], directions:[], status:'active', createdAt:'2026-09-17', mustChangePassword:false}
+    {id:'u1', name:'Оксана Денисенко', login:'oksana.denisenko@atwinta.ru', roles:['Суперадмин'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф','Медботы','Аналитика/ИИ'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
+    {id:'u13', name:'Никита Долинин', login:'nikita.dolinin@atwinta.ru', roles:['Админ'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф','Медботы','Аналитика/ИИ'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u17', name:'Андрей Полковников', login:'andrey.polkovnikov@atwinta.ru', roles:['Руководитель отдела'], directions:['Продвижение'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u14', name:'Владислав Мильберг', login:'vladislav.milberg@atwinta.ru', roles:['Менеджер'], directions:['Разработка','Дизайн'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u16', name:'Дарья Щетинина', login:'darya.shchetinina@atwinta.ru', roles:['Руководитель отдела'], directions:['Техническая поддержка'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u15', name:'Дмитрий Юров', login:'dmitry.yurov@atwinta.ru', roles:['Менеджер'], directions:['Разработка'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u18', name:'Ксения Ельцова', login:'ksenia.eltsova@atwinta.ru', roles:['Руководитель отдела'], directions:['Аналитика','Аналитика/ИИ'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u19', name:'Артемий Филиппов', login:'artemiy.filippov@atwinta.ru', roles:['Менеджер'], directions:['Продвижение'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
+    {id:'u20', name:'Мария Белоножко', login:'maria.belonozhko@atwinta.ru', roles:['Менеджер'], directions:['Техническая поддержка'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
+    {id:'u21', name:'Екатерина Тимофеева', login:'ekaterina.timofeeva@atwinta.ru', roles:['Руководитель отдела'], directions:['Дизайн'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
+    {id:'u22', name:'Егор Пазущенко', login:'egor.pazushchenko@atwinta.ru', roles:['Менеджер'], directions:['Аналитика/ИИ','Аналитика'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
+    {id:'u23', name:'Сергей Перевозников', login:'sergey.perevoznikov@atwinta.ru', roles:['Руководитель отдела'], directions:['Разработка'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
+    {id:'u24', name:'Виктория Дмитриева', login:'viktoria.dmitrieva@atwinta.ru', roles:['Менеджер'], directions:['Техническая поддержка'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
+    {id:'u25', name:'Виктор Гунин', login:'viktor.gunin@atwinta.ru', roles:['Наблюдатель'], directions:[], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
+    {id:'u26', name:'Илья Горбаров', login:'ilya.gorbarov@atwinta.ru', roles:['Наблюдатель'], directions:[], status:'active', createdAt:'2026-09-18', mustChangePassword:false}
   ];
   var DEFAULT_STATUS_RULES = {
     'На рассмотрении':{type:'key',sections:['Ожидают решения']},
@@ -705,8 +702,17 @@
       localStorage.setItem(TENDER_STORAGE_KEY, JSON.stringify(tenders));
     }
   }
+  // этап ПКО/НДА: пока активный этап тендера называется «ПКО» или «НДА», тендер
+  // остаётся в разделе «В работе» при любом статусе этапа (решение Оксаны 2026-09-18).
+  // Как только появляется следующий этап с другим названием, работают обычные правила статусов.
+  function isPkoStageName(name){ return name === 'ПКО' || name === 'НДА'; }
+  function isPkoStageTender(tender){
+    var active = activeTenderSection(tender);
+    return !!(active && isPkoStageName(active.name));
+  }
   function resolveSection(tender, fallbackSection){
     if(tender && tender.decision === 'Отказ') return 'Архив';
+    if(isPkoStageTender(tender)) return 'В работе';
     if(tender && tender.appStatus){
       var rule = statusRule(tender.appStatus);
       if(rule.type === 'through'){
@@ -890,6 +896,20 @@
   var REAL_DATA_REFS_MIGRATION_KEY = 'atvinta_real_data_refs_v1';
   var TENDER_SEED_VERSION_KEY = 'atvinta_tenders_seed_version';
   var NOTIFICATIONS_KEY = 'atvinta_notifications_v1';
+  // состав пользователей, утверждённый Оксаной 2026-09-18: демо-пользователи удалены,
+  // роли и направления проставлены; одноразово заменяет сохранённый в браузере список
+  var REAL_USERS_MIGRATION_KEY = 'atvinta_real_users_v1';
+  function migrateRealUsers(){
+    if(localStorage.getItem(REAL_USERS_MIGRATION_KEY)) return;
+    localStorage.setItem(USERS_KEY, JSON.stringify(clone(DEFAULT_USERS)));
+    localStorage.setItem(USERS_SEED_MIGRATION_KEY, '1');
+    var current = null;
+    try{ current = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || 'null'); }catch(error){}
+    if(current && !DEFAULT_USERS.some(function(u){ return u.name === current.name; })){
+      localStorage.removeItem(CURRENT_USER_KEY);
+    }
+    localStorage.setItem(REAL_USERS_MIGRATION_KEY, '1');
+  }
   function migrateRealDataReferences(){
     if(localStorage.getItem(REAL_DATA_REFS_MIGRATION_KEY)) return;
     var stored = {};
@@ -961,6 +981,7 @@
     return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   }
   try{ migrateRealDataReferences(); }catch(error){}
+  try{ migrateRealUsers(); }catch(error){}
   applyTenderSeed();
 
   syncTenderHierarchy();
@@ -1113,6 +1134,7 @@
     countRenameUsage: countRenameUsage,
     applyReferenceRename: applyReferenceRename,
     resolveSection: resolveSection,
+    isPkoStageTender: isPkoStageTender,
     availableStatuses: availableStatuses,
     statusDestination: statusDestination,
     stageForStatus: stageForStatus,

@@ -1,3 +1,4 @@
+<!doctype html>
 <html lang="ru">
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
@@ -193,6 +194,59 @@
   .icon-btn-xs:hover{background:var(--surface-2);color:var(--ink);}
   .dash-card-head .dash-card-title{margin-bottom:0;}
 
+  /* первый ряд: четыре компактные плашки с цифрами, рядом — диаграмма по направлениям */
+  .stat-cards{display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:16px;grid-column:span 2;}
+  .stat-card{display:flex;flex-direction:column;gap:4px;min-height:152px;}
+  .stat-card-label{font-size:12px;color:var(--ink-muted);}
+  .stat-main{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  /* пробелы между разрядами в суммах вдвое уже обычного (моноширинный пробел слишком широкий) */
+  .stat-money,.won-meta b,.num-cell,.donut-legend-value,.stat-value,.stat-extra b{word-spacing:-.3em;}
+  .stat-money{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-muted);white-space:nowrap;}
+  /* все плашки первого ряда одной высоты: две строки плашек делят высоту ряда с диаграммой */
+  .stat-cards{grid-template-rows:1fr 1fr;}
+  #widgetDirections{height:auto;min-height:320px;}
+  .won-list{display:flex;flex-direction:column;gap:6px;max-height:132px;overflow-y:auto;margin-top:4px;}
+  .won-item{border-top:1px solid var(--border);padding-top:6px;display:flex;flex-direction:column;gap:2px;}
+  .won-link{color:var(--accent);text-decoration:none;font-weight:600;font-size:12.5px;line-height:1.35;}
+  .won-link:hover{text-decoration:underline;}
+  .won-meta{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:var(--ink-muted);}
+  .won-meta b{font-family:var(--font-mono);font-weight:600;color:var(--ink);white-space:nowrap;}
+  .stat-extra{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--ink-muted);
+    border-top:1px solid var(--border);padding-top:5px;margin-top:5px;}
+  .stat-extra b{font-family:var(--font-mono);font-weight:600;color:var(--ink);}
+  .stat-delta{display:inline-flex;align-items:center;gap:4px;font-size:12px;margin-top:auto;
+    padding-top:6px;color:var(--ink-muted);}
+  .stat-delta svg{width:12px;height:12px;flex:none;}
+  .stat-delta.is-up{color:var(--success);}
+  .stat-delta.is-down{color:var(--danger);}
+  .stat-delta.is-flat{color:var(--ink-muted);}
+  @media (max-width: 900px){ .stat-cards{grid-column:auto;} }
+  /* третий ряд: причины отказов и активные пользователи, обе плашки одной высоты */
+  .bottom-row{display:grid;grid-template-columns:repeat(auto-fit, minmax(420px, 1fr));gap:16px;}
+  .dash-card-list{display:flex;flex-direction:column;height:420px;}
+  .dash-card-list .dash-card-head{flex:none;}
+  .list-scroll{flex:1;min-height:0;overflow-y:auto;}
+  .card-total{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-muted);
+    font-family:var(--font-mono);}
+  .card-total .stat-delta{margin-top:0;padding-top:0;font-family:var(--font-body);}
+  .bar-list{display:flex;flex-direction:column;gap:14px;}
+  .bar-item{display:grid;grid-template-columns:1fr auto;gap:5px 10px;align-items:center;}
+  .bar-item .bar-name{font-size:12.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;}
+  .bar-item .bar-num{font-family:var(--font-mono);font-size:12.5px;color:var(--ink);}
+  .bar-track{grid-column:1 / -1;height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden;}
+  .bar-value{display:block;height:100%;border-radius:999px;width:0;
+    transition:width .9s cubic-bezier(.22,.61,.36,1);}
+  @media (prefers-reduced-motion: reduce){ .bar-value{transition:none;} }
+  .people-table{width:100%;border-collapse:collapse;font-size:12.5px;color:var(--ink);}
+  .people-table th{position:sticky;top:0;background:var(--surface);text-align:left;font-size:10.5px;
+    text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted);font-weight:700;
+    padding:0 10px 8px 0;}
+  .people-table td{padding:9px 10px 9px 0;border-top:1px solid var(--border);vertical-align:middle;}
+  .people-table .num-cell{text-align:right;font-family:var(--font-mono);padding-right:0;white-space:nowrap;}
+  .people-name{display:flex;align-items:center;gap:8px;}
+  .people-avatar{width:26px;height:26px;border-radius:50%;flex:none;display:flex;align-items:center;
+    justify-content:center;font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-wash);}
   .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;}
   .stat-tile{padding-bottom:14px;}
   .stat-tile:nth-child(-n+2){border-bottom:1px solid var(--border);}
@@ -202,7 +256,10 @@
   .stat-sub{font-size:12px;color:var(--success);margin-top:3px;font-family:var(--font-mono);
     font-variant-numeric:tabular-nums;font-weight:600;}
 
-  .donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+  /* диаграмма и легенда стоят в одну строку и выровнены по центру по вертикали
+     при любом количестве пунктов; длинный список прокручивается внутри легенды */
+  .donut-wrap{display:flex;align-items:center;gap:24px;flex-wrap:nowrap;height:100%;}
+  #widgetDirections .dash-card-body{display:flex;align-items:center;overflow:hidden;}
   .donut-chart{position:relative;width:140px;height:140px;flex:none;}
   .donut-chart svg{display:block;}
   .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
@@ -210,12 +267,13 @@
   .donut-center .n{font-family:var(--font-mono);font-size:22px;font-weight:600;color:var(--ink);
     font-variant-numeric:tabular-nums;}
   .donut-center .t{font-size:10px;color:var(--ink-muted);}
-  .donut-legend{list-style:none;margin:0;padding:0;flex:1;min-width:200px;}
+  .donut-legend{list-style:none;margin:0;padding:0;flex:1;min-width:0;max-height:100%;overflow-y:auto;}
   .donut-legend-item{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;
     border-bottom:1px solid var(--border);}
   .donut-legend-item:last-child{border-bottom:none;}
   .donut-swatch{width:10px;height:10px;border-radius:3px;flex:none;}
-  .donut-legend-name{flex:1;color:var(--ink);}
+  .donut-legend-name{flex:1;min-width:0;color:var(--ink);overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;}
   .donut-legend-value{color:var(--ink-muted);font-family:var(--font-mono);font-size:11.5px;
     font-variant-numeric:tabular-nums;white-space:nowrap;}
 
@@ -232,6 +290,15 @@
     border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%);opacity:0;
     transition:opacity .1s ease;z-index:5;box-shadow:var(--shadow-md);}
   .funnel-tooltip.is-visible{opacity:1;}
+  /* подсказка по вертикальной линии: все показатели за выбранную точку времени */
+  .funnel-tooltip.is-rich{white-space:normal;min-width:190px;padding:8px 10px;transform:none;
+    transition:opacity .12s ease, left .12s ease, top .12s ease;}
+  .tt-title{font-family:var(--font-body);font-weight:700;margin-bottom:6px;opacity:.85;}
+  .tt-row{display:flex;align-items:center;gap:8px;line-height:1.7;}
+  .tt-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .tt-name{flex:1;font-family:var(--font-body);}
+  .tt-val{font-weight:600;}
+  .chart-crosshair{transition:opacity .12s ease, transform .12s ease;}
   .funnel-table{width:100%;border-collapse:collapse;font-size:12.5px;}
   .funnel-table th{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted);
     font-weight:700;text-align:right;padding:0 0 8px;}
@@ -373,29 +440,30 @@
     </div>
 
     <div class="dash-grid" id="dashGrid">
-      <div class="dash-card dash-card-fixed" data-widget="period" id="widgetPeriod">
-        <h3 class="dash-card-title">Итоги периода</h3>
-        <div class="dash-card-body">
-          <div class="stat-row">
-            <div class="stat-tile">
-              <div class="stat-value" id="statNew">0</div>
-              <div class="stat-label">Новых получено</div>
-            </div>
-            <div class="stat-tile">
-              <div class="stat-value" id="statInWork">0</div>
-              <div class="stat-label">В работе сейчас</div>
-            </div>
-            <div class="stat-tile">
-              <div class="stat-value" id="statSubmitted">0</div>
-              <div class="stat-label">Подано всего</div>
-              <div class="stat-sub" id="statSubmittedSplit" style="color:var(--ink-muted)"></div>
-            </div>
-            <div class="stat-tile">
-              <div class="stat-value" id="statWon">0</div>
-              <div class="stat-label">Выиграно</div>
-              <div class="stat-sub" id="statWonSum"></div>
-            </div>
-          </div>
+      <div class="stat-cards" data-widget="period" id="widgetPeriod">
+        <div class="dash-card stat-card">
+          <div class="stat-card-label">Получено новых</div>
+          <div class="stat-value" id="statNew">0</div>
+          <div class="stat-extra"><span>в т.ч. взяли на изучение</span><b id="statStudied">0</b></div>
+          <div class="stat-delta" id="statNewDelta"></div>
+        </div>
+        <div class="dash-card stat-card">
+          <div class="stat-card-label">В работе</div>
+          <div class="stat-main"><div class="stat-value" id="statInWork">0</div><div class="stat-money" id="statInWorkSum"></div></div>
+          <div class="stat-extra"><span>в т.ч. ПКО/НДА</span><b id="statInWorkPko">0</b></div>
+        </div>
+        <div class="dash-card stat-card">
+          <div class="stat-card-label">Подано</div>
+          <div class="stat-main"><div class="stat-value" id="statSubmitted">0</div><div class="stat-money" id="statSubmittedSum"></div></div>
+          <div class="stat-extra"><span>в т.ч. первично</span><b id="statSubmittedFirst">0</b></div>
+          <div class="stat-extra"><span>переторжки</span><b id="statSubmittedRetender">0</b></div>
+          <div class="stat-extra"><span>ожидают ответа</span><b id="statWaiting">0</b></div>
+        </div>
+        <div class="dash-card stat-card">
+          <div class="stat-card-label">Выиграно</div>
+          <div class="stat-main"><div class="stat-value" id="statWon">0</div><div class="stat-money" id="statWonSum"></div></div>
+          <div class="won-list" id="statWonList"></div>
+          <div class="stat-delta" id="statWonDelta"></div>
         </div>
       </div>
 
@@ -416,17 +484,11 @@
         </div>
       </div>
 
-      <div class="dash-card dash-card-fixed" data-widget="rejections" id="widgetRejections">
-        <h3 class="dash-card-title">Причины отказов</h3>
-        <div class="dash-card-body">
-          <div id="rejectChart"></div>
-        </div>
-      </div>
 
       <div class="funnel-row is-wide" id="widgetFunnel">
         <div class="dash-card funnel-chart-card">
           <div class="dash-card-head">
-            <h3 class="dash-card-title">Воронка <span class="dash-card-title-period" id="funnelPeriodLabel"></span></h3>
+            <h3 class="dash-card-title">Статистика по этапам <span class="dash-card-title-period" id="funnelPeriodLabel"></span></h3>
             <button type="button" class="icon-btn-xs" id="funnelEditBtn" title="Настроить график" aria-label="Настроить график"></button>
           </div>
           <div class="funnel-toggles">
@@ -453,11 +515,34 @@
           </table>
         </div>
       </div>
+      <div class="bottom-row is-wide" id="widgetBottomRow">
+        <div class="dash-card dash-card-list" data-widget="rejections" id="widgetRejections">
+          <div class="dash-card-head">
+            <h3 class="dash-card-title">Причины отказов</h3>
+            <div class="card-total"><span id="rejectTotal">Всего 0</span><span class="stat-delta" id="rejectDelta"></span></div>
+          </div>
+          <div class="dash-card-body list-scroll">
+            <div id="rejectChart"></div>
+          </div>
+        </div>
+        <div class="dash-card dash-card-list" data-widget="people" id="widgetPeople">
+          <div class="dash-card-head">
+            <h3 class="dash-card-title">Активные пользователи</h3>
+            <label class="filter-check"><input type="checkbox" id="peopleManagersOnly"> По ответственным</label>
+          </div>
+          <div class="dash-card-body list-scroll">
+            <table class="people-table">
+              <thead><tr><th>Сотрудник</th><th class="num-cell">Тендеров</th><th class="num-cell">Сумма</th></tr></thead>
+              <tbody id="peopleBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- STAGE VISIBILITY MODAL (Воронка / Конверсия по этапам) -->
+<!-- STAGE VISIBILITY MODAL (Статистика по этапам / Итоги по этапам) -->
 <div class="overlay" id="stageVisibilityOverlay">
   <div class="modal">
     <h4>Настроить график</h4>
@@ -500,8 +585,16 @@
     <p class="hint">Выберите виджеты, которые хотите видеть на своей странице.</p>
     <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="period"><span>Итоги периода</span></label></div>
     <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="directions"><span>По направлениям</span></label></div>
-    <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="funnel"><span>Воронка</span></label></div>
+    <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="funnel"><span>Статистика по этапам</span></label></div>
     <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="rejections"><span>Причины отказов</span></label></div>
+    <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="people"><span>Активные пользователи</span></label></div>
+    <div class="field">
+      <label for="deltaBaseSelect">С чем сравнивать динамику</label>
+      <select id="deltaBaseSelect">
+        <option value="prev">С равным периодом перед текущим</option>
+        <option value="year">С тем же периодом прошлого года</option>
+      </select>
+    </div>
     <div class="modal-actions">
       <button class="btn" id="configureCancel">Отмена</button>
       <button class="btn btn-primary" id="configureSave">Сохранить</button>
@@ -615,10 +708,28 @@
     });
     var byKind = {first:0, retender:0};
     submissions.forEach(function(item){ byKind[item.kind]++; });
+    var inWork = tenders.filter(function(t){ return TenderReferences.resolveSection(t) === 'В работе'; });
+    // «ожидают ответа» — поданные заявки, кроме тендеров на этапе ПКО/НДА (они считаются «в работе»)
+    var waiting = tenders.filter(function(t){
+      return t.appStatus === 'Подано' && !TenderReferences.isPkoStageTender(t);
+    });
+    // «взяли на изучение» — новые тендеры периода, прошедшие первое решение: сейчас на рассмотрении
+    // или участвуем, а также отказы, по которым уже шла работа (есть статус этапа)
+    var studied = inP.filter(function(t){
+      return t.decision === 'На рассмотрении' || t.decision === 'Участвуем'
+        || (t.decision === 'Отказ' && !!t.appStatus && t.appStatus !== 'Отклонено')
+        || (t.decision === 'Отказ' && Array.isArray(t.tenderSections)
+          && t.tenderSections.some(function(sec){ return !!sec.actualSubmissionDate; }));
+    });
     return {
       newCount: inP.length,
-      inWorkNow: tenders.filter(function(t){ return TenderReferences.resolveSection(t) === 'В работе'; }).length,
+      studiedCount: studied.length,
+      inWorkNow: inWork.length,
+      inWorkSum: sumNmc(inWork),
+      inWorkPko: inWork.filter(TenderReferences.isPkoStageTender).length,
+      waitingCount: waiting.length,
       submittedCount: submissions.length,
+      submittedSum: sumNmc(submissionTenders(submissions).filter(function(t, i, list){ return list.indexOf(t) === i; })),
       submittedFirst: byKind.first,
       submittedRetender: byKind.retender,
       wonCount: won.length,
@@ -761,6 +872,14 @@
   var legendVisibleStages = FUNNEL_STAGES.map(function(s){ return s.key; });
 
   var funnelState = {metric:'count'};
+  var chartHover = null;
+  var MONTHS_SHORT = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+  function bucketTitle(b){
+    if(b.start === b.end) return fmtDate(b.start);
+    var s = new Date(b.start + 'T00:00:00');
+    if(b.start.slice(8) === '01' && b.start.slice(0,7) === String(b.end).slice(0,7)) return MONTHS_SHORT[s.getMonth()] + ' ' + s.getFullYear();
+    return fmtDate(b.start) + ' – ' + fmtDate(b.end);
+  }
 
   function fmtAxisValue(v, metric){
     if(metric === 'sum') return fmtMoneyCompact(v);
@@ -795,20 +914,42 @@
     for(var t=0; t<=tickCount; t++){
       var val = max * t / tickCount;
       var y = yAt(val);
-      gridHtml += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(padL+plotW)+'" y2="'+y.toFixed(1)+'" stroke="var(--border)" stroke-width="1"></line>'
+      gridHtml += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(padL+plotW)+'" y2="'+y.toFixed(1)+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 5"></line>'
         + '<text x="'+(padL-8)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end" font-size="10" font-family="var(--font-mono)" fill="var(--ink-muted)">'+esc(fmtAxisValue(val, metric))+'</text>';
     }
 
-    var linesHtml = series.map(function(s){
+    // сглаженная линия с заливкой под ней (стиль area-chart, решение Оксаны 2026-09-18)
+    function smoothPath(pts){
+      if(pts.length < 2) return pts.length ? 'M'+pts[0].x.toFixed(1)+' '+pts[0].y.toFixed(1) : '';
+      var d = 'M'+pts[0].x.toFixed(1)+' '+pts[0].y.toFixed(1);
+      for(var i=0; i<pts.length-1; i++){
+        var p0 = pts[i === 0 ? 0 : i-1], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
+        var c1x = p1.x + (p2.x - p0.x)/6, c1y = p1.y + (p2.y - p0.y)/6;
+        var c2x = p2.x - (p3.x - p1.x)/6, c2y = p2.y - (p3.y - p1.y)/6;
+        d += ' C'+c1x.toFixed(1)+' '+c1y.toFixed(1)+', '+c2x.toFixed(1)+' '+c2y.toFixed(1)
+          + ', '+p2.x.toFixed(1)+' '+p2.y.toFixed(1);
+      }
+      return d;
+    }
+    var defsHtml = series.map(function(s, idx){
+      return '<linearGradient id="areaGrad'+idx+'" x1="0" y1="0" x2="0" y2="1">'
+        + '<stop offset="0%" stop-color="'+s.color+'" stop-opacity="0.28"></stop>'
+        + '<stop offset="100%" stop-color="'+s.color+'" stop-opacity="0"></stop></linearGradient>';
+    }).join('');
+    var linesHtml = series.map(function(s, idx){
       var pts = s.points.map(function(p,i){
         var tipVal = metric === 'sum' ? fmtMoney(p.sum) : (metric === 'pct' ? p.pct+'%' : p.count);
         return {x:xAt(i), y: yAt(p[metric]), tip:s.label+': '+tipVal};
       });
-      var pathD = pts.map(function(p,i){ return (i===0?'M':'L')+p.x.toFixed(1)+' '+p.y.toFixed(1); }).join(' ');
+      var line = smoothPath(pts);
+      var area = line ? line + ' L'+pts[pts.length-1].x.toFixed(1)+' '+(padT+plotH)
+        + ' L'+pts[0].x.toFixed(1)+' '+(padT+plotH)+' Z' : '';
       var dots = pts.map(function(p){
-        return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="'+s.color+'" stroke="var(--surface)" stroke-width="1.5" data-tip="'+esc(p.tip)+'"></circle>';
+        return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="var(--surface)" stroke="'+s.color+'" stroke-width="2" data-tip="'+esc(p.tip)+'"></circle>';
       }).join('');
-      return '<path d="'+pathD+'" fill="none" stroke="'+s.color+'" stroke-width="2"></path>' + dots;
+      return (area ? '<path d="'+area+'" fill="url(#areaGrad'+idx+')" stroke="none"></path>' : '')
+        + '<path d="'+line+'" fill="none" stroke="'+s.color+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>'
+        + dots;
     }).join('');
 
     var xLabels = buckets.map(function(b,i){
@@ -819,8 +960,26 @@
 
     document.getElementById('funnelChart').innerHTML =
       '<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block;">'
-      + gridHtml + linesHtml + xLabels
+      + '<defs>'+defsHtml+'</defs>' + gridHtml
+      + '<line class="chart-crosshair" x1="0" x2="0" y1="'+padT+'" y2="'+(padT+plotH)+'" stroke="var(--ink-muted)" stroke-width="1" stroke-dasharray="4 4" opacity="0"></line>'
+      + linesHtml + xLabels
+      + '<rect class="chart-hover" x="'+padL+'" y="'+padT+'" width="'+plotW+'" height="'+plotH+'" fill="transparent"></rect>'
       + '</svg>';
+    // данные для подсказки: при наведении показываем значения всех видимых линий в этой точке
+    var periodParts = periodBuckets(range);
+    chartHover = {
+      xs: buckets.map(function(b, i){ return xAt(i); }), w: w,
+      rows: buckets.map(function(b, i){
+        return {
+          title: periodParts[i] ? bucketTitle(periodParts[i]) : b.label,
+          items: series.map(function(s){
+            var p = s.points[i];
+            var val = metric === 'sum' ? fmtMoney(p.sum) : (metric === 'pct' ? p.pct + '%' : p.count);
+            return {label: s.label, color: s.color, value: val};
+          })
+        };
+      })
+    };
 
     document.getElementById('funnelKey').innerHTML = series.map(function(s){
       return '<span class="funnel-key-item"><span class="funnel-key-swatch" style="border-color:'+s.color+'"></span>'+esc(s.label)+'</span>';
@@ -855,6 +1014,29 @@
     document.getElementById('funnelLegend').innerHTML = rowsHtml || '<tr><td colspan="4" class="empty-cell" style="text-align:center;padding:16px;">Все этапы скрыты.</td></tr>';
   }
 
+  // в тёмной теме пастельные цвета направлений почти сливаются, поэтому для диаграммы
+  // и легенды берём тот же цвет, но насыщеннее и темнее (решение Оксаны 2026-09-17)
+  function isDarkTheme(){
+    var attr = document.documentElement.getAttribute('data-theme');
+    if(attr === 'dark') return true;
+    if(attr === 'light') return false;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function chartColor(name){
+    var hex = TenderReferences.departmentColor(name);
+    if(!isDarkTheme() || !/^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
+    var r = parseInt(hex.slice(1,3),16)/255, g = parseInt(hex.slice(3,5),16)/255, bl = parseInt(hex.slice(5,7),16)/255;
+    var max = Math.max(r,g,bl), min = Math.min(r,g,bl), l = (max+min)/2, h = 0, sat = 0;
+    if(max !== min){
+      var d = max - min;
+      sat = l > 0.5 ? d/(2-max-min) : d/(max+min);
+      if(max === r) h = ((g-bl)/d + (g < bl ? 6 : 0));
+      else if(max === g) h = (bl-r)/d + 2;
+      else h = (r-g)/d + 4;
+      h *= 60;
+    }
+    return 'hsl('+Math.round(h)+', '+Math.round(Math.max(sat, 0.5)*100)+'%, 62%)';
+  }
   function renderDonut(b){
     var r = 48, cx = 64, cy = 64, sw = 20;
     var circumference = 2 * Math.PI * r;
@@ -867,7 +1049,7 @@
       var offset = 0;
       keys.forEach(function(k){
         var len = b.counts[k] / b.total * circumference;
-        svgParts += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+TenderReferences.departmentColor(k)+'" '
+        svgParts += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+chartColor(k)+'" '
           + 'stroke-width="'+sw+'" stroke-dasharray="'+len+' '+(circumference-len)+'" stroke-dashoffset="'+(-offset)+'" '
           + 'transform="rotate(-90 '+cx+' '+cy+')"></circle>';
         offset += len;
@@ -875,7 +1057,7 @@
     }
     document.getElementById('donutChart').innerHTML =
       '<svg viewBox="0 0 128 128" width="140" height="140">'+svgParts+'</svg>'
-      + '<div class="donut-center"><span class="n">'+b.total+'</span><span class="t">попаданий</span></div>';
+      + '<div class="donut-center"><span class="n">'+b.total+'</span><span class="t">тендеров</span></div>';
   }
 
   function renderLegend(b, mode){
@@ -888,7 +1070,7 @@
     document.getElementById('donutLegend').innerHTML = keys.map(function(k){
       var pct = b.total ? Math.round(b.counts[k] / b.total * 100) : 0;
       var sumHtml = mode === 'won' ? ' · '+fmtMoney(b.sums[k]) : '';
-      return '<li class="donut-legend-item"><span class="donut-swatch" style="background:'+TenderReferences.departmentColor(k)+'"></span>'
+      return '<li class="donut-legend-item"><span class="donut-swatch" style="background:'+chartColor(k)+'"></span>'
         + '<span class="donut-legend-name">'+esc(k)+'</span>'
         + '<span class="donut-legend-value">'+b.counts[k]+' · '+pct+'%'+sumHtml+'</span></li>';
     }).join('');
@@ -918,15 +1100,91 @@
     document.getElementById('legendPeriodLabel').textContent = text;
   }
 
+  // ---- динамика к прошлому периоду (решение Оксаны 2026-09-18) ----
+  // база сравнения настраивается в «Настроить»: равный период перед текущим или тот же период прошлого года
+  var DELTA_BASE_KEY = 'atvinta_dashboard_delta_base_v1';
+  function loadDeltaBase(){
+    try{ return localStorage.getItem(DELTA_BASE_KEY) === 'year' ? 'year' : 'prev'; }catch(e){ return 'prev'; }
+  }
+  var deltaBase = loadDeltaBase();
+  function toDate(iso){ return new Date(iso+'T00:00:00'); }
+  function isoOf(d){
+    var pad = function(n){ return n < 10 ? '0'+n : ''+n; };
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  }
+  function previousRange(range){
+    var start = toDate(range.start), end = toDate(range.end || TODAY);
+    if(end < start) return null;
+    if(deltaBase === 'year'){
+      var ys = new Date(start), ye = new Date(end);
+      ys.setFullYear(ys.getFullYear() - 1); ye.setFullYear(ye.getFullYear() - 1);
+      return {start: isoOf(ys), end: isoOf(ye)};
+    }
+    var days = Math.round((end - start) / 86400000) + 1;
+    var prevEnd = new Date(start); prevEnd.setDate(prevEnd.getDate() - 1);
+    var prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - (days - 1));
+    return {start: isoOf(prevStart), end: isoOf(prevEnd)};
+  }
+  function hasData(range){
+    // сравнивать не с чем, если до начала периода сравнения тендеров ещё не было
+    var earliest = '';
+    tenders.forEach(function(t){
+      var d = createdDate(t);
+      if(d && (!earliest || d < earliest)) earliest = d;
+    });
+    return !!earliest && earliest <= (range.end || TODAY);
+  }
+  function deltaLabel(){
+    if(deltaBase === 'year') return 'к прошлому году';
+    return state.period === 'month' ? 'к прошлому месяцу' : 'к предыдущему периоду';
+  }
+  var ARROW_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
+  var ARROW_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>';
+  function renderDelta(id, current, previous, available){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.className = 'stat-delta';
+    if(!available || previous === null || previous === undefined){ el.innerHTML = ''; return; }
+    if(!previous){
+      if(!current){ el.innerHTML = ''; return; }
+      el.classList.add('is-up');
+      el.innerHTML = ARROW_UP + '<span>новое, ' + deltaLabel() + '</span>';
+      return;
+    }
+    var pct = Math.round((current - previous) / previous * 100);
+    var sign = pct > 0 ? '+' : (pct < 0 ? '−' : '');
+    el.classList.add(pct > 0 ? 'is-up' : (pct < 0 ? 'is-down' : 'is-flat'));
+    el.innerHTML = (pct > 0 ? ARROW_UP : (pct < 0 ? ARROW_DOWN : ''))
+      + '<span>' + sign + Math.abs(pct) + '% ' + deltaLabel() + '</span>';
+  }
+
   function renderStats(range){
     var s = statsForPeriod(range);
+    var prev = previousRange(range);
+    var prevStats = prev ? statsForPeriod(prev) : null;
+    var comparable = !!prev && hasData(prev);
     document.getElementById('statNew').textContent = s.newCount;
+    document.getElementById('statStudied').textContent = s.studiedCount;
+    renderDelta('statNewDelta', s.newCount, prevStats ? prevStats.newCount : null, comparable);
     document.getElementById('statInWork').textContent = s.inWorkNow;
+    document.getElementById('statInWorkSum').textContent = s.inWorkSum ? fmtMoney(s.inWorkSum) : '';
+    document.getElementById('statInWorkPko').textContent = s.inWorkPko;
     document.getElementById('statSubmitted').textContent = s.submittedCount;
-    document.getElementById('statSubmittedSplit').textContent = 'первично '+s.submittedFirst
-      +' · переторжки '+s.submittedRetender;
+    document.getElementById('statSubmittedSum').textContent = s.submittedSum ? fmtMoney(s.submittedSum) : '';
+    document.getElementById('statSubmittedFirst').textContent = s.submittedFirst;
+    document.getElementById('statSubmittedRetender').textContent = s.submittedRetender;
+    document.getElementById('statWaiting').textContent = s.waitingCount;
     document.getElementById('statWon').textContent = s.wonCount;
-    document.getElementById('statWonSum').textContent = s.wonCount ? fmtMoney(s.wonSum) : '';
+    document.getElementById('statWonSum').textContent = s.wonSum ? fmtMoney(s.wonSum) : '';
+    // выигранные тендеры периода: название — ссылка на карточку, направление и сумма
+    var wonList = wonInRange(range).slice().sort(function(a, b){ return wonDate(b).localeCompare(wonDate(a)); });
+    document.getElementById('statWonList').innerHTML = wonList.map(function(t){
+      var dept = (t.depts && t.depts.length) ? t.depts.join(', ') : 'Без направления';
+      return '<div class="won-item"><a class="won-link" href="kartochka-tendera.html?tender='+t.id+'">'
+        + esc(t.name)+' ↗</a><div class="won-meta"><span>'+esc(dept)+'</span><b>'
+        + (Number(t.nmc) ? fmtMoney(Number(t.nmc)) : '—')+'</b></div></div>';
+    }).join('');
+    renderDelta('statWonDelta', s.wonCount, prevStats ? prevStats.wonCount : null, comparable);
   }
   function renderDirections(range){
     var b = directionBreakdown(state.dirMode, range);
@@ -938,8 +1196,78 @@
     renderLegendTable(range);
     renderPeriodLabels();
   }
+  // ---- причины отказов: прогресс-бары с анимацией заливки (решение Оксаны 2026-09-18) ----
+  var BAR_COLORS = ['#c41e52','#e2703a','#d8a200','#2f8fb3','#4f7cd6','#7c6fd6','#a34fb0','#3f9e6a',
+    '#b0563f','#5c7a8a','#8a6ad6','#c07a1f'];
+  function niceMax(value){
+    // округляем вверх до ближайшего «круглого» числа того же разряда: 187 → 200, 67 → 70, 1240 → 2000
+    if(!value) return 1;
+    var digits = String(Math.ceil(value)).length;
+    var step = Math.pow(10, digits - 1);
+    return Math.ceil(value / step) * step;
+  }
   function renderRejections(range){
-    document.getElementById('rejectChart').innerHTML = renderBarRows(rejectionBreakdown(range), true);
+    var rows = rejectionBreakdown(range);
+    var total = rows.reduce(function(sum, r){ return sum + r.value; }, 0);
+    var prev = previousRange(range);
+    var prevRows = prev ? rejectionBreakdown(prev) : [];
+    var prevTotal = prevRows.reduce(function(sum, r){ return sum + r.value; }, 0);
+    document.getElementById('rejectTotal').textContent = 'Всего ' + total;
+    renderDelta('rejectDelta', total, prev ? prevTotal : null, !!prev && hasData(prev));
+    var max = niceMax(rows.length ? rows[0].value : 0);
+    var host = document.getElementById('rejectChart');
+    if(!rows.length){
+      host.innerHTML = '<p class="empty-cell" style="margin:0;font-size:13px;">Отказов за выбранный период нет.</p>';
+      return;
+    }
+    host.innerHTML = '<div class="bar-list">' + rows.map(function(r, i){
+      return '<div class="bar-item"><span class="bar-name" title="'+esc(r.label)+'">'+esc(r.label)+'</span>'
+        + '<span class="bar-num">'+r.value+'</span>'
+        + '<span class="bar-track"><span class="bar-value" data-width="'+(r.value / max * 100)+'" '
+        + 'style="background:'+BAR_COLORS[i % BAR_COLORS.length]+'"></span></span></div>';
+    }).join('') + '</div>';
+    requestAnimationFrame(function(){
+      host.querySelectorAll('.bar-value').forEach(function(el){ el.style.width = el.dataset.width + '%'; });
+    });
+  }
+
+  // ---- активные пользователи ----
+  // тендер засчитывается человеку, если он ответственный или участник; чекбокс оставляет только ответственных
+  function peopleRows(range, managersOnly){
+    var map = {};
+    tendersInPeriod(range).forEach(function(t){
+      var names = [];
+      if(t.manager) names.push(t.manager);
+      if(!managersOnly && Array.isArray(t.participants)){
+        t.participants.forEach(function(name){ if(name && names.indexOf(name) === -1) names.push(name); });
+      }
+      names.forEach(function(name){
+        if(!map[name]) map[name] = {name:name, count:0, sum:0};
+        map[name].count++;
+        map[name].sum += Number(t.nmc) || 0;
+      });
+    });
+    var users = TenderReferences.getUsers();
+    return Object.keys(map).map(function(name){
+      var user = users.find(function(u){ return u.name === name; });
+      var row = map[name];
+      row.department = user && user.directions && user.directions.length ? user.directions.join(', ') : '—';
+      return row;
+    }).sort(function(a, b){ return b.count - a.count || b.sum - a.sum; });
+  }
+  function initials(name){
+    return String(name).split(/\s+/).filter(Boolean).slice(0, 2).map(function(w){ return w[0]; }).join('').toUpperCase();
+  }
+  function renderPeople(range){
+    var rows = peopleRows(range, document.getElementById('peopleManagersOnly').checked);
+    document.getElementById('peopleBody').innerHTML = rows.length
+      ? rows.map(function(r){
+          return '<tr><td><span class="people-name"><span class="people-avatar">'+esc(initials(r.name))+'</span>'
+            + esc(r.name)+'</span></td>'
+            + '<td class="num-cell">'+r.count+'</td>'
+            + '<td class="num-cell">'+(r.sum ? fmtMoney(r.sum) : '—')+'</td></tr>';
+        }).join('')
+      : '<tr><td colspan="3" class="empty-cell" style="padding:16px;text-align:center;">Нет данных за выбранный период.</td></tr>';
   }
   function renderAll(){
     var range = currentRange();
@@ -947,6 +1275,7 @@
     renderDirections(range);
     renderFunnel(range);
     renderRejections(range);
+    renderPeople(range);
   }
 
   function downloadDashboardReport(){
@@ -989,7 +1318,7 @@
       + '</table>'
       + '<h2>По направлениям</h2>'
       + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Направление</th><th>Кол-во</th><th>%</th></tr>'+dirRows+'</table>'
-      + '<h2>Воронка</h2>'
+      + '<h2>Статистика по этапам</h2>'
       + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Этап</th><th>Кол-во</th><th>Сумма</th><th>Конверсия</th></tr>'+funnelRows+'</table>'
       + '<h2>Причины отказов</h2>'
       + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Причина</th><th>Кол-во</th></tr>'+rejRows+'</table>'
@@ -1051,7 +1380,42 @@
     });
     chartEl.addEventListener('mouseleave', function(){ tooltipEl.classList.remove('is-visible'); });
   }
-  setupChartTooltip('funnelChart', 'funnelTooltip');
+  // вертикальная линия + подсказка со всеми показателями (как в примере reaviz area-chart)
+  (function(){
+    var chartEl = document.getElementById('funnelChart');
+    var tooltipEl = document.getElementById('funnelTooltip');
+    tooltipEl.classList.add('is-rich');
+    function hide(){
+      tooltipEl.classList.remove('is-visible');
+      var line = chartEl.querySelector('.chart-crosshair');
+      if(line) line.setAttribute('opacity', '0');
+    }
+    chartEl.addEventListener('mousemove', function(e){
+      var svg = chartEl.querySelector('svg');
+      if(!svg || !chartHover || !chartHover.xs.length) return;
+      var rect = svg.getBoundingClientRect();
+      var scale = rect.width / chartHover.w;
+      var x = (e.clientX - rect.left) / scale;
+      var idx = 0, best = Infinity;
+      chartHover.xs.forEach(function(px, i){ var d = Math.abs(px - x); if(d < best){ best = d; idx = i; } });
+      var line = svg.querySelector('.chart-crosshair');
+      line.setAttribute('x1', chartHover.xs[idx]); line.setAttribute('x2', chartHover.xs[idx]);
+      line.setAttribute('opacity', '1');
+      var row = chartHover.rows[idx];
+      tooltipEl.innerHTML = '<div class="tt-title">'+esc(row.title)+'</div>' + row.items.map(function(it){
+        return '<div class="tt-row"><span class="tt-dot" style="background:'+it.color+'"></span>'
+          + '<span class="tt-name">'+esc(it.label)+'</span><span class="tt-val">'+esc(String(it.value))+'</span></div>';
+      }).join('');
+      var wrap = chartEl.getBoundingClientRect();
+      var px = chartHover.xs[idx] * scale;
+      var tw = tooltipEl.offsetWidth || 200;
+      var left = px + 14 + tw > wrap.width ? px - tw - 14 : px + 14;
+      tooltipEl.style.left = Math.max(0, left) + 'px';
+      tooltipEl.style.top = '8px';
+      tooltipEl.classList.add('is-visible');
+    });
+    chartEl.addEventListener('mouseleave', hide);
+  })();
 
   document.getElementById('funnelEditBtn').innerHTML = PENCIL_SVG;
   document.getElementById('legendEditBtn').innerHTML = PENCIL_SVG;
@@ -1101,7 +1465,7 @@
 
   // ---- настройка видимости виджетов (своя для каждого браузера/пользователя) ----
   var WIDGETS_KEY = 'atvinta_dashboard_widgets_v1';
-  var ALL_WIDGETS = ['period','directions','funnel','rejections'];
+  var ALL_WIDGETS = ['period','directions','funnel','rejections','people'];
   function loadWidgetSettings(){
     var stored = null;
     try{ stored = JSON.parse(localStorage.getItem(WIDGETS_KEY)); }catch(e){}
@@ -1117,7 +1481,12 @@
     document.getElementById('widgetDirections').hidden = enabledWidgets.indexOf('directions') === -1;
     document.getElementById('widgetFunnel').hidden = enabledWidgets.indexOf('funnel') === -1;
     document.getElementById('widgetRejections').hidden = enabledWidgets.indexOf('rejections') === -1;
+    document.getElementById('widgetPeople').hidden = enabledWidgets.indexOf('people') === -1;
+    document.getElementById('widgetBottomRow').hidden = enabledWidgets.indexOf('rejections') === -1
+      && enabledWidgets.indexOf('people') === -1;
   }
+
+  document.getElementById('peopleManagersOnly').addEventListener('change', function(){ renderPeople(currentRange()); });
 
   document.getElementById('reportDownloadBtn').innerHTML = DOWNLOAD_SVG;
   document.getElementById('reportDownloadBtn').addEventListener('click', downloadDashboardReport);
@@ -1125,6 +1494,7 @@
   var configureOverlay = document.getElementById('configureOverlay');
   document.getElementById('configureBtn').addEventListener('click', function(){
     document.querySelectorAll('.widget-check').forEach(function(cb){ cb.checked = enabledWidgets.indexOf(cb.value) !== -1; });
+    document.getElementById('deltaBaseSelect').value = deltaBase;
     configureOverlay.classList.add('is-open');
   });
   document.getElementById('configureCancel').addEventListener('click', function(){ configureOverlay.classList.remove('is-open'); });
@@ -1146,10 +1516,22 @@
     var checked = Array.prototype.slice.call(document.querySelectorAll('.widget-check:checked')).map(function(cb){ return cb.value; });
     enabledWidgets = checked;
     saveWidgetSettings(enabledWidgets);
+    deltaBase = document.getElementById('deltaBaseSelect').value === 'year' ? 'year' : 'prev';
+    try{ localStorage.setItem(DELTA_BASE_KEY, deltaBase); }catch(e){}
     applyWidgetVisibility();
+    renderStats(currentRange());
     configureOverlay.classList.remove('is-open');
     showToast('Настройки дашборда сохранены.');
   });
+
+  // перерисовка диаграмм при смене темы (системная тема, переключатель в Профиле)
+  if(window.matchMedia){
+    var themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    var onThemeChange = function(){ renderDirections(currentRange()); };
+    if(themeQuery.addEventListener) themeQuery.addEventListener('change', onThemeChange);
+    else if(themeQuery.addListener) themeQuery.addListener(onThemeChange);
+    new MutationObserver(onThemeChange).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+  }
 
   window.addEventListener('storage', function(e){
     if(e.key === 'atvinta_tenders_v2'){ tenders = loadTenders(); renderAll(); }

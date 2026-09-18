@@ -101,7 +101,7 @@ def D(dm): return '2026-%s-%s' % (dm[3:5], dm[0:2])
 RETENDER = [(4,'01.02'),(764,'06.03'),(921,'13.03'),(836,'14.04'),(1472,'28.04'),(1442,'30.04'),(1646,'02.06'),
             (2062,'07.07'),(2000,'07.07'),(1847,'10.07'),(2114,'13.07'),(2157,'22.07'),(2200,'31.07'),
             (2096,'05.08'),(2356,'03.09'),(2361,'10.09'),(1847,'10.09')]
-MAINSTAGE = [(76,'01.02'),(529,'19.02'),(587,'20.02'),(921,'02.03'),(479,'02.03'),(836,'30.03'),(1440,'25.08'),(2401,'08.09'),(2266,'15.09')]
+MAINSTAGE = [(76,'01.02'),(529,'19.02'),(921,'02.03'),(479,'02.03'),(836,'30.03'),(1440,'25.08'),(2401,'08.09'),(2266,'15.09')]
 extra = collections.defaultdict(list)
 for row, dm in MAINSTAGE: extra[row].append(('Этап 2', D(dm)))
 for row, dm in RETENDER: extra[row].append(('Переторжка', D(dm)))
@@ -123,6 +123,8 @@ PRE_STAGE = {1442: ('НДА', '2026-04-06')}
 # первая подача была на ПКО («статистика»: «Дрогери ритейл - ПКО», «ОЗОН игровые механики, подались на ПКО»)
 FIRST_IS_PKO = {1471, 1394}
 NOT_SUBMITTED_STATUSES = {'Формирование заявки'}
+# отказ заказчика после подачи: решение в «Тендерах» — «Отказ», но подача была («Ответы» №77, 18.02)
+SUBMITTED_REFUSALS = {899}
 
 def section(idx, name, status, deadline, actual, completed):
     return {'id': None, 'name': name, 'status': status, 'deadline': deadline,
@@ -188,7 +190,7 @@ for i in sorted(rows):
         log['unexpected_decision'].append((i, dec))
     t['appStatus'] = status
     # submission dates / stages
-    submitted = dec == 'Участвуем' and status not in NOT_SUBMITTED_STATUSES and st_raw != 'не успели податься' \
+    submitted = (dec == 'Участвуем' or i in SUBMITTED_REFUSALS) and status not in NOT_SUBMITTED_STATUSES and st_raw != 'не успели податься' \
         and not (st_raw == 'Отменено' and not ar)
     first_actual = ''
     if dec == 'На рассмотрении' and st_raw == 'ПКО/НДА' and t['deadline']:
@@ -251,7 +253,7 @@ for t in out:
 js = ("// Реальные тендеры из Google-таблицы «Тендеры» (листы «Тендеры», «Ответы», «статистика»).\n"
       "// Сформировано автоматически " + datetime.date.today().isoformat() + ". Дубли не загружены.\n"
       "// Меняя данные в этом файле, увеличьте TENDER_SEED_VERSION — иначе браузер оставит старую копию.\n"
-      "window.TENDER_SEED_VERSION = 'real-2026-09-17-v4';\n"
+      "window.TENDER_SEED_VERSION = 'real-2026-09-17-v5';\n"
       "window.TENDER_SEED_DATA = " + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ";\n")
 open(OUT, 'w').write(js)
 

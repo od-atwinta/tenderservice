@@ -1,3 +1,4 @@
+<!doctype html>
 <html lang="ru">
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
@@ -147,6 +148,14 @@
     color:var(--ink);}
   .search-field .ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-muted);
     font-size:13px;}
+  /* крестик быстрой очистки поиска — виден, только когда в поле есть текст */
+  .search-field input{padding-right:30px;}
+  .search-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:20px;height:20px;
+    border:none;border-radius:50%;background:none;color:var(--ink-muted);cursor:pointer;display:flex;
+    align-items:center;justify-content:center;padding:0;}
+  .search-clear:hover{background:var(--surface-2);color:var(--ink);}
+  .search-clear svg{width:12px;height:12px;}
+  .search-clear[hidden]{display:none;}
 
   .link-ico{color:var(--accent);text-decoration:none;font-weight:600;font-size:12.5px;}
   .link-ico:hover{text-decoration:underline;}
@@ -512,6 +521,7 @@
           <div class="search">
             <span class="ico"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg></span>
             <input type="text" id="searchInput" placeholder="Название или заказчик…">
+            <button type="button" class="search-clear" id="searchClear" aria-label="Очистить поиск" title="Очистить" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
           </div>
         </div>
       </div>
@@ -1253,6 +1263,23 @@
   }
   window.addEventListener('storage', function(e){ if(e.key === NOTIFICATIONS_KEY) renderSyncedNotifications(); });
   renderSyncedNotifications();
+})();
+</script>
+<script>
+// крестик очистки поиска: очищает поле и заново применяет фильтры страницы (решение Оксаны 2026-09-18)
+(function(){
+  var input = document.getElementById('searchInput');
+  var clear = document.getElementById('searchClear');
+  if(!input || !clear) return;
+  function sync(){ clear.hidden = !input.value; }
+  input.addEventListener('input', sync);
+  clear.addEventListener('click', function(){
+    input.value = '';
+    input.dispatchEvent(new Event('input', {bubbles:true}));
+    sync();
+    input.focus();
+  });
+  sync();
 })();
 </script>
 </html>

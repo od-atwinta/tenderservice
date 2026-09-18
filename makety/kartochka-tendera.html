@@ -1,3 +1,4 @@
+<!doctype html>
 <html lang="ru">
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
@@ -3248,6 +3249,16 @@
       +DOWNLOAD_SVG+'<span>'+escSynced(name)+'</span></button>';
   }
   var editingProcessSectionId = '';
+  // исправление завершённого этапа (в т.ч. в архивном тендере) — только Суперадмин,
+  // каждое исправление пишется в историю (решение Оксаны 2026-09-18)
+  var correctingCompleted = false;
+  function userIsSuperadmin(){
+    var roles = Array.isArray(CURRENT_USER.roles) ? CURRENT_USER.roles : [];
+    return roles.some(function(role){
+      var normalized = String(role).toLowerCase();
+      return normalized === 'суперадмин' || normalized === 'суперадминистратор';
+    });
+  }
   var editingProcessDraft = null;
   var processSectionSelects = {};
   function syncProcessDraftFromEditor(){
@@ -3256,6 +3267,12 @@
       '[data-process-section-id="'+editingProcessSectionId+'"]'
     );
     if(!sectionNode) return;
+    // сумма заявки пересчитывается при уходе из поля; если сохранить сразу, не уходя из поля,
+    // принудительно применяем введённое значение
+    var amountExclInput = sectionNode.querySelector('[data-amount-excl]');
+    if(amountExclInput && amountExclInput.value !== String(editingProcessDraft.amountExclVat || '')){
+      amountExclInput.dispatchEvent(new Event('blur'));
+    }
     var nameSelect = processSectionSelects[editingProcessSectionId];
     if(nameSelect && nameSelect.dataset.value){
       editingProcessDraft.name = nameSelect.dataset.value;
@@ -3309,14 +3326,15 @@
       +processLibraryDocumentChips(ids,kind,false,library)+'</div></div>';
   }
   function processSectionHtml(t,section,index,commonDocs,library){
-    var isEditing = editingProcessSectionId === section.id && !section.completed;
+    var isEditing = editingProcessSectionId === section.id && (!section.completed || correctingCompleted);
+    var isLastSection = index === t.tenderSections.length - 1;
     var view = isEditing && editingProcessDraft
       ? editingProcessDraft
       : (section.completed && section.snapshot ? section.snapshot : section);
     var sectionDocumentIds = uniqueDocumentIds(view.documentIds);
     var formsDocumentIds = uniqueDocumentIds(view.formsDocumentIds);
     var submissionDocumentIds = uniqueDocumentIds(view.submissionDocumentIds);
-    var readonlyDocs = section.completed;
+    var readonlyDocs = section.completed && !isEditing;
     var docsBlock = readonlyDocs
       ? processReadonlyDocumentBlock('Документы',sectionDocumentIds,'section',library,false)
       : processEditableDocumentBlock('Документы',sectionDocumentIds,'section',library,false);
@@ -3340,6 +3358,10 @@
     var rightTop = isEditing
       ? '<div class="field"><label>Дата фактической подачи</label><input type="date"'
         +' data-process-section-actual-submission value="'+escSynced(view.actualSubmissionDate || '')+'"></div>'
+        +(correctingCompleted && isLastSection
+          ? '<div class="field"><label>Дата итога</label><input type="date" data-process-result-date'
+            +' value="'+escSynced(t.resultDate || t.archivedAt || '')+'"></div>'
+          : '')
       : '<div class="fact-row"><span class="k">Дата фактической подачи</span><span class="v">'
         +(view.actualSubmissionDate ? escSynced(fmtDate(view.actualSubmissionDate)) : '—')+'</span></div>';
     return '<section class="card process-section'+(section.completed ? ' is-completed' : '')+'"'
@@ -3349,6 +3371,10 @@
         ? '<button class="btn btn-sm rail-edit-btn" type="button" data-process-action="edit-section"'
           +' data-section-id="'+escSynced(section.id)+'" title="Редактировать этап" aria-label="Редактировать этап">'
           +'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>'
+        : '')
+      +(section.completed && !isEditing && userIsSuperadmin()
+        ? '<button class="btn btn-sm" type="button" data-process-action="edit-section"'
+          +' data-section-id="'+escSynced(section.id)+'" title="Исправить завершённый этап (Суперадмин)">Исправить</button>'
         : '')+'</div>'
       +(view.description
         ? '<div class="process-section-description-block"><span class="summary-label">Описание</span>'
@@ -4052,9 +4078,14 @@
       var sourceSection = tender.tenderSections.find(function(section){
         return section.id === button.dataset.sectionId;
       });
-      if(!sourceSection || sourceSection.completed) return;
+      if(!sourceSection) return;
+      if(sourceSection.completed && !userIsSuperadmin()) return;
+      correctingCompleted = !!sourceSection.completed;
       editingProcessSectionId = sourceSection.id;
-      editingProcessDraft = JSON.parse(JSON.stringify(sourceSection));
+      // для завершённого этапа правим данные его снимка — именно они показываются в карточке
+      var sourceView = sourceSection.completed && sourceSection.snapshot ? sourceSection.snapshot : sourceSection;
+      editingProcessDraft = JSON.parse(JSON.stringify(sourceView));
+      editingProcessDraft.id = sourceSection.id;
       renderProcessSections(tender);
       TenderReferences.setDirty('processSection', false);
       return;
@@ -4095,6 +4126,7 @@
       TenderReferences.guardedClose('processSection', function(){
         editingProcessSectionId = '';
         editingProcessDraft = null;
+        correctingCompleted = false;
         TenderReferences.setDirty('processSection', false);
         renderProcessSections(tender);
       }, function(){
@@ -4115,7 +4147,7 @@
       editingProcessDraft.name = selectedName;
       var sectionDeadlineInput = sectionNode.querySelector('[data-process-section-deadline]');
       var sectionDeadline = sectionDeadlineInput ? sectionDeadlineInput.value : '';
-      if(!sectionDeadline){
+      if(!sectionDeadline && !correctingCompleted){
         if(sectionDeadlineInput) sectionDeadlineInput.style.borderColor = 'var(--danger)';
         return;
       }
@@ -4129,6 +4161,48 @@
         return section.id === editingProcessSectionId;
       });
       if(sectionIndex === -1) return;
+      if(correctingCompleted){
+        var originalSection = tender.tenderSections[sectionIndex];
+        var before = originalSection.snapshot || originalSection;
+        var corrected = JSON.parse(JSON.stringify(editingProcessDraft));
+        delete corrected.snapshot;
+        corrected.completed = true;
+        corrected.completedAt = originalSection.completedAt || before.completedAt || '';
+        corrected.status = before.status;
+        corrected.stage = before.stage;
+        var changes = [];
+        [['name','название'],['deadline','дата подачи'],['actualSubmissionDate','фактическая подача'],
+         ['amountExclVat','сумма без НДС'],['vatRate','НДС'],['amountInclVat','сумма с НДС'],
+         ['description','описание']].forEach(function(pair){
+          var was = before[pair[0]] || '', now = corrected[pair[0]] || '';
+          if(pair[0] === 'deadline'){ was = String(was).slice(0,16); now = String(now).slice(0,16); }
+          if(pair[0] === 'deadline' && !now && was){ corrected.deadline = before.deadline; return; }
+          if(String(was) !== String(now)) changes.push(pair[1]+': '+(was || '—')+' → '+(now || '—'));
+        });
+        var resultInput = sectionNode.querySelector('[data-process-result-date]');
+        if(resultInput && resultInput.value !== (tender.resultDate || tender.archivedAt || '')){
+          changes.push('дата итога: '+(tender.resultDate || tender.archivedAt || '—')+' → '+(resultInput.value || '—'));
+          tender.resultDate = resultInput.value || '';
+          if(resultInput.value) tender.archivedAt = resultInput.value;
+        }
+        corrected.snapshot = JSON.parse(JSON.stringify(corrected));
+        tender.tenderSections[sectionIndex] = corrected;
+        tender.events = tender.events || [];
+        tender.events.push({
+          date:eventDate(),
+          text:'Исправлен завершённый этап «'+corrected.name+'» (Суперадмин)'
+            +(changes.length ? ': '+changes.join('; ') : ' — без изменений')+'.',
+          actor:CURRENT_USER.name
+        });
+        editingProcessSectionId = '';
+        editingProcessDraft = null;
+        correctingCompleted = false;
+        TenderReferences.setDirty('processSection', false);
+        saveTenders(tenders);
+        applyTenderData();
+        showToast('Исправление сохранено и записано в историю.');
+        return;
+      }
       tender.tenderSections[sectionIndex] = editingProcessDraft;
       tender.deadline = sectionDeadline;
       tender.events = tender.events || [];
