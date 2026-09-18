@@ -122,7 +122,30 @@
   .summary-nmc-row{display:flex;align-items:baseline;gap:6px;}
   /* сумма договора — у выигранного тендера, вносится вручную (решение Оксаны 2026-09-18) */
   .contract-row{align-items:center;flex-wrap:wrap;}
-  .contract-row[hidden],.contract-edit[hidden]{display:none;}
+  /* многолотовый тендер: одна заявка, несколько лотов со своим направлением и итогом (2026-09-18) */
+  .multilot-toggle{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-muted);cursor:pointer;}
+  .multilot-toggle input{width:15px;height:15px;accent-color:var(--accent);margin:0;}
+  .multilot-toggle.is-disabled{cursor:default;opacity:.7;}
+  #lotsCard[hidden]{display:none;}
+  #lotsEditOpen[hidden]{display:none;}
+  .lots-summary{font-weight:400;font-size:13px;color:var(--ink-muted);margin-left:6px;}
+  .lots-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px;}
+  .lots-table th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;
+    color:var(--ink-muted);font-weight:700;padding:0 8px 8px 0;white-space:nowrap;}
+  .lots-table td{padding:8px 8px 8px 0;border-top:1px solid var(--border);vertical-align:middle;}
+  .lots-table .num{text-align:right;font-family:var(--font-mono);white-space:nowrap;word-spacing:-.3em;}
+  .lots-table input{width:100%;height:32px;border:1px solid var(--border-strong);border-radius:6px;
+    padding:0 8px;font-family:var(--font-body);font-size:12.5px;background:var(--surface);color:var(--ink);}
+  .lots-table input[type="number"]{font-family:var(--font-mono);text-align:right;}
+  .lots-table .xselect{display:block;width:100%;}
+  .lots-table .xselect-trigger{min-width:0;width:100%;}
+  .lot-result-won{color:var(--success);font-weight:600;}
+  .lot-remove{width:28px;height:28px;border:none;background:none;color:var(--ink-muted);cursor:pointer;border-radius:6px;}
+  .lot-remove:hover{background:var(--surface-2);color:var(--danger);}
+  .lots-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;}
+  .lots-actions .right{display:flex;gap:12px;}
+  .lots-empty{font-size:13px;color:var(--ink-muted);margin:10px 0 0;}
+  .contract-row[hidden],.contract-edit[hidden],.contract-pencil[hidden]{display:none;}
   .contract-edit{display:inline-flex;align-items:center;gap:8px;}
   .contract-edit input{width:160px;height:32px;border:1px solid var(--border-strong);border-radius:6px;
     padding:0 10px;font-family:var(--font-mono);font-size:13px;background:var(--surface);color:var(--ink);}
@@ -726,6 +749,7 @@
                 <span class="summary-label">НМЦ:</span>
                 <span class="summary-nmc" id="syncedNmc">1 250 000 ₽</span>
               </div>
+              <label class="multilot-toggle" id="multiLotWrap"><input type="checkbox" id="multiLotToggle"> Многолотовый</label>
               <div class="summary-nmc-row contract-row" id="contractRow" hidden>
                 <span class="summary-label">Сумма договора:</span>
                 <span class="summary-nmc" id="syncedContract">—</span>
@@ -849,6 +873,15 @@
               <div class="fact-row" data-submission-part="email"><span class="k">Адрес подачи КП</span><span class="v" id="platformKpAddress">—</span></div>
               <p id="platformComment" style="font-size:13px;color:var(--ink-muted);margin:10px 0 0">Комментарий не указан.</p>
             </div>
+          </div>
+
+          <div class="card" id="lotsCard" hidden>
+            <div class="rail-card-head">
+              <h3>Лоты <span class="lots-summary" id="lotsSummary"></span></h3>
+              <button class="btn btn-sm rail-edit-btn" type="button" id="lotsEditOpen"
+                title="Редактировать лоты" aria-label="Редактировать лоты"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+            </div>
+            <div id="lotsBody"></div>
           </div>
 
           <div class="card" data-overview-section="ai">
@@ -3609,13 +3642,105 @@
     var won = tender && tender.appStatus === 'Выиграли';
     row.hidden = !won;
     if(!won) return;
-    var amount = Number(tender.contractAmount);
+    var amount = tender.multiLot ? lotsWonSum(tender) : Number(tender.contractAmount);
     document.getElementById('syncedContract').textContent = amount
-      ? new Intl.NumberFormat('ru-RU').format(amount)+' ₽'
-      : 'не указана';
-    document.getElementById('contractEdit').hidden = !userCanEditContract(tender);
+      ? new Intl.NumberFormat('ru-RU').format(amount)+' ₽'+(tender.multiLot ? ' (по лотам)' : '')
+      : (tender.multiLot ? 'не указана (заполните лоты)' : 'не указана');
+    // у многолотового тендера сумма считается по выигранным лотам и вручную не правится
+    document.getElementById('contractEdit').hidden = tender.multiLot || !userCanEditContract(tender);
     document.getElementById('contractEditor').hidden = true;
     document.getElementById('syncedContract').hidden = false;
+  }
+  // ---- лоты многолотового тендера ----
+  var LOT_RESULTS = ['Выиграли','Не выиграли','Отменён'];
+  var lotsEditing = false, lotsDraft = null, lotRowSelects = [];
+  function userCanEditLots(t){ return userIsAdmin() || userCanManageStages() || t.manager === CURRENT_USER.name; }
+  function tenderLots(t){ return Array.isArray(t.lots) ? t.lots : []; }
+  function lotsWonSum(t){
+    return tenderLots(t).reduce(function(sum, lot){
+      return sum + (lot.result === 'Выиграли' ? (Number(lot.contract) || 0) : 0);
+    }, 0);
+  }
+  function fmtRub(v){ return v ? new Intl.NumberFormat('ru-RU').format(v)+' ₽' : '—'; }
+  function renderLots(){
+    var wrap = document.getElementById('multiLotWrap');
+    var toggle = document.getElementById('multiLotToggle');
+    var canEdit = userCanEditLots(tender);
+    toggle.checked = !!tender.multiLot;
+    toggle.disabled = !canEdit;
+    wrap.classList.toggle('is-disabled', !canEdit);
+    var card = document.getElementById('lotsCard');
+    card.hidden = !tender.multiLot;
+    if(!tender.multiLot) return;
+    var lots = tenderLots(tender);
+    var won = lots.filter(function(l){ return l.result === 'Выиграли'; }).length;
+    document.getElementById('lotsSummary').textContent = lots.length ? 'выиграно '+won+' из '+lots.length : '';
+    document.getElementById('lotsEditOpen').hidden = lotsEditing || !canEdit;
+    var body = document.getElementById('lotsBody');
+    if(!lotsEditing){
+      body.innerHTML = lots.length
+        ? '<table class="lots-table"><thead><tr><th>Лот</th><th>Направление</th><th class="num">НМЦ лота</th>'
+          + '<th>Результат</th><th class="num">Сумма договора</th></tr></thead><tbody>'
+          + lots.map(function(l){
+              return '<tr><td>'+escSynced(l.name || '—')+'</td><td>'+escSynced(l.dept || '—')+'</td>'
+                + '<td class="num">'+fmtRub(Number(l.nmc))+'</td>'
+                + '<td class="'+(l.result === 'Выиграли' ? 'lot-result-won' : '')+'">'+escSynced(l.result || '—')+'</td>'
+                + '<td class="num">'+(l.result === 'Выиграли' ? fmtRub(Number(l.contract)) : '—')+'</td></tr>';
+            }).join('') + '</tbody></table>'
+        : '<p class="lots-empty">Лоты пока не добавлены.</p>';
+      return;
+    }
+    body.innerHTML = '<table class="lots-table"><thead><tr><th style="width:30%">Лот</th><th style="width:22%">Направление</th>'
+      + '<th class="num" style="width:14%">НМЦ лота</th><th style="width:16%">Результат</th>'
+      + '<th class="num" style="width:14%">Сумма договора</th><th></th></tr></thead><tbody>'
+      + lotsDraft.map(function(l, i){
+          return '<tr data-lot-index="'+i+'"><td><input type="text" data-lot-name value="'+escSynced(l.name || '')+'" placeholder="Например: Лот 1. Реклама"></td>'
+            + '<td data-lot-dept></td>'
+            + '<td><input type="number" min="0" step="0.01" data-lot-nmc value="'+escSynced(l.nmc || '')+'" placeholder="—" title="НМЦ лота — необязательно"></td>'
+            + '<td data-lot-result></td>'
+            + '<td><input type="number" min="0" step="0.01" data-lot-contract value="'+escSynced(l.contract || '')+'"'
+            + (l.result === 'Выиграли' ? '' : ' disabled')+'></td>'
+            + '<td><button type="button" class="lot-remove" data-lot-remove="'+i+'" title="Удалить лот" aria-label="Удалить лот">✕</button></td></tr>';
+        }).join('') + '</tbody></table>'
+      + '<div class="lots-actions"><button class="btn btn-sm" type="button" id="lotAdd">Добавить лот</button>'
+      + '<span class="right"><button class="btn" type="button" id="lotsCancel">Отмена</button>'
+      + '<button class="btn btn-primary" type="button" id="lotsSave">Сохранить</button></span></div>';
+    lotRowSelects = [];
+    body.querySelectorAll('tr[data-lot-index]').forEach(function(row){
+      var i = Number(row.dataset.lotIndex);
+      var deptSel = buildXSelect(TenderReferences.get('departments'), lotsDraft[i].dept || '', 'Направление');
+      row.querySelector('[data-lot-dept]').appendChild(deptSel);
+      var resSel = buildXSelect(['—'].concat(LOT_RESULTS), lotsDraft[i].result || '—', 'Результат', true);
+      row.querySelector('[data-lot-result]').appendChild(resSel);
+      resSel.addEventListener('xchange', function(){
+        var contractInput = row.querySelector('[data-lot-contract]');
+        contractInput.disabled = resSel.dataset.value !== 'Выиграли';
+        if(contractInput.disabled) contractInput.value = '';
+      });
+      lotRowSelects[i] = {dept:deptSel, result:resSel};
+    });
+  }
+  function readLotsDraft(){
+    var rows = document.querySelectorAll('#lotsBody tr[data-lot-index]');
+    return Array.prototype.map.call(rows, function(row){
+      var i = Number(row.dataset.lotIndex);
+      var sel = lotRowSelects[i] || {};
+      var result = sel.result ? sel.result.dataset.value : '';
+      return {
+        id: lotsDraft[i].id || ('lot-'+Date.now()+'-'+i),
+        name: row.querySelector('[data-lot-name]').value.trim(),
+        dept: sel.dept ? sel.dept.dataset.value : '',
+        nmc: row.querySelector('[data-lot-nmc]').value,
+        result: result === '—' ? '' : result,
+        contract: result === 'Выиграли' ? row.querySelector('[data-lot-contract]').value : ''
+      };
+    });
+  }
+  function openLotsEditor(){
+    lotsDraft = JSON.parse(JSON.stringify(tenderLots(tender)));
+    if(!lotsDraft.length) lotsDraft.push({name:'', dept:'', nmc:'', result:'', contract:''});
+    lotsEditing = true;
+    renderLots();
   }
   function applyTenderData(){
     refreshNavCounts();
@@ -3637,6 +3762,7 @@
       ? new Intl.NumberFormat('ru-RU').format(tender.nmc)+' '+tenderCurrencies
       : '— '+tenderCurrencies;
     renderContractAmount();
+    renderLots();
     var riskFlag = document.getElementById('syncedRiskFlag');
     riskFlag.hidden = !tender.risk;
     document.getElementById('syncedRiskTip').textContent =
@@ -4259,6 +4385,67 @@
       saveTenders(tenders);
       applyTenderData();
       showToast('Этап сохранён. Срок подачи обновлён.');
+    }
+  });
+  document.getElementById('multiLotToggle').addEventListener('change', function(){
+    if(!tender || !userCanEditLots(tender)) return;
+    tender.multiLot = this.checked;
+    tender.events = tender.events || [];
+    tender.events.push({date:eventDate(), text:this.checked ? 'Тендер отмечен как многолотовый.' : 'Снята отметка «Многолотовый».', actor:CURRENT_USER.name});
+    saveTenders(tenders);
+    if(tender.multiLot && !tenderLots(tender).length){ openLotsEditor(); applyTenderData(); return; }
+    lotsEditing = false;
+    applyTenderData();
+  });
+  document.getElementById('lotsEditOpen').addEventListener('click', function(){
+    if(!tender || !userCanEditLots(tender)) return;
+    openLotsEditor();
+  });
+  document.getElementById('lotsBody').addEventListener('click', function(event){
+    if(!lotsEditing) return;
+    var removeBtn = event.target.closest('[data-lot-remove]');
+    if(event.target.closest('#lotAdd')){
+      lotsDraft = readLotsDraft();
+      lotsDraft.push({name:'', dept:'', nmc:'', result:'', contract:''});
+      renderLots();
+      return;
+    }
+    if(removeBtn){
+      lotsDraft = readLotsDraft();
+      lotsDraft.splice(Number(removeBtn.dataset.lotRemove), 1);
+      renderLots();
+      return;
+    }
+    if(event.target.closest('#lotsCancel')){
+      lotsEditing = false; lotsDraft = null;
+      renderLots();
+      return;
+    }
+    if(event.target.closest('#lotsSave')){
+      var lots = readLotsDraft();
+      var missing = false;
+      document.querySelectorAll('#lotsBody [data-lot-name]').forEach(function(input){
+        if(!input.value.trim()){ input.style.borderColor = 'var(--danger)'; missing = true; }
+      });
+      if(missing) return;
+      tender.lots = lots;
+      // направления тендера дополняются направлениями лотов
+      var depts = Array.isArray(tender.depts) ? tender.depts.slice() : [];
+      lots.forEach(function(l){ if(l.dept && depts.indexOf(l.dept) === -1) depts.push(l.dept); });
+      tender.depts = depts;
+      tender.dept = depts[0] || '';
+      var wonCount = lots.filter(function(l){ return l.result === 'Выиграли'; }).length;
+      tender.events = tender.events || [];
+      tender.events.push({
+        date:eventDate(),
+        text:'Лоты обновлены: всего '+lots.length+', выиграно '+wonCount
+          +(wonCount ? ', сумма договоров '+fmtRub(lotsWonSum(tender)) : '')+'.',
+        actor:CURRENT_USER.name
+      });
+      lotsEditing = false; lotsDraft = null;
+      saveTenders(tenders);
+      applyTenderData();
+      showToast('Лоты сохранены.');
     }
   });
   document.getElementById('contractEdit').addEventListener('click', function(){

@@ -305,6 +305,8 @@
     .search-field{margin-left:0;width:100%;}
     .search-field input{width:100%;}
   }
+  .lots-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;
+    line-height:1.6;white-space:nowrap;vertical-align:1px;background:var(--surface-2);color:var(--ink-muted);border:1px solid var(--border);}
 </style>
 
 <div class="shell">
@@ -652,6 +654,13 @@
     return match[3]+'.'+match[2]+'.'+match[1]+' '+(match[4] ? match[4]+':'+match[5] : '—:—');
   }
   function fmtNum(n){ if(n===null||n===undefined) return '—'; return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽'; }
+  // значок многолотового тендера: сколько лотов выиграно из скольких
+  function lotsBadge(t){
+    if(!t.multiLot) return '';
+    var lots = Array.isArray(t.lots) ? t.lots : [];
+    var won = lots.filter(function(l){ return l.result === 'Выиграли'; }).length;
+    return ' <span class="lots-badge" title="Многолотовый тендер">'+(lots.length ? 'Лоты: '+won+' из '+lots.length : 'Лоты')+'</span>';
+  }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function daysUntil(iso){
     var d = String(iso).slice(0,10), t = String(TODAY).slice(0,10);
@@ -894,7 +903,7 @@
       + '<td>'+(canEdit
             ? '<select class="cell-select" data-field="manager" data-id="'+t.id+'"><option value="">—</option>'+optionsHtml(MANAGERS, t.manager)+'</select>'
             : esc(t.manager || '—'))+'</td>'
-      + '<td class="name-cell">'+riskIco+'<a class="'+titleClass+'" href="'+nameHref+'">'+esc(t.name)+'</a>'+dupIco+'</td>'
+      + '<td class="name-cell">'+riskIco+'<a class="'+titleClass+'" href="'+nameHref+'">'+esc(t.name)+'</a>'+dupIco+lotsBadge(t)+'</td>'
       + '<td><span class="status-tag '+bucketClass(b)+'"><span class="dot"></span>'+b+'</span></td>'
       + '<td class="col-customer" title="'+esc(t.customer)+'">'+esc(t.customer)+'</td>'
       + '<td class="num">'+fmtNum(t.nmc)+'</td>'

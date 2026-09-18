@@ -151,6 +151,11 @@
   .field input[type="date"]{width:100%;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
     padding:9px 10px;font-family:var(--font-body);font-size:14px;background:var(--surface);color:var(--ink);
     height:32px;}
+  /* чекбокс «По ответственным» в «Активных пользователях» — как фильтр «Только избранные» */
+  .filter-check{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-muted);
+    padding-bottom:8px;white-space:nowrap;}
+  .filter-check input{width:15px;height:15px;accent-color:var(--accent);}
+  .dash-card-head .filter-check{margin:0;padding-bottom:0;cursor:pointer;}
   .check-row{display:flex;align-items:center;gap:8px;}
   .check-row input{width:15px;height:15px;accent-color:var(--accent);}
   .check-row span{font-size:13.5px;color:var(--ink);text-transform:none;font-weight:500;
@@ -653,6 +658,14 @@
     return true;
   }
   function isWon(t){ return t.decision !== 'Отказ' && t.appStatus === 'Выиграли'; }
+  // многолотовый тендер: победа считается одним тендером, сумма и направления — по выигранным лотам
+  function wonLots(t){
+    return (t.multiLot && Array.isArray(t.lots)) ? t.lots.filter(function(l){ return l.result === 'Выиграли'; }) : [];
+  }
+  function contractSum(t){
+    if(!t.multiLot) return Number(t.contractAmount) || 0;
+    return wonLots(t).reduce(function(s, l){ return s + (Number(l.contract) || 0); }, 0);
+  }
   // выигрыш относится к периоду по дате итога (дате победы), а не по дате создания тендера
   // (решение Оксаны 2026-09-17); для тендеров без даты итога — дата закрытия
   function wonDate(t){ return String(t.resultDate || t.archivedAt || '').slice(0,10); }
@@ -703,7 +716,7 @@
     var won = wonInRange(range);
     var wonSum = 0;
     // сумма выигрыша — по сумме договора (вносится в карточке выигранного тендера)
-    won.forEach(function(t){ wonSum += Number(t.contractAmount) || 0; });
+    won.forEach(function(t){ wonSum += contractSum(t); });
     var submissions = submissionsInRange(range).filter(function(item){
       return item.kind === 'first' || item.kind === 'retender';
     });
@@ -747,6 +760,20 @@
         : inP.filter(isProcessed);
     var counts = {}, sums = {}, total = 0;
     filtered.forEach(function(t){
+      if(mode === 'won' && wonLots(t).length){
+        // у многолотового тендера в «Выиграли» идут только направления выигранных лотов
+        var lotDepts = {};
+        wonLots(t).forEach(function(l){
+          var d = l.dept || 'Без направления';
+          lotDepts[d] = (lotDepts[d] || 0) + (Number(l.contract) || 0);
+        });
+        Object.keys(lotDepts).forEach(function(d){
+          counts[d] = (counts[d] || 0) + 1;
+          sums[d] = (sums[d] || 0) + lotDepts[d];
+          total++;
+        });
+        return;
+      }
       var depts = (t.depts && t.depts.length) ? t.depts : ['Без направления'];
       depts.forEach(function(d){
         counts[d] = (counts[d] || 0) + 1;
@@ -757,7 +784,7 @@
     return {counts:counts, sums:sums, total:total};
   }
 
-  function sumContracts(list){ var s = 0; list.forEach(function(t){ s += Number(t.contractAmount) || 0; }); return s; }
+  function sumContracts(list){ var s = 0; list.forEach(function(t){ s += contractSum(t); }); return s; }
   function sumNmc(list){ var s = 0; list.forEach(function(t){ s += Number(t.nmc) || 0; }); return s; }
 
   function funnelForPeriod(range){
@@ -1182,10 +1209,15 @@
     // выигранные тендеры периода: название — ссылка на карточку, направление и сумма
     var wonList = wonInRange(range).slice().sort(function(a, b){ return wonDate(b).localeCompare(wonDate(a)); });
     document.getElementById('statWonList').innerHTML = wonList.map(function(t){
-      var dept = (t.depts && t.depts.length) ? t.depts.join(', ') : 'Без направления';
+      var lotsWon = wonLots(t);
+      var dept = lotsWon.length
+        ? lotsWon.map(function(l){ return l.dept; }).filter(function(d, i, a){ return d && a.indexOf(d) === i; }).join(', ') || 'Без направления'
+        : (t.depts && t.depts.length) ? t.depts.join(', ') : 'Без направления';
+      if(t.multiLot && Array.isArray(t.lots) && t.lots.length) dept += ' · лоты: '+lotsWon.length+' из '+t.lots.length;
+      var amount = contractSum(t);
       return '<div class="won-item"><a class="won-link" href="kartochka-tendera.html?tender='+t.id+'">'
         + esc(t.name)+' ↗</a><div class="won-meta"><span>'+esc(dept)+'</span><b>'
-        + (Number(t.contractAmount) ? fmtMoney(Number(t.contractAmount)) : 'договор не указан')+'</b></div></div>';
+        + (amount ? fmtMoney(amount) : 'договор не указан')+'</b></div></div>';
     }).join('');
     renderDelta('statWonDelta', s.wonCount, prevStats ? prevStats.wonCount : null, comparable);
   }

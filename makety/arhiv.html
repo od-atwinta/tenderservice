@@ -417,6 +417,8 @@
     .tcard-row1{flex-direction:column;gap:14px;}
     .tcard-right{align-items:flex-start;text-align:left;}
   }
+  .lots-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;
+    line-height:1.6;white-space:nowrap;vertical-align:1px;background:var(--surface-2);color:var(--ink-muted);border:1px solid var(--border);}
 </style>
 
 <div class="shell">
@@ -778,6 +780,13 @@
     return TenderReferences.resolveSection(t);
   }
 
+  // значок многолотового тендера: сколько лотов выиграно из скольких
+  function lotsBadge(t){
+    if(!t.multiLot) return '';
+    var lots = Array.isArray(t.lots) ? t.lots : [];
+    var won = lots.filter(function(l){ return l.result === 'Выиграли'; }).length;
+    return ' <span class="lots-badge" title="Многолотовый тендер">'+(lots.length ? 'Лоты: '+won+' из '+lots.length : 'Лоты')+'</span>';
+  }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function fmtNum(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
   function fmtDateShort(iso){ var d = String(iso).slice(0,10); var p = d.split('-'); return p[2]+'.'+p[1]+'.'+p[0].slice(2); }
@@ -1065,7 +1074,7 @@
     return '<tr data-id="'+t.id+'">'
       + '<td><button class="fav-star'+(t.fav?' is-fav':'')+'" data-action="toggle-fav" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button></td>'
       + '<td>'+esc(t.manager || '—')+'</td>'
-      + '<td class="name-cell"><a class="'+titleClass+'" href="'+nameHref+'">'+esc(t.name)+'</a></td>'
+      + '<td class="name-cell"><a class="'+titleClass+'" href="'+nameHref+'">'+esc(t.name)+'</a>'+lotsBadge(t)+'</td>'
       + '<td>'+(t.decision === 'Отказ' ? '' : '<span class="status-tag"><span class="dot"></span>'+esc(t.appStatus || 'Архив')+'</span>')+'</td>'
       + '<td>'+esc(t.customer)+'</td>'
       + '<td class="num">'+(t.nmc ? fmtNum(t.nmc) : '—')+'</td>'
