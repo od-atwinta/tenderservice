@@ -702,7 +702,8 @@
     var inP = tendersInPeriod(range);
     var won = wonInRange(range);
     var wonSum = 0;
-    won.forEach(function(t){ wonSum += Number(t.nmc) || 0; });
+    // сумма выигрыша — по сумме договора (вносится в карточке выигранного тендера)
+    won.forEach(function(t){ wonSum += Number(t.contractAmount) || 0; });
     var submissions = submissionsInRange(range).filter(function(item){
       return item.kind === 'first' || item.kind === 'retender';
     });
@@ -756,6 +757,7 @@
     return {counts:counts, sums:sums, total:total};
   }
 
+  function sumContracts(list){ var s = 0; list.forEach(function(t){ s += Number(t.contractAmount) || 0; }); return s; }
   function sumNmc(list){ var s = 0; list.forEach(function(t){ s += Number(t.nmc) || 0; }); return s; }
 
   function funnelForPeriod(range){
@@ -768,7 +770,8 @@
       {label:'Выиграно', shortLabel:'Выиграно', list: wonInRange(range)}
     ];
     return stages.map(function(s){
-      return {label:s.label, shortLabel:s.shortLabel, value:s.list.length, sum:sumNmc(s.list)};
+      return {label:s.label, shortLabel:s.shortLabel, value:s.list.length,
+        sum: s.label === 'Выиграно' ? sumContracts(s.list) : sumNmc(s.list)};
     });
   }
 
@@ -858,7 +861,7 @@
             ? wonInRange({start:b.start, end:b.end})
             : allInBucket.filter(stage.match);
         var pct = allInBucket.length ? Math.round(list.length / allInBucket.length * 100) : 0;
-        return {count:list.length, sum:sumNmc(list), pct:pct, label:b.label};
+        return {count:list.length, sum: stage.byWinDate ? sumContracts(list) : sumNmc(list), pct:pct, label:b.label};
       });
       return {key:stage.key, label:stage.label, color:stage.color, points:points};
     });
@@ -1182,7 +1185,7 @@
       var dept = (t.depts && t.depts.length) ? t.depts.join(', ') : 'Без направления';
       return '<div class="won-item"><a class="won-link" href="kartochka-tendera.html?tender='+t.id+'">'
         + esc(t.name)+' ↗</a><div class="won-meta"><span>'+esc(dept)+'</span><b>'
-        + (Number(t.nmc) ? fmtMoney(Number(t.nmc)) : '—')+'</b></div></div>';
+        + (Number(t.contractAmount) ? fmtMoney(Number(t.contractAmount)) : 'договор не указан')+'</b></div></div>';
     }).join('');
     renderDelta('statWonDelta', s.wonCount, prevStats ? prevStats.wonCount : null, comparable);
   }

@@ -120,6 +120,16 @@
   .tender-summary{margin-top:14px;display:flex;flex-direction:column;gap:14px;}
   .service-head .tender-summary{grid-column:1 / -1;grid-row:2;margin-top:0;}
   .summary-nmc-row{display:flex;align-items:baseline;gap:6px;}
+  /* сумма договора — у выигранного тендера, вносится вручную (решение Оксаны 2026-09-18) */
+  .contract-row{align-items:center;flex-wrap:wrap;}
+  .contract-row[hidden],.contract-edit[hidden]{display:none;}
+  .contract-edit{display:inline-flex;align-items:center;gap:8px;}
+  .contract-edit input{width:160px;height:32px;border:1px solid var(--border-strong);border-radius:6px;
+    padding:0 10px;font-family:var(--font-mono);font-size:13px;background:var(--surface);color:var(--ink);}
+  .contract-pencil{width:24px;height:24px;border:none;background:none;color:var(--ink-muted);cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;border-radius:6px;padding:0;}
+  .contract-pencil:hover{background:var(--surface-2);color:var(--ink);}
+  .contract-pencil svg{width:14px;height:14px;}
   .summary-top{display:flex;align-items:flex-start;
     justify-content:space-between;gap:24px;width:100%;min-height:60px;}
   .summary-left{display:flex;flex-direction:column;gap:14px;flex:1;min-width:0;}
@@ -715,6 +725,16 @@
               <div class="summary-nmc-row">
                 <span class="summary-label">НМЦ:</span>
                 <span class="summary-nmc" id="syncedNmc">1 250 000 ₽</span>
+              </div>
+              <div class="summary-nmc-row contract-row" id="contractRow" hidden>
+                <span class="summary-label">Сумма договора:</span>
+                <span class="summary-nmc" id="syncedContract">—</span>
+                <span class="contract-edit" id="contractEditor" hidden>
+                  <input type="number" min="0" step="0.01" inputmode="decimal" id="contractInput" aria-label="Сумма договора, ₽">
+                  <button class="btn btn-sm btn-primary" type="button" id="contractSave">Сохранить</button>
+                  <button class="btn btn-sm" type="button" id="contractCancel">Отмена</button>
+                </span>
+                <button class="icon-btn-xs contract-pencil" type="button" id="contractEdit" title="Указать сумму договора" aria-label="Указать сумму договора"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
               </div>
               <div class="header-status-compact">
                 <span class="current-stage-tag current-section-tag" id="currentTenderSection">Основной</span>
@@ -3582,6 +3602,21 @@
           : section === 'ai' ? 'отчёт и рекомендацию ИИ' : 'комментарий менеджера'));
     });
   }
+  // ---- сумма договора: у выигранного тендера, правят Суперадмин, Админ и ответственный ----
+  function userCanEditContract(t){ return userIsAdmin() || t.manager === CURRENT_USER.name; }
+  function renderContractAmount(){
+    var row = document.getElementById('contractRow');
+    var won = tender && tender.appStatus === 'Выиграли';
+    row.hidden = !won;
+    if(!won) return;
+    var amount = Number(tender.contractAmount);
+    document.getElementById('syncedContract').textContent = amount
+      ? new Intl.NumberFormat('ru-RU').format(amount)+' ₽'
+      : 'не указана';
+    document.getElementById('contractEdit').hidden = !userCanEditContract(tender);
+    document.getElementById('contractEditor').hidden = true;
+    document.getElementById('syncedContract').hidden = false;
+  }
   function applyTenderData(){
     refreshNavCounts();
     renderTenderList();
@@ -3601,6 +3636,7 @@
     document.getElementById('syncedNmc').textContent = tender.nmc
       ? new Intl.NumberFormat('ru-RU').format(tender.nmc)+' '+tenderCurrencies
       : '— '+tenderCurrencies;
+    renderContractAmount();
     var riskFlag = document.getElementById('syncedRiskFlag');
     riskFlag.hidden = !tender.risk;
     document.getElementById('syncedRiskTip').textContent =
@@ -4224,6 +4260,41 @@
       applyTenderData();
       showToast('Этап сохранён. Срок подачи обновлён.');
     }
+  });
+  document.getElementById('contractEdit').addEventListener('click', function(){
+    if(!tender || !userCanEditContract(tender)) return;
+    var input = document.getElementById('contractInput');
+    input.value = tender.contractAmount || '';
+    document.getElementById('syncedContract').hidden = true;
+    document.getElementById('contractEdit').hidden = true;
+    document.getElementById('contractEditor').hidden = false;
+    input.focus();
+  });
+  document.getElementById('contractCancel').addEventListener('click', renderContractAmount);
+  document.getElementById('contractInput').addEventListener('keydown', function(event){
+    if(event.key === 'Enter'){ event.preventDefault(); document.getElementById('contractSave').click(); }
+    if(event.key === 'Escape'){ event.preventDefault(); renderContractAmount(); }
+  });
+  document.getElementById('contractSave').addEventListener('click', function(){
+    if(!tender || !userCanEditContract(tender)) return;
+    var raw = document.getElementById('contractInput').value;
+    var value = raw === '' ? '' : Math.round(Number(raw) * 100) / 100;
+    if(raw !== '' && (isNaN(value) || value < 0)){
+      document.getElementById('contractInput').style.borderColor = 'var(--danger)';
+      return;
+    }
+    var before = tender.contractAmount || '';
+    tender.contractAmount = value;
+    tender.events = tender.events || [];
+    tender.events.push({
+      date:eventDate(),
+      text:'Сумма договора: '+(before ? new Intl.NumberFormat('ru-RU').format(before)+' ₽' : '—')
+        +' → '+(value ? new Intl.NumberFormat('ru-RU').format(value)+' ₽' : '—')+'.',
+      actor:CURRENT_USER.name
+    });
+    saveTenders(tenders);
+    applyTenderData();
+    showToast('Сумма договора сохранена.');
   });
   document.getElementById('addProcessSection').addEventListener('click', function(){
     if(!tender || !userCanManageStages() || !TenderReferences.canAddTenderSection(tender)) return;
