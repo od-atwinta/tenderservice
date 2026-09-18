@@ -122,6 +122,10 @@
   .summary-nmc-row{display:flex;align-items:baseline;gap:6px;}
   /* сумма договора — у выигранного тендера, вносится вручную (решение Оксаны 2026-09-18) */
   .contract-row{align-items:center;flex-wrap:wrap;}
+  .summary-money-line{display:flex;align-items:center;flex-wrap:wrap;gap:6px 0;}
+  .summary-money-line .summary-nmc-row{align-items:center;}
+  .summary-money-line .contract-row::before{content:"";width:1px;height:18px;flex:none;
+    background:var(--ink-muted);opacity:.45;margin:0 10px 0 14px;}
   /* многолотовый тендер: одна заявка, несколько лотов со своим направлением и итогом (2026-09-18) */
   .multilot-toggle{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-muted);cursor:pointer;}
   .multilot-toggle input{width:15px;height:15px;accent-color:var(--accent);margin:0;}
@@ -745,21 +749,24 @@
                 <span class="summary-customer"><span class="summary-label">Заказчик</span><b id="syncedCustomer">АО «СМЗ»</b></span>
                 <span id="syncedChecko"><span class="checko-missing"><svg class="checko-warning-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z"/><path d="M6.6 6.2a1.6 1.6 0 1 1 2.45 1.35C8.3 8 8 8.45 8 9.2"/><path d="M8 11.5h.01"/></svg></span></span>
               </div>
-              <div class="summary-nmc-row">
-                <span class="summary-label">НМЦ:</span>
-                <span class="summary-nmc" id="syncedNmc">1 250 000 ₽</span>
+              <!-- НМЦ и сумма договора (только у выигранного) — в одну строку через черту -->
+              <div class="summary-money-line">
+                <div class="summary-nmc-row">
+                  <span class="summary-label">НМЦ:</span>
+                  <span class="summary-nmc" id="syncedNmc">1 250 000 ₽</span>
+                </div>
+                <div class="summary-nmc-row contract-row" id="contractRow" hidden>
+                  <span class="summary-label">Сумма договора:</span>
+                  <span class="summary-nmc" id="syncedContract">—</span>
+                  <span class="contract-edit" id="contractEditor" hidden>
+                    <input type="number" min="0" step="0.01" inputmode="decimal" id="contractInput" aria-label="Сумма договора, ₽">
+                    <button class="btn btn-sm btn-primary" type="button" id="contractSave">Сохранить</button>
+                    <button class="btn btn-sm" type="button" id="contractCancel">Отмена</button>
+                  </span>
+                  <button class="icon-btn-xs contract-pencil" type="button" id="contractEdit" title="Указать сумму договора" aria-label="Указать сумму договора"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+                </div>
               </div>
               <label class="multilot-toggle" id="multiLotWrap"><input type="checkbox" id="multiLotToggle"> Многолотовый</label>
-              <div class="summary-nmc-row contract-row" id="contractRow" hidden>
-                <span class="summary-label">Сумма договора:</span>
-                <span class="summary-nmc" id="syncedContract">—</span>
-                <span class="contract-edit" id="contractEditor" hidden>
-                  <input type="number" min="0" step="0.01" inputmode="decimal" id="contractInput" aria-label="Сумма договора, ₽">
-                  <button class="btn btn-sm btn-primary" type="button" id="contractSave">Сохранить</button>
-                  <button class="btn btn-sm" type="button" id="contractCancel">Отмена</button>
-                </span>
-                <button class="icon-btn-xs contract-pencil" type="button" id="contractEdit" title="Указать сумму договора" aria-label="Указать сумму договора"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
-              </div>
               <div class="header-status-compact">
                 <span class="current-stage-tag current-section-tag" id="currentTenderSection">Основной</span>
                 <span class="current-stage-tag" id="currentTenderStage">Подготовка</span>
