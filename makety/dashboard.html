@@ -156,6 +156,7 @@
     padding-bottom:8px;white-space:nowrap;}
   .filter-check input{width:15px;height:15px;accent-color:var(--accent);}
   .dash-card-head .filter-check{margin:0;padding-bottom:0;cursor:pointer;}
+  .stat-money.is-empty{font-family:var(--font-body);font-size:12px;font-weight:500;color:var(--ink-muted);word-spacing:normal;}
   .check-row{display:flex;align-items:center;gap:8px;}
   .check-row input{width:15px;height:15px;accent-color:var(--accent);}
   .check-row span{font-size:13.5px;color:var(--ink);text-transform:none;font-weight:500;
@@ -1205,7 +1206,12 @@
     document.getElementById('statSubmittedRetender').textContent = s.submittedRetender;
     document.getElementById('statWaiting').textContent = s.waitingCount;
     document.getElementById('statWon').textContent = s.wonCount;
-    document.getElementById('statWonSum').textContent = s.wonSum ? fmtMoney(s.wonSum) : '';
+    // выигрыши есть, а суммы договоров не внесены — пишем об этом, а не оставляем пустое место
+    var wonSumEl = document.getElementById('statWonSum');
+    var wonNoSum = wonInRange(range).filter(function(t){ return !contractSum(t); }).length;
+    wonSumEl.textContent = s.wonSum ? fmtMoney(s.wonSum) : (s.wonCount ? 'сумма договоров не указана' : '');
+    wonSumEl.classList.toggle('is-empty', !s.wonSum && !!s.wonCount);
+    wonSumEl.title = wonNoSum ? 'Без суммы договора: '+wonNoSum+' из '+s.wonCount+'. Сумма вносится в карточке выигранного тендера.' : '';
     // выигранные тендеры периода: название — ссылка на карточку, направление и сумма
     var wonList = wonInRange(range).slice().sort(function(a, b){ return wonDate(b).localeCompare(wonDate(a)); });
     document.getElementById('statWonList').innerHTML = wonList.map(function(t){
