@@ -707,7 +707,7 @@
   function fmtDate(iso){ if(!iso) return '—'; var d = String(iso).slice(0,10); var p = d.split('-'); return p.length===3 ? p[2]+'.'+p[1]+'.'+p[0] : iso; }
 
   // ---- общая библиотека документов, тот же localStorage, что читает карточка тендера ----
-  var LIBRARY_KEY = 'atvinta_document_library_v1';
+  var LIBRARY_KEY = 'atvinta_jul_document_library_v1';
   function documentName(doc){ return typeof doc === 'string' ? doc : String((doc && doc.name) || 'Документ'); }
   function normalizeDocumentName(value){ return documentName(value).trim().toLocaleLowerCase('ru-RU').replace(/\s+/g,' '); }
   function librarySeed(){
@@ -751,7 +751,7 @@
   var library = loadLibrary();
 
   // ---- Штат: отдельный справочник для тендерных документов, не связан с доступами сервиса ----
-  var STAFF_KEY = 'atvinta_staff_v1';
+  var STAFF_KEY = 'atvinta_jul_staff_v1';
   function staffSeed(){
     return [
       {id:'staff-1', name:'Мария Кузнецова', department:'Продвижение', position:'Специалист по продвижению',
@@ -783,7 +783,7 @@
   var staff = loadStaff();
 
   // ---- Опыт: подтверждение опыта (контракты с заказчиками) ----
-  var EXPERIENCE_KEY = 'atvinta_experience_v1';
+  var EXPERIENCE_KEY = 'atvinta_jul_experience_v1';
   function experienceSeed(){
     return [
       {id:'exp-1', contractor:'АО «СМЗ»', contractNumber:'12/2024', contractDate:'2024-03-01',
@@ -809,7 +809,7 @@
   var experience = loadExperience();
 
   // ---- Шаблоны: справочник типовых документов для заполнения ----
-  var TEMPLATES_KEY = 'atvinta_templates_v1';
+  var TEMPLATES_KEY = 'atvinta_jul_templates_v1';
   function templatesSeed(){
     return [
       {id:'tpl-1', name:'Анкета участника закупки', format:'DOCX', type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -1892,7 +1892,7 @@
 
   function refreshNavCounts(){
     var tenders = [];
-    try{ tenders = JSON.parse(localStorage.getItem('atvinta_tenders_v2') || '[]'); }catch(e){}
+    try{ tenders = JSON.parse(localStorage.getItem('atvinta_jul_tenders_v2') || '[]'); }catch(e){}
     var bucket = function(t){ return TenderReferences.resolveSection(t); };
     var newCount = tenders.filter(function(t){ return bucket(t) === 'Новый'; }).length;
     document.getElementById('navNew').textContent = newCount;

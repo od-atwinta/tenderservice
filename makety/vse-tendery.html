@@ -594,7 +594,7 @@
   var CARD_URL = 'https://claude.ai/code/artifact/cc2156ed-e65b-4080-9434-48e8241591fe';
 
   // общее хранилище с novye-tendery.html (псевдо-синхронизация через localStorage, см. Дизайн-система.md)
-  var STORAGE_KEY = 'atvinta_tenders_v2';
+  var STORAGE_KEY = 'atvinta_jul_tenders_v2';
   function loadTenders(seedFn){
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -1145,7 +1145,7 @@
 </script>
 <script>
 (function(){
-  var NOTIFICATIONS_KEY = 'atvinta_notifications_v1';
+  var NOTIFICATIONS_KEY = 'atvinta_jul_notifications_v1';
   function escNotice(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function renderSyncedNotifications(){
     var list = [];

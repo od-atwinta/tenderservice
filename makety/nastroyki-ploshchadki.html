@@ -649,7 +649,7 @@
 
   function refreshNavCounts(){
     var tenders = [];
-    try{ tenders = JSON.parse(localStorage.getItem('atvinta_tenders_v2') || '[]'); }catch(e){}
+    try{ tenders = JSON.parse(localStorage.getItem('atvinta_jul_tenders_v2') || '[]'); }catch(e){}
     var bucket = function(t){ return TenderReferences.resolveSection(t); };
     var newCount = tenders.filter(function(t){ return bucket(t) === 'Новый'; }).length;
     document.getElementById('navNew').textContent = newCount;

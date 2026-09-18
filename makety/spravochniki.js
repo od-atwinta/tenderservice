@@ -1,26 +1,26 @@
 (function(global){
   'use strict';
 
-  var STORAGE_KEY = 'atvinta_reference_data_v1';
-  var STATUS_RULES_KEY = 'atvinta_status_section_rules_v1';
-  var STATUS_MIGRATION_KEY = 'atvinta_status_matrix_migrated_v1';
-  var STATUS_RULES_CANONICAL_MIGRATION_KEY = 'atvinta_status_matrix_canonical_v2';
-  var STATUS_RULES_STAGE_MIGRATION_KEY = 'atvinta_status_matrix_stage_v3';
-  var REFERENCE_HIERARCHY_MIGRATION_KEY = 'atvinta_reference_hierarchy_v4';
-  var PROCESS_SECTION_OPTIONS_MIGRATION_KEY = 'atvinta_process_section_options_v5';
-  var STATUS_RULES_HIERARCHY_MIGRATION_KEY = 'atvinta_status_rules_hierarchy_v4';
-  var TENDER_STORAGE_KEY = 'atvinta_tenders_v2';
-  var CURRENT_USER_KEY = 'atvinta_current_user_v1';
-  var USERS_KEY = 'atvinta_users_v1';
-  var USERS_SEED_MIGRATION_KEY = 'atvinta_users_seeded_v1';
-  var CHECKLIST_TERMS_KEY = 'atvinta_checklist_terms_v1';
-  var RATES_KEY = 'atvinta_rates_v1';
-  var EXPERIENCE_KEY = 'atvinta_experience_v1';
-  var DEPARTMENT_COLORS_KEY = 'atvinta_department_colors_v1';
+  var STORAGE_KEY = 'atvinta_jul_reference_data_v1';
+  var STATUS_RULES_KEY = 'atvinta_jul_status_section_rules_v1';
+  var STATUS_MIGRATION_KEY = 'atvinta_jul_status_matrix_migrated_v1';
+  var STATUS_RULES_CANONICAL_MIGRATION_KEY = 'atvinta_jul_status_matrix_canonical_v2';
+  var STATUS_RULES_STAGE_MIGRATION_KEY = 'atvinta_jul_status_matrix_stage_v3';
+  var REFERENCE_HIERARCHY_MIGRATION_KEY = 'atvinta_jul_reference_hierarchy_v4';
+  var PROCESS_SECTION_OPTIONS_MIGRATION_KEY = 'atvinta_jul_process_section_options_v5';
+  var STATUS_RULES_HIERARCHY_MIGRATION_KEY = 'atvinta_jul_status_rules_hierarchy_v4';
+  var TENDER_STORAGE_KEY = 'atvinta_jul_tenders_v2';
+  var CURRENT_USER_KEY = 'atvinta_jul_current_user_v1';
+  var USERS_KEY = 'atvinta_jul_users_v1';
+  var USERS_SEED_MIGRATION_KEY = 'atvinta_jul_users_seeded_v1';
+  var CHECKLIST_TERMS_KEY = 'atvinta_jul_checklist_terms_v1';
+  var RATES_KEY = 'atvinta_jul_rates_v1';
+  var EXPERIENCE_KEY = 'atvinta_jul_experience_v1';
+  var DEPARTMENT_COLORS_KEY = 'atvinta_jul_department_colors_v1';
   // справочник доступов площадок (Настройки → Автоматизация) — независим от
   // списка площадок на странице "Платежи" (там тарифы/депозиты, здесь доступ)
-  var ACCESS_DIRECTORY_KEY = 'atvinta_access_directory_v1';
-  var THEME_KEY = 'atvinta_theme_v1';
+  var ACCESS_DIRECTORY_KEY = 'atvinta_jul_access_directory_v1';
+  var THEME_KEY = 'atvinta_jul_theme_v1';
   var SYSTEM_ROLES = ['Суперадмин','Админ','Наблюдатель','Менеджер','Руководитель отдела','Сотрудник отдела'];
   var SECTION_ORDER = ['Новые','Ожидают решения','В работе','Заявки','Архив'];
   // статусы-исходы отказа/проигрыша, ведущие в Архив (без "Выиграли" — это не отказ);
@@ -133,28 +133,28 @@
   // секции — на их названиях завязана логика переходов между разделами)
   var RENAME_TARGETS = {
     departments: [
-      {storageKey:'atvinta_tenders_v2', fields:[{name:'depts',type:'array'},{name:'dept',type:'string'}]},
-      {storageKey:'atvinta_users_v1', fields:[{name:'directions',type:'array'}]},
-      {storageKey:'atvinta_experience_v1', fields:[{name:'directions',type:'array'}]}
+      {storageKey:'atvinta_jul_tenders_v2', fields:[{name:'depts',type:'array'},{name:'dept',type:'string'}]},
+      {storageKey:'atvinta_jul_users_v1', fields:[{name:'directions',type:'array'}]},
+      {storageKey:'atvinta_jul_experience_v1', fields:[{name:'directions',type:'array'}]}
     ],
     rejectionReasons: [
-      {storageKey:'atvinta_tenders_v2', fields:[{name:'rejectReason',type:'string'}]}
+      {storageKey:'atvinta_jul_tenders_v2', fields:[{name:'rejectReason',type:'string'}]}
     ],
     procurementTypes: [
-      {storageKey:'atvinta_tenders_v2', fields:[{name:'procType',type:'string'}]}
+      {storageKey:'atvinta_jul_tenders_v2', fields:[{name:'procType',type:'string'}]}
     ],
     foundations: [
-      {storageKey:'atvinta_tenders_v2', fields:[{name:'law',type:'string'}]}
+      {storageKey:'atvinta_jul_tenders_v2', fields:[{name:'law',type:'string'}]}
     ],
     currencies: [
-      {storageKey:'atvinta_tenders_v2', fields:[{name:'currencies',type:'array'}]}
+      {storageKey:'atvinta_jul_tenders_v2', fields:[{name:'currencies',type:'array'}]}
     ]
   };
   // деактивация вместо удаления — только для "безопасных" справочников выше
   // (те же ключи, что у переименования): значение остаётся в data[key], но
   // TenderReferences.get() скрывает его из выпадающих списков по всему сервису;
   // полный список (включая деактивированные) виден только в редакторе Настроек
-  var REFERENCE_INACTIVE_KEY = 'atvinta_reference_inactive_v1';
+  var REFERENCE_INACTIVE_KEY = 'atvinta_jul_reference_inactive_v1';
   function loadInactiveReferenceValues(){
     var stored = {};
     try{ stored = JSON.parse(localStorage.getItem(REFERENCE_INACTIVE_KEY) || '{}'); }catch(error){}
@@ -409,7 +409,7 @@
     localStorage.setItem(ACCESS_DIRECTORY_KEY, JSON.stringify(clean));
     return clean;
   }
-  var FINANCE_PLATFORMS_KEY = 'atvinta_finance_platforms_v1';
+  var FINANCE_PLATFORMS_KEY = 'atvinta_jul_finance_platforms_v1';
   // площадки ведутся на странице "Платежи" (finansy/платежи.html) — здесь только читаем,
   // тот же сид на случай, если "Платежи" ещё ни разу не открывали в этом браузере
   function financePlatformsSeed(){
@@ -808,7 +808,7 @@
   }
   // читает матрицу "Роли и доступы" (Настройки), настраиваемую только Суперадмином —
   // см. hasPermission ниже и подраздел "Роли и доступы" в Настройках
-  var ACCESS_KEY = 'atvinta_role_access_v1';
+  var ACCESS_KEY = 'atvinta_jul_role_access_v1';
   var ROLE_MATRIX_KEYS = {
     'суперадмин':'superadmin', 'суперадминистратор':'superadmin',
     'админ':'admin', 'администратор':'admin',
@@ -893,12 +893,12 @@
   // ---- реальные данные (tendery-dannye.js), решение Оксаны 2026-09-17 ----
   // одноразово дописывает в сохранённые справочники и пользователей новые значения
   // (новый статус, причины, отделы, менеджеры), не трогая ручные правки
-  var REAL_DATA_REFS_MIGRATION_KEY = 'atvinta_real_data_refs_v1';
-  var TENDER_SEED_VERSION_KEY = 'atvinta_tenders_seed_version';
-  var NOTIFICATIONS_KEY = 'atvinta_notifications_v1';
+  var REAL_DATA_REFS_MIGRATION_KEY = 'atvinta_jul_real_data_refs_v1';
+  var TENDER_SEED_VERSION_KEY = 'atvinta_jul_tenders_seed_version';
+  var NOTIFICATIONS_KEY = 'atvinta_jul_notifications_v1';
   // состав пользователей, утверждённый Оксаной 2026-09-18: демо-пользователи удалены,
   // роли и направления проставлены; одноразово заменяет сохранённый в браузере список
-  var REAL_USERS_MIGRATION_KEY = 'atvinta_real_users_v1';
+  var REAL_USERS_MIGRATION_KEY = 'atvinta_jul_real_users_v1';
   function migrateRealUsers(){
     if(localStorage.getItem(REAL_USERS_MIGRATION_KEY)) return;
     localStorage.setItem(USERS_KEY, JSON.stringify(clone(DEFAULT_USERS)));

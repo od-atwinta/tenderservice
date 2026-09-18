@@ -406,7 +406,7 @@
 
   <div class="app">
     <div class="page-head">
-      <h1 class="page-title">Дашборд</h1>
+      <h1 class="page-title">Дашборд <span class="dash-card-title-period">с 01.07.2026</span></h1>
       <div class="page-actions">
         <div class="icon-popover-wrap">
           <button class="icon-btn" id="bellBtn" aria-label="Уведомления">
@@ -640,7 +640,7 @@
   var TODAY = TenderReferences.todayIso();
 
   function loadTenders(){
-    try{ var list = JSON.parse(localStorage.getItem('atvinta_tenders_v2') || '[]'); return Array.isArray(list) ? list : []; }
+    try{ var list = JSON.parse(localStorage.getItem('atvinta_jul_tenders_v2') || '[]'); return Array.isArray(list) ? list : []; }
     catch(e){ return []; }
   }
   var tenders = loadTenders();
@@ -1505,7 +1505,7 @@
   });
 
   // ---- настройка видимости виджетов (своя для каждого браузера/пользователя) ----
-  var WIDGETS_KEY = 'atvinta_dashboard_widgets_v1';
+  var WIDGETS_KEY = 'atvinta_jul_dashboard_widgets_v1';
   var ALL_WIDGETS = ['period','directions','funnel','rejections','people'];
   function loadWidgetSettings(){
     var stored = null;
@@ -1575,7 +1575,7 @@
   }
 
   window.addEventListener('storage', function(e){
-    if(e.key === 'atvinta_tenders_v2'){ tenders = loadTenders(); renderAll(); }
+    if(e.key === 'atvinta_jul_tenders_v2'){ tenders = loadTenders(); renderAll(); }
     if(e.key === WIDGETS_KEY){ enabledWidgets = loadWidgetSettings(); applyWidgetVisibility(); }
   });
 

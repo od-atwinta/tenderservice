@@ -1750,17 +1750,17 @@
     document.getElementById('bellPopover').classList.remove('is-open');
     document.getElementById('calPopover').classList.remove('is-open');
   });
-  var STORAGE_KEY = 'atvinta_tenders_v2';
-  var NOTIFICATIONS_KEY = 'atvinta_notifications_v1';
+  var STORAGE_KEY = 'atvinta_jul_tenders_v2';
+  var NOTIFICATIONS_KEY = 'atvinta_jul_notifications_v1';
   var APP_STATUSES = TenderReferences.get('applicationStatuses');
   var REASONS = TenderReferences.get('rejectionReasons');
   var DIRECTIONS = TenderReferences.get('departments');
   var SUBMISSION_TYPES = ['На площадке','На почту'];
   var MANAGERS = TenderReferences.managerNames();
-  var CURRENT_USER_KEY = 'atvinta_current_user_v1';
-  var SOURCE_FILTERS_KEY = 'atvinta_tender_card_filters_v1';
-  var OVERVIEW_COLLAPSED_KEY = 'atvinta_tender_overview_collapsed_v1';
-  var DOCUMENT_LIBRARY_KEY = 'atvinta_document_library_v1';
+  var CURRENT_USER_KEY = 'atvinta_jul_current_user_v1';
+  var SOURCE_FILTERS_KEY = 'atvinta_jul_tender_card_filters_v1';
+  var OVERVIEW_COLLAPSED_KEY = 'atvinta_jul_tender_overview_collapsed_v1';
+  var DOCUMENT_LIBRARY_KEY = 'atvinta_jul_document_library_v1';
   var PROCESS_SECTION_OPTIONS = ['НДА','ПКО','Основной','Этап 2','Этап 3','Переторжка','RFI'];
   var CURRENT_USER = {
     name:'Оксана Денисенко',
@@ -2508,7 +2508,7 @@
       .filter(function(w){ return w.length >= 3 && CHECKLIST_MATCH_STOP_WORDS.indexOf(w) === -1; });
   }
   function loadTemplatesForMatch(){
-    try{ return JSON.parse(localStorage.getItem('atvinta_templates_v1') || '[]'); }catch(e){ return []; }
+    try{ return JSON.parse(localStorage.getItem('atvinta_jul_templates_v1') || '[]'); }catch(e){ return []; }
   }
   // временно исключаем шаблоны КП/коммерческих предложений из подбора совпадений для чек-листа
   // (решение Оксаны 2026-08-18, пока без даты пересмотра)

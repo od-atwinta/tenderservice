@@ -612,7 +612,7 @@
   var CARD_URL = 'https://claude.ai/code/artifact/cc2156ed-e65b-4080-9434-48e8241591fe';
 
   // общее хранилище со vse-tendery.html (псевдо-синхронизация через localStorage, см. Дизайн-система.md)
-  var STORAGE_KEY = 'atvinta_tenders_v2';
+  var STORAGE_KEY = 'atvinta_jul_tenders_v2';
   function loadTenders(seedFn){
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -998,7 +998,7 @@
   });
 
   var filterState = {search:'', deadline:'', source:'all', manager:'all', dept:'all', mine:false};
-  var CARD_FILTERS_KEY = 'atvinta_tender_card_filters_v1';
+  var CARD_FILTERS_KEY = 'atvinta_jul_tender_card_filters_v1';
   document.addEventListener('click', function(event){
     var link = event.target.closest('a[href*="kartochka-tendera.html"]');
     if(!link) return;
@@ -1243,7 +1243,7 @@
 </script>
 <script>
 (function(){
-  var NOTIFICATIONS_KEY = 'atvinta_notifications_v1';
+  var NOTIFICATIONS_KEY = 'atvinta_jul_notifications_v1';
   function escNotice(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function renderSyncedNotifications(){
     var list = [];

@@ -1020,7 +1020,7 @@
   var CARD_URL = 'https://claude.ai/code/artifact/cc2156ed-e65b-4080-9434-48e8241591fe';
 
   // общее хранилище со vse-tendery.html (псевдо-синхронизация через localStorage, см. Дизайн-система.md)
-  var STORAGE_KEY = 'atvinta_tenders_v2';
+  var STORAGE_KEY = 'atvinta_jul_tenders_v2';
   function loadTenders(seedFn){
     try{
       var raw = localStorage.getItem(STORAGE_KEY);
@@ -1057,7 +1057,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     }catch(e){}
   }
-  var DEMO_NEW_MIGRATION_KEY = 'atvinta_demo_new_20260727_v1';
+  var DEMO_NEW_MIGRATION_KEY = 'atvinta_jul_demo_new_20260727_v1';
   function ensureDemoNewTenders(list){
     // демо-тендеры удалены: в сервисе реальные данные (решение Оксаны 2026-09-17)
     var additions = [];
@@ -1970,7 +1970,7 @@
 </script>
 <script>
 (function(){
-  var NOTIFICATIONS_KEY = 'atvinta_notifications_v1';
+  var NOTIFICATIONS_KEY = 'atvinta_jul_notifications_v1';
   function escNotice(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
   function renderSyncedNotifications(){
     var list = [];
@@ -2842,7 +2842,7 @@
     }
     return;
   }
-  var ACCESS_KEY = 'atvinta_role_access_v1';
+  var ACCESS_KEY = 'atvinta_jul_role_access_v1';
   var roles = ['superadmin','admin','observer','manager','head','employee'];
   var rows = [
     {group:'Тендеры'},
