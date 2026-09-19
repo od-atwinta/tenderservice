@@ -494,7 +494,7 @@
       <div class="funnel-row is-wide" id="widgetFunnel">
         <div class="dash-card funnel-chart-card">
           <div class="dash-card-head">
-            <h3 class="dash-card-title">Статистика по этапам <span class="dash-card-title-period" id="funnelPeriodLabel"></span></h3>
+            <h3 class="dash-card-title">Статистика в динамике <span class="dash-card-title-period" id="funnelPeriodLabel"></span></h3>
             <button type="button" class="icon-btn-xs" id="funnelEditBtn" title="Настроить график" aria-label="Настроить график"></button>
           </div>
           <div class="funnel-toggles">
@@ -548,7 +548,7 @@
   </div>
 </div>
 
-<!-- STAGE VISIBILITY MODAL (Статистика по этапам / Итоги по этапам) -->
+<!-- STAGE VISIBILITY MODAL (Статистика в динамике / Итоги по этапам) -->
 <div class="overlay" id="stageVisibilityOverlay">
   <div class="modal">
     <h4>Настроить график</h4>
@@ -591,7 +591,7 @@
     <p class="hint">Выберите виджеты, которые хотите видеть на своей странице.</p>
     <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="period"><span>Итоги периода</span></label></div>
     <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="directions"><span>По направлениям</span></label></div>
-    <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="funnel"><span>Статистика по этапам</span></label></div>
+    <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="funnel"><span>Статистика в динамике</span></label></div>
     <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="rejections"><span>Причины отказов</span></label></div>
     <div class="field"><label class="check-row"><input type="checkbox" class="widget-check" value="people"><span>Активные пользователи</span></label></div>
     <div class="field">
@@ -880,7 +880,7 @@
 
   function seriesForPeriod(range){
     var buckets = periodBuckets(range);
-    return FUNNEL_STAGES.map(function(stage){
+    var series = FUNNEL_STAGES.map(function(stage){
       var points = buckets.map(function(b){
         var allInBucket = tenders.filter(function(t){ var d = createdDate(t); return d && d >= b.start && d <= b.end; });
         var list = stage.submissionKind
@@ -888,11 +888,26 @@
           : stage.byWinDate
             ? wonInRange({start:b.start, end:b.end})
             : allInBucket.filter(stage.match);
-        var pct = allInBucket.length ? Math.round(list.length / allInBucket.length * 100) : 0;
-        return {count:list.length, sum: stage.byWinDate ? sumContracts(list) : sumNmc(list), pct:pct, label:b.label};
+        return {count:list.length, sum: stage.byWinDate ? sumContracts(list) : sumNmc(list), pct:0, label:b.label};
       });
       return {key:stage.key, label:stage.label, color:stage.color, points:points};
     });
+    // конверсия на графике — по тому же правилу, что в таблице «Итоги по этапам»
+    // (от предыдущего этапа, переторжки и выигрыши — от «Подано первично»),
+    // и нарастающим итогом с начала периода: последняя точка = значение в таблице.
+    // Раньше график делил всё на «Новых получено» за месяц и расходился с таблицей,
+    // а по отдельным дням получались 0% там, где базы в этот день не было.
+    series.forEach(function(s, i){
+      if(i === 0) return;
+      var base = conversionBase(series, series, i);
+      var cum = 0, cumBase = 0;
+      s.points.forEach(function(p, k){
+        cum += p.count;
+        cumBase += base.points[k].count;
+        p.pct = cumBase ? Math.round(cum / cumBase * 100) : 0;
+      });
+    });
+    return series;
   }
 
   var PENCIL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>';
@@ -928,37 +943,67 @@
     var buckets = allSeries[0].points;
     var n = buckets.length;
 
-    var w = 640, h = 200, padL = 44, padR = 12, padT = 16, padB = 30;
+    // подписи вертикальной шкалы убраны (решение Оксаны 2026-09-19): остаётся только сетка,
+    // значения — в подсказке при наведении
+    var w = 640, h = 200, padL = 12, padR = 12, padT = 16, padB = 30;
     var plotW = w - padL - padR, plotH = h - padT - padB;
-    var max = metric === 'pct' ? 100 : 0;
-    if(metric !== 'pct'){
-      series.forEach(function(s){ s.points.forEach(function(p){ if(p[metric] > max) max = p[metric]; }); });
+    var max = 0;
+    var tickCount = 4;
+    series.forEach(function(s){ s.points.forEach(function(p){ if(p[metric] > max) max = p[metric]; }); });
+    if(metric === 'pct' && max <= 100){
+      max = 100; // шкала 0–25–50–75–100%
+    } else {
       if(!max) max = 1;
+      // «круглый» шаг шкалы (1, 2, 5, 10…); для количества не меньше 1 —
+      // иначе при малых числах деления 0,5 / 1,5 округлялись и подписи повторялись (1, 1, 2, 2)
+      // берём наименьший шаг из ряда 1, 2, 5, 10, 20, 50…, при котором делений не больше пяти
+      var pow = Math.pow(10, Math.floor(Math.log10(max / 5)));
+      var step = pow;
+      [1, 2, 5, 10].some(function(m){ step = m * pow; return Math.ceil(max / step) <= 5; });
+      if(metric !== 'sum') step = Math.max(1, step);
+      tickCount = Math.max(1, Math.ceil(max / step));
+      max = step * tickCount;
     }
 
     function xAt(i){ return padL + (n > 1 ? (i/(n-1)) * plotW : plotW/2); }
     function yAt(v){ return padT + plotH - (v/max)*plotH; }
     var labelStep = Math.ceil(n / 8);
 
-    var tickCount = 4;
     var gridHtml = '';
     for(var t=0; t<=tickCount; t++){
       var val = max * t / tickCount;
       var y = yAt(val);
-      gridHtml += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(padL+plotW)+'" y2="'+y.toFixed(1)+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 5"></line>'
-        + '<text x="'+(padL-8)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end" font-size="10" font-family="var(--font-mono)" fill="var(--ink-muted)">'+esc(fmtAxisValue(val, metric))+'</text>';
+      gridHtml += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(padL+plotW)+'" y2="'+y.toFixed(1)+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 5"></line>';
     }
 
     // сглаженная линия с заливкой под ней (стиль area-chart, решение Оксаны 2026-09-18)
+    // «монотонное» сглаживание (Fritsch–Carlson, как curveMonotoneX в d3), решение Оксаны 2026-09-19:
+    // между двумя точками линия не выходит за их значения — не уходит ниже нуля
+    // и не рисует горб выше точки; вершина всегда ровно в точке с реальным значением
     function smoothPath(pts){
-      if(pts.length < 2) return pts.length ? 'M'+pts[0].x.toFixed(1)+' '+pts[0].y.toFixed(1) : '';
+      var n = pts.length;
+      if(n < 2) return n ? 'M'+pts[0].x.toFixed(1)+' '+pts[0].y.toFixed(1) : '';
       var d = 'M'+pts[0].x.toFixed(1)+' '+pts[0].y.toFixed(1);
-      for(var i=0; i<pts.length-1; i++){
-        var p0 = pts[i === 0 ? 0 : i-1], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
-        var c1x = p1.x + (p2.x - p0.x)/6, c1y = p1.y + (p2.y - p0.y)/6;
-        var c2x = p2.x - (p3.x - p1.x)/6, c2y = p2.y - (p3.y - p1.y)/6;
-        d += ' C'+c1x.toFixed(1)+' '+c1y.toFixed(1)+', '+c2x.toFixed(1)+' '+c2y.toFixed(1)
-          + ', '+p2.x.toFixed(1)+' '+p2.y.toFixed(1);
+      if(n === 2) return d + ' L'+pts[1].x.toFixed(1)+' '+pts[1].y.toFixed(1);
+      var h = [], sl = [], m = [];
+      for(var i=0; i<n-1; i++){
+        h[i] = pts[i+1].x - pts[i].x;
+        sl[i] = h[i] ? (pts[i+1].y - pts[i].y) / h[i] : 0;
+      }
+      for(var j=1; j<n-1; j++){
+        if(sl[j-1] * sl[j] <= 0){ m[j] = 0; continue; } // точка — вершина или впадина: касательная горизонтальна
+        var pm = (sl[j-1]*h[j] + sl[j]*h[j-1]) / (h[j-1] + h[j]);
+        m[j] = (sl[j] > 0 ? 1 : -1) * Math.min(Math.abs(sl[j-1]), Math.abs(sl[j]), 0.5*Math.abs(pm)) * 2;
+      }
+      m[0] = (3*sl[0] - m[1]) / 2;
+      if(m[0] * sl[0] <= 0) m[0] = 0;
+      m[n-1] = (3*sl[n-2] - m[n-2]) / 2;
+      if(m[n-1] * sl[n-2] <= 0) m[n-1] = 0;
+      for(var k=0; k<n-1; k++){
+        var dx = h[k] / 3;
+        d += ' C'+(pts[k].x + dx).toFixed(1)+' '+(pts[k].y + m[k]*dx).toFixed(1)
+          + ', '+(pts[k+1].x - dx).toFixed(1)+' '+(pts[k+1].y - m[k+1]*dx).toFixed(1)
+          + ', '+pts[k+1].x.toFixed(1)+' '+pts[k+1].y.toFixed(1);
       }
       return d;
     }
@@ -1002,7 +1047,8 @@
       xs: buckets.map(function(b, i){ return xAt(i); }), w: w,
       rows: buckets.map(function(b, i){
         return {
-          title: periodParts[i] ? bucketTitle(periodParts[i]) : b.label,
+          title: (periodParts[i] ? bucketTitle(periodParts[i]) : b.label)
+            + (metric === 'pct' ? ' · с начала периода' : ''),
           items: series.map(function(s){
             var p = s.points[i];
             var val = metric === 'sum' ? fmtMoney(p.sum) : (metric === 'pct' ? p.pct + '%' : p.count);
@@ -1359,7 +1405,7 @@
       + '</table>'
       + '<h2>По направлениям</h2>'
       + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Направление</th><th>Кол-во</th><th>%</th></tr>'+dirRows+'</table>'
-      + '<h2>Статистика по этапам</h2>'
+      + '<h2>Итоги по этапам</h2>'
       + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Этап</th><th>Кол-во</th><th>Сумма</th><th>Конверсия</th></tr>'+funnelRows+'</table>'
       + '<h2>Причины отказов</h2>'
       + '<table border="1" cellpadding="6" cellspacing="0"><tr><th>Причина</th><th>Кол-во</th></tr>'+rejRows+'</table>'

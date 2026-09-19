@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Вход — Тендеры Атвинта</title>
+<script>
+  // тема из Профиля (light / dark / system) — как на остальных страницах
+  try{
+    var theme = localStorage.getItem('atvinta_jul_theme_v1');
+    if(theme === 'light' || theme === 'dark') document.documentElement.setAttribute('data-theme', theme);
+  }catch(e){}
+</script>
+<style>
+  :root{
+    --bg:#faf8f9;--surface:#ffffff;--surface-2:#f4eef1;--ink:#1c1720;--ink-muted:#6b6270;
+    --border:#e6dfe3;--border-strong:#d8cfd4;--accent:#c41e52;--accent-ink:#ffffff;--accent-wash:#fbe8ee;
+    --radius-sm:7px;--radius-md:12px;
+    --shadow-md:0 8px 24px rgba(28,23,32,.14);
+    --font-display:Georgia,"Noto Serif","PT Serif","Times New Roman",serif;
+    --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#18131b;--surface:#201a24;--surface-2:#271f2b;--ink:#f3eef1;--ink-muted:#a99fac;
+      --border:#382e3d;--border-strong:#463a4c;--accent:#ff7196;--accent-ink:#1c1720;--accent-wash:#3a1f29;
+      --shadow-md:0 12px 32px rgba(0,0,0,.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#18131b;--surface:#201a24;--surface-2:#271f2b;--ink:#f3eef1;--ink-muted:#a99fac;
+    --border:#382e3d;--border-strong:#463a4c;--accent:#ff7196;--accent-ink:#1c1720;--accent-wash:#3a1f29;
+    --shadow-md:0 12px 32px rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;
+    /* мягкие фирменные пятна на фоне */
+    background-image:
+      radial-gradient(520px 420px at 12% 8%, var(--accent-wash), transparent 70%),
+      radial-gradient(480px 380px at 92% 96%, var(--accent-wash), transparent 70%);
+    background-repeat:no-repeat;}
+
+  .login-main{flex:1;display:flex;align-items:center;justify-content:center;padding:32px 16px;}
+  .login-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);
+    border-radius:16px;box-shadow:var(--shadow-md);padding:36px 32px 28px;}
+
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:28px;}
+  .brand-mark{width:40px;height:40px;border-radius:10px;background:var(--accent);color:var(--accent-ink);
+    display:flex;align-items:center;justify-content:center;flex:none;}
+  .brand-mark svg{width:22px;height:22px;}
+  .brand-title{font-family:var(--font-display);font-weight:700;font-size:19px;line-height:1.15;}
+  .brand-sub{font-size:10.5px;color:var(--ink-muted);letter-spacing:.05em;text-transform:uppercase;margin-top:2px;}
+
+  h1{font-family:var(--font-display);font-weight:700;font-size:26px;line-height:1.2;margin:0 0 6px;}
+  .lead{font-size:13.5px;color:var(--ink-muted);margin:0 0 24px;line-height:1.45;}
+
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+  .field label{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-muted);}
+  .input-wrap{position:relative;}
+  .field input{width:100%;height:42px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+    padding:0 12px;font-family:var(--font-body);font-size:14.5px;background:var(--surface);color:var(--ink);
+    transition:border-color .15s ease, box-shadow .15s ease;}
+  .field input::placeholder{color:var(--ink-muted);opacity:.7;}
+  .field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-wash);}
+  .input-wrap input{padding-right:44px;}
+  .pass-toggle{position:absolute;top:50%;right:6px;transform:translateY(-50%);width:32px;height:32px;
+    border:none;background:none;border-radius:6px;color:var(--ink-muted);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;}
+  .pass-toggle:hover{background:var(--surface-2);color:var(--ink);}
+  .pass-toggle svg{width:18px;height:18px;}
+
+  .btn-login{width:100%;height:44px;margin-top:8px;border:1px solid var(--accent);border-radius:var(--radius-sm);
+    background:var(--accent);color:var(--accent-ink);font-family:var(--font-body);font-size:14.5px;font-weight:600;
+    cursor:pointer;transition:filter .15s ease;}
+  .btn-login:hover{filter:brightness(1.06);}
+  .btn-login:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-wash);}
+
+  .help{font-size:12.5px;color:var(--ink-muted);text-align:center;margin:18px 0 0;line-height:1.45;}
+  .login-footer{text-align:center;font-size:11.5px;color:var(--ink-muted);padding:0 16px 20px;}
+
+  @media (max-width:480px){
+    .login-card{padding:28px 20px 22px;border-radius:14px;}
+    h1{font-size:23px;}
+  }
+</style>
+<body>
+  <main class="login-main">
+    <div class="login-card">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+        </div>
+        <div>
+          <div class="brand-title">Тендеры</div>
+          <div class="brand-sub">Атвинта</div>
+        </div>
+      </div>
+
+      <h1>Вход в сервис</h1>
+      <p class="lead">Введите логин и пароль, которые выдал администратор.</p>
+
+      <!-- макет: проверки логина и пароля пока нет — «Войти» сразу открывает дашборд -->
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="loginInput">Логин (email)</label>
+          <input type="email" id="loginInput" autocomplete="username" placeholder="name@atwinta.ru" autofocus>
+        </div>
+        <div class="field">
+          <label for="passwordInput">Пароль</label>
+          <div class="input-wrap">
+            <input type="password" id="passwordInput" autocomplete="current-password" placeholder="••••••••">
+            <button type="button" class="pass-toggle" id="passToggle" title="Показать пароль" aria-label="Показать пароль">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn-login">Войти</button>
+      </form>
+
+      <p class="help">Забыли пароль? Обратитесь к администратору сервиса.</p>
+    </div>
+  </main>
+  <footer class="login-footer">© Атвинта · Тендерный сервис</footer>
+
+<script>
+  var EYE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.7 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-2.2 3.2"/><path d="M6.6 6.6A17.4 17.4 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/></svg>';
+  var passInput = document.getElementById('passwordInput');
+  var passToggle = document.getElementById('passToggle');
+  passToggle.addEventListener('click', function(){
+    var show = passInput.type === 'password';
+    passInput.type = show ? 'text' : 'password';
+    passToggle.innerHTML = show ? EYE_OFF : EYE;
+    passToggle.title = show ? 'Скрыть пароль' : 'Показать пароль';
+    passToggle.setAttribute('aria-label', passToggle.title);
+  });
+  // проверки логина и пароля пока нет (появится в рабочей версии сервиса) — сразу открываем дашборд
+  document.getElementById('loginForm').addEventListener('submit', function(event){
+    event.preventDefault();
+    window.location.href = 'dashboard.html';
+  });
+</script>
+</body>
+</html>
