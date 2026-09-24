@@ -887,6 +887,8 @@
     if(!admin) document.querySelectorAll('[data-admin-only]').forEach(function(el){ el.remove(); });
     if(!admin && !isObserverUser(user)){
       document.querySelectorAll('[data-admin-observer-only]').forEach(function(el){ el.remove(); });
+      // пункт «Тендеры» ведёт на Сводную таблицу; кому она недоступна — на «Новые»
+      document.querySelectorAll('[data-nav-tenders]').forEach(function(el){ el.setAttribute('href', 'novye-tendery.html'); });
     }
   }
 
