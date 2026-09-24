@@ -281,7 +281,6 @@
   .tform-field textarea{border:1px solid var(--border-strong);border-radius:6px;padding:8px 10px;
     font-family:var(--font-body);font-size:13px;background:var(--surface);color:var(--ink);resize:vertical;
     min-width:220px;min-height:38px;}
-  .tform-hint{font-size:11.5px;color:var(--ink-muted);max-width:220px;line-height:1.4;}
   .tform-actions{display:flex;gap:12px;margin-left:auto;}
 
   .tcard-row3{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:13.5px;
@@ -646,7 +645,6 @@
   var TODAY = TenderReferences.todayIso();
   var DEPTS = TenderReferences.get('departments');
   var REASONS = TenderReferences.get('rejectionReasons');
-  var MANAGERS = TenderReferences.managerNames();
   var CURRENT_USER_NAME = 'Оксана Денисенко';
   var APP_STATUSES = TenderReferences.get('applicationStatuses');
   var CARD_URL = 'https://claude.ai/code/artifact/cc2156ed-e65b-4080-9434-48e8241591fe';
@@ -780,86 +778,6 @@
   }
 
   // ---- множественный кастомный select (направления) с добавлением нового значения ----
-  function buildXMulti(){
-    var wrap = document.createElement('span');
-    wrap.className = 'xmulti';
-    wrap.dataset.values = '[]';
-
-    var trigger = document.createElement('button');
-    trigger.type = 'button';
-    trigger.className = 'xmulti-trigger';
-    wrap.appendChild(trigger);
-
-    var menu = document.createElement('div');
-    menu.className = 'xmulti-menu';
-    wrap.appendChild(menu);
-
-    function selected(){ return JSON.parse(wrap.dataset.values); }
-    function renderTrigger(){
-      var sel = selected();
-      trigger.innerHTML = '<span>'+(sel.length ? esc(sel.join(', ')) : 'Выбрать направления')+'</span>' + CHEVRON_SVG;
-    }
-    function renderMenu(){
-      menu.innerHTML = '';
-      var sel = selected();
-      TenderReferences.sortOptions(DEPTS).forEach(function(v){
-        var item = document.createElement('label');
-        item.className = 'xmulti-item';
-        var cb = document.createElement('input');
-        cb.type = 'checkbox';
-        cb.checked = sel.indexOf(v) !== -1;
-        cb.addEventListener('change', function(){
-          var cur = selected();
-          var idx = cur.indexOf(v);
-          if(cb.checked && idx === -1) cur.push(v);
-          if(!cb.checked && idx !== -1) cur.splice(idx,1);
-          wrap.dataset.values = JSON.stringify(cur);
-          renderTrigger();
-          trigger.style.borderColor = '';
-          wrap.dispatchEvent(new Event('xchange', {bubbles:true}));
-        });
-        var span = document.createElement('span');
-        span.textContent = v;
-        item.appendChild(cb); item.appendChild(span);
-        menu.appendChild(item);
-      });
-      var addRow = document.createElement('div');
-      addRow.className = 'xmulti-add';
-      var addInput = document.createElement('input');
-      addInput.type = 'text';
-      addInput.placeholder = 'Новое направление…';
-      var addBtn = document.createElement('button');
-      addBtn.type = 'button';
-      addBtn.textContent = '+';
-      function addNew(){
-        var val = addInput.value.trim();
-        if(!val) return;
-        if(DEPTS.indexOf(val) === -1) DEPTS.push(val);
-        var cur = selected();
-        if(cur.indexOf(val) === -1) cur.push(val);
-        wrap.dataset.values = JSON.stringify(cur);
-        addInput.value = '';
-        renderTrigger(); renderMenu();
-        trigger.style.borderColor = '';
-        menu.classList.add('is-open');
-        wrap.dispatchEvent(new Event('xchange', {bubbles:true}));
-      }
-      addBtn.addEventListener('click', function(e){ e.stopPropagation(); addNew(); });
-      addInput.addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.stopPropagation(); addNew(); } });
-      addInput.addEventListener('click', function(e){ e.stopPropagation(); });
-      addRow.appendChild(addInput); addRow.appendChild(addBtn);
-      menu.appendChild(addRow);
-    }
-    trigger.addEventListener('click', function(e){
-      e.stopPropagation();
-      var willOpen = !menu.classList.contains('is-open');
-      document.querySelectorAll('.xselect-menu.is-open, .xmulti-menu.is-open').forEach(function(m){ m.classList.remove('is-open'); });
-      if(willOpen){ renderMenu(); menu.classList.add('is-open'); }
-    });
-    renderTrigger();
-    return wrap;
-  }
-
   function tagsHtml(t){
     var out = '';
     if(t.law) out += '<span class="tag">'+esc(t.law)+'</span>';
@@ -1015,25 +933,6 @@
       +       '</div>'
       +     '</div>'
 
-      +     '<div class="tform" data-part="reject" data-id="'+t.id+'" hidden>'
-      +       '<div class="tform-field"><label>Причина</label><span class="xselect-reject-slot"></span></div>'
-      +       '<div class="tform-field" style="flex:1;min-width:200px"><label>Комментарий</label><textarea data-field="comment" placeholder="Необязательно"></textarea></div>'
-      +       '<div class="tform-actions">'
-      +         '<button class="btn" data-action="cancel-form" data-id="'+t.id+'">Отмена</button>'
-      +         '<button class="btn btn-primary" data-action="save-reject" data-id="'+t.id+'">Сохранить</button>'
-      +       '</div>'
-      +     '</div>'
-
-      +     '<div class="tform" data-part="accept" data-id="'+t.id+'" hidden>'
-      +       '<div class="tform-field"><label>Направления</label><span class="xmulti-slot"></span></div>'
-      +       '<div class="tform-field"><label>Ответственный</label><span class="xselect-manager-slot"></span></div>'
-      +       '<div class="tform-hint" data-part="multi-hint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</div>'
-      +       '<div class="tform-actions">'
-      +         '<button class="btn" data-action="cancel-form" data-id="'+t.id+'">Отмена</button>'
-      +         '<button class="btn btn-primary" data-action="save-accept" data-id="'+t.id+'">Сохранить</button>'
-      +       '</div>'
-      +     '</div>'
-
       +     '<div class="tedit" data-part="edit" data-id="'+t.id+'" hidden>'
       +       '<div class="tedit-grid">'
       +         '<div class="tform-field"><label>Название</label><input type="text" data-field="name"></div>'
@@ -1093,30 +992,6 @@
     document.getElementById('navNew').hidden = newCount === 0;
     document.getElementById('navWaiting').textContent = waitingCount;
     document.getElementById('navProgress').textContent = progressCount;
-  }
-
-  function initCardWidgets(cardEl, t){
-    var rejectSlot = cardEl.querySelector('.xselect-reject-slot');
-    var reasonSelect = buildXSelect(REASONS, '', 'Выбрать причину');
-    rejectSlot.appendChild(reasonSelect);
-
-    var managerSlot = cardEl.querySelector('.xselect-manager-slot');
-    var managerSelect = buildXSelect(MANAGERS, '', 'Выбрать ответственного');
-    managerSlot.appendChild(managerSelect);
-
-    var multiSlot = cardEl.querySelector('.xmulti-slot');
-    var deptMulti = buildXMulti();
-    multiSlot.appendChild(deptMulti);
-
-    var multiHint = cardEl.querySelector('[data-part="multi-hint"]');
-    deptMulti.addEventListener('xchange', function(){
-      var vals = JSON.parse(deptMulti.dataset.values);
-      multiHint.hidden = vals.length < 2;
-    });
-
-    cardEl._reasonSelect = reasonSelect;
-    cardEl._managerSelect = managerSelect;
-    cardEl._deptMulti = deptMulti;
   }
 
   function showToast(text){
@@ -1345,20 +1220,8 @@
     render();
   });
 
-  // решение принято — карточка остаётся в общем списке (для Сводной таблицы), но уходит из вида "Новые"
-  function resolveCard(id, toastText){
-    var cardEl = document.querySelector('.tcard[data-id="'+id+'"]');
-    saveTenders(tenders);
-    showToast(toastText);
-    if(!cardEl){ render(); return; }
-    cardEl.classList.add('is-leaving');
-    setTimeout(function(){ render(); }, 300);
-  }
-
   function closeForms(cardEl){
     cardEl.querySelector('[data-part="default"]').hidden = false;
-    cardEl.querySelector('[data-part="reject"]').hidden = true;
-    cardEl.querySelector('[data-part="accept"]').hidden = true;
     cardEl.querySelector('[data-part="edit"]').hidden = true;
   }
 
@@ -1405,11 +1268,6 @@
     list.innerHTML = visible.map(cardHtml).join('');
     refreshMeta();
 
-    document.querySelectorAll('.tcard').forEach(function(cardEl){
-      var id = Number(cardEl.dataset.id);
-      var t = tenders.find(function(x){ return x.id === id; });
-      initCardWidgets(cardEl, t);
-    });
   }
 
   function onListClick(e){
@@ -1437,22 +1295,6 @@
       cardEl.querySelectorAll('[data-action="toggle-details"][data-label="1"]').forEach(function(b){
         b.textContent = details.hidden ? 'Подробнее' : 'Свернуть';
       });
-      return;
-    }
-    if(action === 'open-reject'){
-      closeForms(cardEl);
-      cardEl.querySelector('[data-part="default"]').hidden = true;
-      cardEl.querySelector('[data-part="reject"]').hidden = false;
-      return;
-    }
-    if(action === 'open-accept'){
-      closeForms(cardEl);
-      cardEl.querySelector('[data-part="default"]').hidden = true;
-      cardEl.querySelector('[data-part="accept"]').hidden = false;
-      return;
-    }
-    if(action === 'cancel-form'){
-      closeForms(cardEl);
       return;
     }
     if(action === 'open-edit'){
@@ -1526,30 +1368,6 @@
       saveTenders(tenders);
       render();
       showToast('Изменения сохранены.');
-      return;
-    }
-    if(action === 'save-reject'){
-      var reason = cardEl._reasonSelect.dataset.value;
-      if(!reason){ cardEl._reasonSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; return; }
-      var comment = cardEl.querySelector('[data-part="reject"] textarea[data-field="comment"]').value.trim();
-      t.decision = 'Отказ';
-      t.rejectReason = reason;
-      t.rejectComment = comment;
-      resolveCard(id, 'Перемещено в архив.');
-      return;
-    }
-    if(action === 'save-accept'){
-      var depts = JSON.parse(cardEl._deptMulti.dataset.values);
-      var manager = cardEl._managerSelect.dataset.value;
-      var ok = true;
-      if(!depts.length){ cardEl._deptMulti.querySelector('.xmulti-trigger').style.borderColor = 'var(--danger)'; ok = false; }
-      if(!manager){ cardEl._managerSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; ok = false; }
-      if(!ok) return;
-      t.decision = 'На рассмотрении';
-      t.depts = depts;
-      t.dept = depts[0] || '';
-      t.manager = manager;
-      resolveCard(id, 'Передано в работу.');
       return;
     }
   }

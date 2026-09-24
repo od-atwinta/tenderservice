@@ -880,9 +880,27 @@
   }
   // скрывает пункты меню: data-admin-only — для всех кроме Админа/Суперадмина;
   // data-admin-observer-only — для всех кроме Админа/Суперадмина/Наблюдателя
+  // блок пользователя внизу меню: имя, роли и инициалы того, кто вошёл
+  // (раньше на всех страницах был вписан текст «Оксана Д. · суперадмин»)
+  function applyNavUser(user){
+    var block = document.querySelector('.nav-user');
+    if(!block || !user || !user.name) return;
+    var parts = String(user.name).trim().split(/\s+/);
+    var shortName = parts[0] + (parts[1] ? ' ' + parts[1].charAt(0) + '.' : '');
+    var initials = parts.slice(0, 2).map(function(w){ return w.charAt(0); }).join('').toUpperCase();
+    var roles = (Array.isArray(user.roles) ? user.roles : []).map(function(r){ return String(r).toLocaleLowerCase('ru-RU'); }).join(', ');
+    var avatar = block.querySelector('.avatar');
+    var nameEl = block.querySelector('.nav-user-text b');
+    var roleEl = block.querySelector('.nav-user-text > span');
+    if(avatar) avatar.textContent = initials;
+    if(nameEl) nameEl.textContent = shortName;
+    if(roleEl) roleEl.textContent = roles;
+    block.title = shortName + (roles ? ' · ' + roles : '');
+  }
   function applyAdminOnlyNav(){
     if(typeof document === 'undefined') return;
     var user = currentUser();
+    applyNavUser(user);
     var admin = isAdminUser(user);
     if(!admin) document.querySelectorAll('[data-admin-only]').forEach(function(el){ el.remove(); });
     if(!admin && !isObserverUser(user)){
