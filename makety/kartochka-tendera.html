@@ -220,6 +220,7 @@
   .header-status-divider{width:1px;align-self:stretch;min-height:18px;background:var(--border);}
   .header-status-compact .current-status-label{font-size:12.5px;}
   .header-status-compact .btn{height:28px;min-height:28px;padding:0 12px;font-size:12.5px;}
+  .header-status-compact .btn[hidden]{display:none;}
   .service-actions .icon-btn{width:38px;height:38px;border-radius:9px;position:relative;}
   .service-actions .icon-btn svg{width:18px;height:18px;}
   .service-actions .ping{position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);}
@@ -773,6 +774,8 @@
                 <span class="header-status-divider" id="headerStatusDivider"></span>
                 <span class="current-status-label" id="currentTenderStatus">Формируем</span>
                 <button class="btn btn-sm" type="button" id="statusOpen">Изменить</button>
+                <button class="btn btn-sm" type="button" id="decisionReject" hidden>Отказ</button>
+                <button class="btn btn-sm btn-primary" type="button" id="decisionAccept" hidden>Участвовать</button>
               </div>
             </div>
             <div class="card header-deadline" id="syncedDeadlineBadge">
@@ -1117,6 +1120,47 @@
   </div>
 </div>
 
+<!-- РЕШЕНИЕ ИЗ ШАПКИ: ОТКАЗ (Новые / Ожидают решения) -->
+<div class="overlay" id="decisionRejectOverlay">
+  <div class="modal status-modal">
+    <h4>Отказ от тендера</h4>
+    <p class="hint">Тендер будет перенесён в «Архив».</p>
+    <div class="field">
+      <label>Причина</label>
+      <span id="decisionReasonSlot"></span>
+    </div>
+    <div class="field">
+      <label for="decisionRejectComment">Комментарий</label>
+      <textarea id="decisionRejectComment" placeholder="Необязательно"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="decisionRejectCancel">Отмена</button>
+      <button class="btn btn-primary" type="button" id="decisionRejectSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- РЕШЕНИЕ ИЗ ШАПКИ: ВЗЯТЬ В РАБОТУ (Новые) -->
+<div class="overlay" id="decisionTakeOverlay">
+  <div class="modal status-modal">
+    <h4>Взять в работу</h4>
+    <p class="hint">Тендер перейдёт в «Ожидают решения», ответственному придёт задача.</p>
+    <div class="field">
+      <label>Направления</label>
+      <span id="decisionDeptSlot"></span>
+    </div>
+    <div class="field">
+      <label>Ответственный</label>
+      <span id="decisionManagerSlot"></span>
+    </div>
+    <p class="hint" id="decisionMultiHint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</p>
+    <div class="modal-actions">
+      <button class="btn" type="button" id="decisionTakeCancel">Отмена</button>
+      <button class="btn btn-primary" type="button" id="decisionTakeSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay status-move-overlay" id="statusMoveOverlay">
   <div class="modal">
     <h4>Перенести тендер?</h4>
@@ -1455,8 +1499,8 @@
   </div>
 </aside>
 
-<script src="tendery-dannye.js"></script>
-<script src="spravochniki.js"></script>
+<script src="tendery-dannye.js?v=2026-09-30"></script>
+<script src="spravochniki.js?v=2026-09-30"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -4564,11 +4608,38 @@
     });
     try{ localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications.slice(-50))); }catch(e){}
   }
+  // Кнопки решения в шапке вместо «Изменить», пока решение не принято
+  // (решение Оксаны 30.09.2026, ТЗ 6.3): «Новые» — «Отказ» / «Взять в работу»,
+  // «Ожидают решения» — «Отказ» / «Участвовать». Право — первое/второе решение (ТЗ 3.3).
+  function canDecide(user){
+    var DECISION_ROLES = ['суперадмин','админ','менеджер','руководитель отдела'];
+    var roles = user && Array.isArray(user.roles) ? user.roles : [];
+    return roles.some(function(role){ return DECISION_ROLES.indexOf(String(role).toLocaleLowerCase('ru-RU')) !== -1; });
+  }
+  function decisionStage(t){
+    if(t.decision === 'Отказ') return '';
+    var section = bucket(t);
+    if(section === 'Новый' || section === 'Новые') return 'first';
+    if(section === 'Ожидают решения') return 'second';
+    return '';
+  }
   function renderStatusControl(t){
     var btn = document.getElementById('statusOpen');
+    var rejectBtn = document.getElementById('decisionReject');
+    var acceptBtn = document.getElementById('decisionAccept');
+    var stage = decisionStage(t);
+    rejectBtn.hidden = acceptBtn.hidden = true;
+    btn.hidden = false;
     if(t.decision === 'Отказ'){
       btn.textContent = 'Вернуть в работу';
       btn.dataset.mode = 'restore';
+    }else if(stage){
+      btn.hidden = true;
+      if(canDecide(CURRENT_USER)){
+        rejectBtn.hidden = acceptBtn.hidden = false;
+        acceptBtn.textContent = stage === 'first' ? 'Взять в работу' : 'Участвовать';
+        acceptBtn.dataset.stage = stage;
+      }
     }else{
       btn.textContent = 'Изменить';
       btn.dataset.mode = 'change';
@@ -4609,6 +4680,17 @@
       return;
     }
     if(!manager) return;
+    // ТЗ 5.5/5.7: в активный раздел — только с направлением
+    var restoreSection = restoreDestination(statusValue, tender.id).section;
+    if(TenderReferences.assigneeRequiredSections.indexOf(restoreSection) !== -1 && !(tender.depts || []).length){
+      TenderReferences.requireAssignee({manager:manager, depts:[]}, restoreSection, function(depts, chosenManager){
+        tender.depts = depts;
+        if(restoreManagerSelect) restoreManagerSelect.dataset.value = chosenManager;
+        tender.dept = depts[0] || '';
+        document.getElementById('restoreSave').click();
+      });
+      return;
+    }
     var previousManager = tender.manager || 'не назначен';
     var destination = restoreDestination(statusValue, tender.id);
     if(statusValue === 'Новые'){
@@ -4677,6 +4759,100 @@
     showToast('Запрос отправлен.');
   });
 
+  // ---- решение из шапки карточки ----
+  var decisionRejectOverlay = document.getElementById('decisionRejectOverlay');
+  var decisionTakeOverlay = document.getElementById('decisionTakeOverlay');
+  var decisionReasonSelect = null;
+  var decisionDeptMulti = null;
+  var decisionManagerSelect = null;
+  function finishDecision(destination, eventText, comment, toastText){
+    tender.events = tender.events || [];
+    tender.events.push({ date:eventDate(), text:eventText, comment:comment || '', actor:CURRENT_USER.name });
+    saveTenders(tenders);
+    pushStatusNotification(tender, destination);
+    targetSection = destination;
+    history.replaceState(null, '', sectionHref(tender));
+    applyTenderData();
+    document.querySelectorAll('.nav-sub a').forEach(function(link){
+      link.classList.toggle('is-active', link.textContent.trim().indexOf(destination) === 0);
+    });
+    renderSyncedNotifications();
+    showToast(toastText);
+  }
+  document.getElementById('decisionReject').addEventListener('click', function(){
+    if(!tender) return;
+    var slot = document.getElementById('decisionReasonSlot');
+    slot.innerHTML = '';
+    decisionReasonSelect = buildXSelect(REASONS, '', 'Выбрать причину');
+    slot.appendChild(decisionReasonSelect);
+    document.getElementById('decisionRejectComment').value = '';
+    decisionRejectOverlay.classList.add('is-open');
+  });
+  document.getElementById('decisionRejectCancel').addEventListener('click', function(){ decisionRejectOverlay.classList.remove('is-open'); });
+  decisionRejectOverlay.addEventListener('click', function(e){ if(e.target === decisionRejectOverlay) decisionRejectOverlay.classList.remove('is-open'); });
+  document.getElementById('decisionRejectSave').addEventListener('click', function(){
+    if(!tender || !decisionReasonSelect) return;
+    var reason = decisionReasonSelect.dataset.value;
+    if(!reason){ decisionReasonSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; return; }
+    var comment = document.getElementById('decisionRejectComment').value.trim();
+    var from = bucket(tender) === 'Новый' ? 'Новые' : bucket(tender);
+    tender.decision = 'Отказ';
+    tender.lifecycleSection = 'Архив';
+    TenderReferences.updateActiveSectionFromStatus(tender, 'Отклонено');
+    tender.rejectReason = reason;
+    tender.rejectComment = comment;
+    decisionRejectOverlay.classList.remove('is-open');
+    finishDecision('Архив', 'Отказ ('+from+'). Причина: '+reason+'. Тендер перенесён в раздел «Архив».', comment, 'Перемещено в архив.');
+  });
+  document.getElementById('decisionAccept').addEventListener('click', function(){
+    if(!tender) return;
+    if(this.dataset.stage === 'second'){
+      tender.decision = 'Участвуем';
+      tender.lifecycleSection = 'В работе';
+      TenderReferences.updateActiveSectionFromStatus(tender, 'Формирование заявки');
+      tender.appStatus = 'Формирование заявки';
+      tender.rejectReason = '';
+      tender.rejectComment = '';
+      finishDecision('В работе', 'Решение: участвуем. Тендер перенесён в раздел «В работе».', '', 'Тендер перенесён в раздел «В работе».');
+      return;
+    }
+    var deptSlot = document.getElementById('decisionDeptSlot');
+    deptSlot.innerHTML = '';
+    decisionDeptMulti = buildXMulti(DIRECTIONS, tender.depts || [], 'Выбрать направления');
+    deptSlot.appendChild(decisionDeptMulti);
+    var hint = document.getElementById('decisionMultiHint');
+    function syncHint(){ hint.hidden = JSON.parse(decisionDeptMulti.dataset.values).length < 2; }
+    decisionDeptMulti.addEventListener('xchange', syncHint);
+    syncHint();
+    var managerSlot = document.getElementById('decisionManagerSlot');
+    managerSlot.innerHTML = '';
+    decisionManagerSelect = buildXSelect(MANAGERS, tender.manager || '', 'Выбрать ответственного');
+    managerSlot.appendChild(decisionManagerSelect);
+    decisionTakeOverlay.classList.add('is-open');
+  });
+  document.getElementById('decisionTakeCancel').addEventListener('click', function(){ decisionTakeOverlay.classList.remove('is-open'); });
+  decisionTakeOverlay.addEventListener('click', function(e){ if(e.target === decisionTakeOverlay) decisionTakeOverlay.classList.remove('is-open'); });
+  document.getElementById('decisionTakeSave').addEventListener('click', function(){
+    if(!tender || !decisionDeptMulti || !decisionManagerSelect) return;
+    var depts = JSON.parse(decisionDeptMulti.dataset.values);
+    var manager = decisionManagerSelect.dataset.value;
+    var ok = true;
+    if(!depts.length){ decisionDeptMulti.querySelector('.xmulti-trigger').style.borderColor = 'var(--danger)'; ok = false; }
+    if(!manager){ decisionManagerSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; ok = false; }
+    if(!ok) return;
+    tender.decision = 'На рассмотрении';
+    tender.lifecycleSection = 'Ожидают решения';
+    TenderReferences.updateActiveSectionFromStatus(tender, 'На рассмотрении');
+    tender.depts = depts;
+    tender.dept = depts[0] || '';
+    tender.manager = manager;
+    var reviewTaskText = 'Изучить документы и принять решение по тендеру «'+tender.name+'»';
+    upsertAutoTask(tender, 'auto-review', reviewTaskText, '', manager, true);
+    pushAutoTaskNotification(manager, reviewTaskText);
+    decisionTakeOverlay.classList.remove('is-open');
+    finishDecision('Ожидают решения', 'Взят в работу. Направления: '+depts.join(', ')+'. Ответственный: '+manager+'. Тендер перенесён в раздел «Ожидают решения».', '', 'Передано в работу.');
+  });
+
   document.getElementById('statusOpen').addEventListener('click', function(){
     if(!tender) return;
     if(this.dataset.mode === 'restore'){
@@ -4700,6 +4876,18 @@
     if(event.target === statusMoveOverlay) closeStatusMoveModal();
   });
   function applyStatusChange(change){
+    if(TenderReferences.assigneeRequiredSections.indexOf(change.destination) !== -1 && !TenderReferences.hasAssignee(tender)){
+      // ТЗ 5.7: в активный раздел — только с ответственным и направлением
+      closeStatusMoveModal();
+      closeStatusModal();
+      TenderReferences.requireAssignee(tender, change.destination, function(depts, manager){
+        tender.depts = depts;
+        tender.dept = depts[0] || '';
+        tender.manager = manager;
+        applyStatusChange(change);
+      });
+      return;
+    }
     var moved = change.currentSection !== change.destination;
     tender.decision = 'Участвуем';
     tender.appStatus = change.status;

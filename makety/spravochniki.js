@@ -21,6 +21,7 @@
   // списка площадок на странице "Платежи" (там тарифы/депозиты, здесь доступ)
   var ACCESS_DIRECTORY_KEY = 'atvinta_jul_access_directory_v1';
   var THEME_KEY = 'atvinta_jul_theme_v1';
+  var REMOVE_AI_ANALYTICS_MIGRATION_KEY = 'atvinta_jul_remove_ai_analytics_v1';
   var SYSTEM_ROLES = ['Суперадмин','Админ','Наблюдатель','Менеджер','Руководитель отдела','Сотрудник отдела'];
   var SECTION_ORDER = ['Новые','Ожидают решения','В работе','Заявки','Архив'];
   // статусы-исходы отказа/проигрыша, ведущие в Архив (без "Выиграли" — это не отказ);
@@ -30,7 +31,7 @@
   var PROCESS_STAGES = ['Отбор','Изучение','Подготовка','Подача','Итог'];
   var DEFAULTS = {
     departments: ['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф',
-      'Медботы','Аналитика/ИИ'],
+      'Медботы'],
     rejectionReasons: ['Нейронка плохо определила','Прочее','Не наш стек','Не наш стек/профиль',
       'Не успеваем подготовиться','Не проходим по КТ','Жесткие условия','Малобюджетный',
       'Нереальные сроки','Отмена заказчиком','Закрытая от нас','Дубль','Не успели податься',
@@ -46,17 +47,17 @@
     foundations: ['223-ФЗ','44-ФЗ','Коммерческие закупки','внутренний конкурс','не указано']
   };
   var DEFAULT_USERS = [
-    {id:'u1', name:'Оксана Денисенко', login:'oksana.denisenko@atwinta.ru', roles:['Суперадмин'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф','Медботы','Аналитика/ИИ'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u13', name:'Никита Долинин', login:'nikita.dolinin@atwinta.ru', roles:['Админ'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф','Медботы','Аналитика/ИИ'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u1', name:'Оксана Денисенко', login:'oksana.denisenko@atwinta.ru', roles:['Суперадмин'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф','Медботы'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
+    {id:'u13', name:'Никита Долинин', login:'nikita.dolinin@atwinta.ru', roles:['Админ'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф','Медботы'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
     {id:'u17', name:'Андрей Полковников', login:'andrey.polkovnikov@atwinta.ru', roles:['Руководитель отдела'], directions:['Продвижение'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
     {id:'u14', name:'Владислав Мильберг', login:'vladislav.milberg@atwinta.ru', roles:['Менеджер'], directions:['Разработка','Дизайн'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
     {id:'u16', name:'Дарья Щетинина', login:'darya.shchetinina@atwinta.ru', roles:['Руководитель отдела'], directions:['Техническая поддержка'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
     {id:'u15', name:'Дмитрий Юров', login:'dmitry.yurov@atwinta.ru', roles:['Менеджер'], directions:['Разработка'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
-    {id:'u18', name:'Ксения Ельцова', login:'ksenia.eltsova@atwinta.ru', roles:['Руководитель отдела'], directions:['Аналитика','Аналитика/ИИ'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u18', name:'Ксения Ельцова', login:'ksenia.eltsova@atwinta.ru', roles:['Руководитель отдела'], directions:['Аналитика'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
     {id:'u19', name:'Артемий Филиппов', login:'artemiy.filippov@atwinta.ru', roles:['Менеджер'], directions:['Продвижение'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
     {id:'u20', name:'Мария Белоножко', login:'maria.belonozhko@atwinta.ru', roles:['Менеджер'], directions:['Техническая поддержка'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
     {id:'u21', name:'Екатерина Тимофеева', login:'ekaterina.timofeeva@atwinta.ru', roles:['Руководитель отдела'], directions:['Дизайн'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
-    {id:'u22', name:'Егор Пазущенко', login:'egor.pazushchenko@atwinta.ru', roles:['Менеджер'], directions:['Аналитика/ИИ','Аналитика'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
+    {id:'u22', name:'Егор Пазущенко', login:'egor.pazushchenko@atwinta.ru', roles:['Менеджер'], directions:['Аналитика'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
     {id:'u23', name:'Сергей Перевозников', login:'sergey.perevoznikov@atwinta.ru', roles:['Руководитель отдела'], directions:['Разработка'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
     {id:'u24', name:'Виктория Дмитриева', login:'viktoria.dmitrieva@atwinta.ru', roles:['Менеджер'], directions:['Техническая поддержка'], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
     {id:'u25', name:'Виктор Гунин', login:'viktor.gunin@atwinta.ru', roles:['Наблюдатель'], directions:[], status:'active', createdAt:'2026-09-18', mustChangePassword:false},
@@ -930,12 +931,55 @@
     }
     localStorage.setItem(REAL_USERS_MIGRATION_KEY, '1');
   }
+  // «Аналитика/ИИ» убрана (решение 28.09.2026): у справочника, пользователей
+  // и тендеров, сохранённых в браузере, заменяется на «Аналитика».
+  function migrateRemoveAiAnalytics(){
+    if(localStorage.getItem(REMOVE_AI_ANALYTICS_MIGRATION_KEY)) return;
+    var OLD = 'Аналитика/ИИ', NEW = 'Аналитика';
+    function fixList(list){
+      if(!Array.isArray(list) || list.indexOf(OLD) === -1) return list;
+      var out = [];
+      list.forEach(function(v){ v = v === OLD ? NEW : v; if(out.indexOf(v) === -1) out.push(v); });
+      return out;
+    }
+    function update(key, fix){
+      var value = null;
+      try{ value = JSON.parse(localStorage.getItem(key) || 'null'); }catch(error){ return; }
+      if(value === null) return;
+      localStorage.setItem(key, JSON.stringify(fix(value)));
+    }
+    update(STORAGE_KEY, function(stored){
+      if(stored && Array.isArray(stored.departments)) stored.departments = stored.departments.filter(function(v){ return v !== OLD; });
+      return stored;
+    });
+    update(REFERENCE_INACTIVE_KEY, function(stored){
+      if(stored && Array.isArray(stored.departments)) stored.departments = stored.departments.filter(function(v){ return v !== OLD; });
+      return stored;
+    });
+    update(DEPARTMENT_COLORS_KEY, function(stored){
+      if(stored && typeof stored === 'object') delete stored[OLD];
+      return stored;
+    });
+    update(USERS_KEY, function(users){
+      if(Array.isArray(users)) users.forEach(function(u){ if(u) u.directions = fixList(u.directions); });
+      return users;
+    });
+    update(TENDER_STORAGE_KEY, function(tenders){
+      if(Array.isArray(tenders)) tenders.forEach(function(t){
+        if(!t) return;
+        if(t.dept === OLD) t.dept = NEW;
+        t.depts = fixList(t.depts);
+      });
+      return tenders;
+    });
+    localStorage.setItem(REMOVE_AI_ANALYTICS_MIGRATION_KEY, '1');
+  }
   function migrateRealDataReferences(){
     if(localStorage.getItem(REAL_DATA_REFS_MIGRATION_KEY)) return;
     var stored = {};
     try{ stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }catch(error){ stored = {}; }
     if(stored && typeof stored === 'object'){
-      [['departments',['Медботы','Аналитика/ИИ']],
+      [['departments',['Медботы']],
        ['rejectionReasons',['Не успели податься','Невыполнимые условия']]].forEach(function(pair){
         if(!Array.isArray(stored[pair[0]])) return;
         pair[1].forEach(function(value){
@@ -1003,6 +1047,7 @@
   try{ migrateRealDataReferences(); }catch(error){}
   try{ migrateRealUsers(); }catch(error){}
   applyTenderSeed();
+  try{ migrateRemoveAiAnalytics(); }catch(error){}
 
   syncTenderHierarchy();
 
@@ -1108,7 +1153,264 @@
     overlay.addEventListener('click', onClick);
   }
 
+  // Блок «Направления + Ответственный» в форме «Добавить тендер» (решение Оксаны
+  // 30.09.2026, ТЗ 5.6 и 5.7): в «Ожидают решения» тендер не попадает без
+  // ответственного и направления. Показывается только при разделе «Ожидают решения».
+  var ASSIGNEE_CSS = '.at-assignee[hidden]{display:none;}'
+    + '.at-pick{position:relative;display:block;}'
+    + '.at-pick-trigger{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;'
+    + 'min-height:36px;padding:0 10px;border:1px solid var(--border-strong);border-radius:var(--radius-sm,8px);'
+    + 'background:var(--surface);color:var(--ink);font:inherit;font-size:13.5px;text-align:left;cursor:pointer;}'
+    + '.at-pick-trigger:hover{border-color:var(--ink-muted);}'
+    + '.at-pick-trigger.is-empty{color:var(--ink-muted);}'
+    + '.at-pick-trigger.is-invalid{border-color:var(--danger);}'
+    + '.at-pick-menu{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:30;max-height:240px;'
+    + 'overflow:auto;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm,8px);'
+    + 'box-shadow:var(--shadow-md,0 8px 24px rgba(0,0,0,.12));}'
+    + '.at-pick.is-open .at-pick-menu{display:block;}'
+    + '.at-pick-item{display:flex;align-items:center;gap:8px;padding:7px 10px;margin:0;border-radius:6px;font-size:13px;font-weight:400;'
+    + 'text-transform:none;letter-spacing:normal;color:var(--ink);cursor:pointer;}'
+    + '.at-pick-item:hover,.at-pick-item.is-selected{background:var(--surface-2);}'
+    + '.at-pick-item input{width:14px;height:14px;accent-color:var(--accent);flex:none;margin:0;}'
+    + '.at-assignee-hint{margin:-4px 0 12px;font-size:12.5px;color:var(--ink-muted);}';
+  function ensureAssigneeCss(){
+    if(document.getElementById('atAssigneeCss')) return;
+    var style = document.createElement('style');
+    style.id = 'atAssigneeCss';
+    style.textContent = ASSIGNEE_CSS;
+    document.head.appendChild(style);
+  }
+  function escHtml(value){
+    return String(value).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; });
+  }
+  function buildPick(values, multi, placeholder){
+    var wrap = document.createElement('span');
+    wrap.className = 'at-pick';
+    var trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'at-pick-trigger';
+    var menu = document.createElement('div');
+    menu.className = 'at-pick-menu';
+    wrap.appendChild(trigger);
+    wrap.appendChild(menu);
+    var selected = [];
+    function renderTrigger(){
+      trigger.classList.toggle('is-empty', !selected.length);
+      trigger.innerHTML = '<span>'+escHtml(selected.length ? selected.join(', ') : placeholder)+'</span>'
+        + '<svg viewBox="0 0 10 6" width="9" height="6" fill="none" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+    function renderMenu(){
+      menu.innerHTML = '';
+      values.forEach(function(value){
+        var item = document.createElement('div');
+        item.setAttribute('role', multi ? 'menuitemcheckbox' : 'option');
+        item.className = 'at-pick-item' + (selected.indexOf(value) !== -1 ? ' is-selected' : '');
+        if(multi){
+          var cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = selected.indexOf(value) !== -1;
+          item.appendChild(cb);
+        }
+        var text = document.createElement('span');
+        text.textContent = value;
+        item.appendChild(text);
+        item.addEventListener('click', function(event){
+          event.preventDefault();
+          event.stopPropagation();
+          var index = selected.indexOf(value);
+          if(multi){
+            if(index === -1) selected.push(value); else selected.splice(index, 1);
+            renderMenu();
+          }else{
+            selected = [value];
+            wrap.classList.remove('is-open');
+          }
+          trigger.classList.remove('is-invalid');
+          renderTrigger();
+          wrap.dispatchEvent(new Event('xchange', {bubbles:true}));
+        });
+        menu.appendChild(item);
+      });
+    }
+    trigger.addEventListener('click', function(event){
+      event.stopPropagation();
+      var open = !wrap.classList.contains('is-open');
+      document.querySelectorAll('.at-pick.is-open').forEach(function(el){ el.classList.remove('is-open'); });
+      if(open){ renderMenu(); wrap.classList.add('is-open'); }
+    });
+    document.addEventListener('click', function(event){
+      if(!wrap.contains(event.target)) wrap.classList.remove('is-open');
+    });
+    wrap.getValues = function(){ return selected.slice(); };
+    wrap.reset = function(){ selected = []; trigger.classList.remove('is-invalid'); wrap.classList.remove('is-open'); renderTrigger(); };
+    wrap.markInvalid = function(){ trigger.classList.add('is-invalid'); };
+    wrap.setValues = function(list){ selected = (list || []).filter(function(v){ return values.indexOf(v) !== -1; }); renderTrigger(); };
+    renderTrigger();
+    return wrap;
+  }
+  function addTenderAssignee(overlay, getSection){
+    ensureAssigneeCss();
+    var sectionField = overlay.querySelector('.at-section-field');
+    if(!sectionField){ var sectionSelect = overlay.querySelector('#atSection'); sectionField = sectionSelect && sectionSelect.closest('.field'); }
+    var box = document.createElement('div');
+    box.className = 'at-assignee';
+    box.hidden = true;
+    box.innerHTML = '<div class="field"><label>Направления</label><span class="at-assignee-depts"></span></div>'
+      + '<div class="field"><label>Ответственный</label><span class="at-assignee-manager"></span></div>'
+      + '<p class="at-assignee-hint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</p>';
+    sectionField.parentNode.insertBefore(box, sectionField.nextSibling);
+    var depts = buildPick(activeReferenceValues('departments'), true, 'Выбрать направления');
+    var manager = buildPick(managerNames(), false, 'Выбрать ответственного');
+    box.querySelector('.at-assignee-depts').appendChild(depts);
+    box.querySelector('.at-assignee-manager').appendChild(manager);
+    var hint = box.querySelector('.at-assignee-hint');
+    function sync(){
+      box.hidden = getSection() !== 'Ожидают решения';
+      hint.hidden = depts.getValues().length < 2;
+    }
+    overlay.addEventListener('xchange', sync);
+    overlay.addEventListener('change', sync);
+    return {
+      reset: function(){ depts.reset(); manager.reset(); sync(); },
+      // null — если не заполнено (поля подсвечиваются), иначе {depts, manager}
+      validate: function(){
+        var d = depts.getValues(), m = manager.getValues()[0] || '';
+        if(!d.length) depts.markInvalid();
+        if(!m) manager.markInvalid();
+        return d.length && m ? {depts:d, manager:m} : null;
+      }
+    };
+  }
+  // Разделы, где у тендера обязательно есть ответственный и направление (ТЗ 5.7)
+  var ASSIGNEE_REQUIRED_SECTIONS = ['Ожидают решения','В работе','Заявки'];
+  function hasAssignee(tender){
+    return Boolean(tender && tender.manager && Array.isArray(tender.depts) && tender.depts.length);
+  }
+  // Окно «Нужны ответственный и направления» перед переносом в активный раздел.
+  // Если всё уже есть — сразу onDone(depts, manager).
+  function requireAssignee(prefill, destination, onDone, onCancel){
+    prefill = prefill || {};
+    if(ASSIGNEE_REQUIRED_SECTIONS.indexOf(destination) === -1 || hasAssignee(prefill)){
+      onDone((prefill.depts || []).slice(), prefill.manager || '');
+      return;
+    }
+    ensureAssigneeCss();
+    var overlay = document.createElement('div');
+    overlay.className = 'overlay is-open';
+    overlay.style.zIndex = '90';
+    overlay.innerHTML = '<div class="modal" role="dialog" aria-modal="true">'
+      + '<h4>Нужны ответственный и направления</h4>'
+      + '<p class="hint">В разделе «'+escHtml(destination)+'» у тендера должны быть ответственный и хотя бы одно направление.</p>'
+      + '<div class="field"><label>Направления</label><span class="ra-depts"></span></div>'
+      + '<div class="field"><label>Ответственный</label><span class="ra-manager"></span></div>'
+      + '<p class="at-assignee-hint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</p>'
+      + '<div class="modal-actions"><button class="btn" type="button" data-ra="cancel">Отмена</button>'
+      + '<button class="btn btn-primary" type="button" data-ra="save">Сохранить</button></div></div>';
+    var depts = buildPick(activeReferenceValues('departments'), true, 'Выбрать направления');
+    var manager = buildPick(managerNames(), false, 'Выбрать ответственного');
+    depts.setValues(prefill.depts || []);
+    if(prefill.manager) manager.setValues([prefill.manager]);
+    overlay.querySelector('.ra-depts').appendChild(depts);
+    overlay.querySelector('.ra-manager').appendChild(manager);
+    var hint = overlay.querySelector('.at-assignee-hint');
+    overlay.addEventListener('xchange', function(){ hint.hidden = depts.getValues().length < 2; });
+    hint.hidden = depts.getValues().length < 2;
+    function close(){ overlay.remove(); }
+    overlay.addEventListener('click', function(event){
+      var action = event.target.getAttribute && event.target.getAttribute('data-ra');
+      if(event.target === overlay || action === 'cancel'){ close(); if(onCancel) onCancel(); return; }
+      if(action === 'save'){
+        var d = depts.getValues(), m = manager.getValues()[0] || '';
+        if(!d.length) depts.markInvalid();
+        if(!m) manager.markInvalid();
+        if(!d.length || !m) return;
+        close();
+        onDone(d, m);
+      }
+    });
+    document.body.appendChild(overlay);
+  }
+  // Деактивация пользователя-ответственного (ТЗ 3.4, решение 30.09.2026):
+  // сначала — новый ответственный по его тендерам в «Новых», «Ожидают решения»,
+  // «В работе», «Заявках». onDone вызывается после сохранения переназначения.
+  function reassignBeforeDeactivation(userName, onDone){
+    var tenders = [];
+    try{ tenders = JSON.parse(localStorage.getItem('atvinta_jul_tenders_v2') || '[]'); }catch(e){}
+    var ACTIVE = ['Новый','Новые','Ожидают решения','В работе','Заявки'];
+    var own = tenders.filter(function(t){ return t && t.manager === userName && ACTIVE.indexOf(resolveSection(t)) !== -1; });
+    if(!own.length){ onDone(0); return; }
+    ensureAssigneeCss();
+    var candidates = managerNames().filter(function(name){ return name !== userName; });
+    var overlay = document.createElement('div');
+    overlay.className = 'overlay is-open';
+    overlay.style.zIndex = '90';
+    overlay.innerHTML = '<div class="modal" role="dialog" aria-modal="true" style="max-width:640px;width:calc(100% - 32px);">'
+      + '<h4>Переназначить тендеры</h4>'
+      + '<p class="hint">'+escHtml(userName)+' — ответственный по '+own.length+' '+(own.length % 10 === 1 && own.length % 100 !== 11 ? 'активному тендеру' : 'активным тендерам')+'. Перед деактивацией выберите нового ответственного.</p>'
+      + '<div class="field"><label>Назначить всем</label><span class="rd-all"></span></div>'
+      + '<div class="rd-list" style="max-height:280px;overflow:auto;border-top:1px solid var(--border);margin-top:4px;"></div>'
+      + '<div class="modal-actions"><button class="btn" type="button" data-rd="cancel">Отмена</button>'
+      + '<button class="btn btn-primary" type="button" data-rd="save">Переназначить и деактивировать</button></div></div>';
+    var allPick = buildPick(candidates, false, 'Выбрать ответственного');
+    overlay.querySelector('.rd-all').appendChild(allPick);
+    var list = overlay.querySelector('.rd-list');
+    var rowPicks = own.map(function(t){
+      var row = document.createElement('div');
+      row.style.cssText = 'display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;';
+      row.innerHTML = '<div><div>'+escHtml(t.name)+'</div><div style="color:var(--ink-muted);font-size:12px;">'+escHtml(displaySection(resolveSection(t)))+'</div></div>';
+      var pick = buildPick(candidates, false, 'Выбрать');
+      row.appendChild(pick);
+      list.appendChild(row);
+      return pick;
+    });
+    allPick.addEventListener('xchange', function(){
+      var value = allPick.getValues()[0];
+      if(value) rowPicks.forEach(function(pick){ pick.setValues([value]); });
+    });
+    overlay.addEventListener('click', function(event){
+      var action = event.target.getAttribute && event.target.getAttribute('data-rd');
+      if(event.target === overlay || action === 'cancel'){ overlay.remove(); return; }
+      if(action !== 'save') return;
+      var missing = false;
+      rowPicks.forEach(function(pick){ if(!pick.getValues()[0]){ pick.markInvalid(); missing = true; } });
+      if(missing) return;
+      var date = new Date().toLocaleString('ru-RU');
+      var notifications = [];
+      try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
+      own.forEach(function(t, index){
+        var next = rowPicks[index].getValues()[0];
+        t.manager = next;
+        t.events = Array.isArray(t.events) ? t.events : [];
+        t.events.push({date:date, text:'Ответственный переназначен перед деактивацией: '+userName+' → '+next+'.', comment:'', actor:(currentUser() || {}).name || ''});
+        notifications.push({recipient:next, text:'Вы назначены ответственным по тендеру «'+t.name+'».', date:date, href:'kartochka-tendera.html?tender='+t.id});
+      });
+      try{
+        localStorage.setItem('atvinta_jul_tenders_v2', JSON.stringify(tenders));
+        localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50)));
+      }catch(e){}
+      overlay.remove();
+      onDone(own.length);
+    });
+    document.body.appendChild(overlay);
+  }
+  // задача и уведомление ответственному при попадании тендера в «Ожидают решения» (ТЗ 5.4)
+  function addReviewTask(tender, manager){
+    var text = 'Изучить документы и принять решение по тендеру «'+tender.name+'»';
+    tender.tasks = Array.isArray(tender.tasks) ? tender.tasks : [];
+    var ids = tender.tasks.map(function(item){ return Number(item.id) || 0; });
+    tender.tasks.push({ id:(ids.length ? Math.max.apply(null, ids) : 0) + 1, text:text, due:'', assignee:manager, assignedBy:manager, done:false });
+    var notifications = [];
+    try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
+    notifications.push({ recipient:manager, text:text, date:new Date().toLocaleString('ru-RU'), href:'kartochka-tendera.html?tender='+tender.id });
+    try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
+  }
   global.TenderReferences = {
+    addTenderAssignee: addTenderAssignee,
+    addReviewTask: addReviewTask,
+    requireAssignee: requireAssignee,
+    reassignBeforeDeactivation: reassignBeforeDeactivation,
+    hasAssignee: hasAssignee,
+    assigneeRequiredSections: ASSIGNEE_REQUIRED_SECTIONS.slice(),
     key: STORAGE_KEY,
     confirmUnsavedExit: confirmUnsavedExit,
     confirmDialog: confirmDialog,

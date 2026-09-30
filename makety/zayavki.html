@@ -453,7 +453,7 @@
 <div class="overlay" id="addTenderOverlay">
   <div class="modal">
     <h4>Добавить тендер</h4>
-    <p class="hint">Дата создания проставится автоматически. Ответственного назначите позже — любой администратор сможет сделать это прямо в таблице.</p>
+    <p class="hint">Дата создания проставится автоматически. Для раздела «Ожидают решения» сразу укажите направления и ответственного, для «Новых» — при взятии в работу.</p>
     <div class="field at-section-field">
       <label for="atSection">Раздел</label>
       <select id="atSection">
@@ -532,8 +532,8 @@
   </div>
 </div>
 
-<script src="tendery-dannye.js"></script>
-<script src="spravochniki.js"></script>
+<script src="tendery-dannye.js?v=2026-09-30"></script>
+<script src="spravochniki.js?v=2026-09-30"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -950,6 +950,18 @@
   }
   function applyStatusChange(change){
     var t = change.tender;
+    if(TenderReferences.assigneeRequiredSections.indexOf(change.destination) !== -1 && !TenderReferences.hasAssignee(t)){
+      // ТЗ 5.7: в активный раздел — только с ответственным и направлением
+      closeStatusMoveModal();
+      closeStatusModal();
+      TenderReferences.requireAssignee(t, change.destination, function(depts, manager){
+        t.depts = depts;
+        t.dept = depts[0] || '';
+        t.manager = manager;
+        applyStatusChange(change);
+      });
+      return;
+    }
     var moved = change.currentSection !== change.destination;
     t.decision = 'Участвуем';
     t.appStatus = change.status;
@@ -1049,6 +1061,7 @@
 
   // ---- add tender modal (общая форма шапки, без изменений) ----
   var addOverlay = document.getElementById('addTenderOverlay');
+  var addAssignee = TenderReferences.addTenderAssignee(addOverlay, function(){ return atSection.value || 'Новые'; });
   var atName = document.getElementById('atName');
   var atCustomer = document.getElementById('atCustomer');
   var atNmc = document.getElementById('atNmc');
@@ -1079,6 +1092,7 @@
     atSection.value = 'Новые';
     atSection.dispatchEvent(new Event('change'));
     dupHint.hidden = true;
+    addAssignee.reset();
     addOverlay.classList.add('is-open');
     atName.focus();
     TenderReferences.setDirty('addTender', false);
@@ -1102,16 +1116,19 @@
     var newId = tenders.length ? Math.max.apply(null, tenders.map(function(t){ return t.id; })) + 1 : 1;
     var nmcVal = atNmc.value ? Number(atNmc.value) : null;
     var addSection = atSection.value || 'Новые';
+    var assignee = null;
+    if(addSection === 'Ожидают решения'){ assignee = addAssignee.validate(); if(!assignee) return; }
     tenders.unshift({
-      id:newId, manager:'', name:atName.value.trim(), customer:atCustomer.value.trim(),
+      id:newId, manager:assignee ? assignee.manager : '', name:atName.value.trim(), customer:atCustomer.value.trim(),
       nmc: nmcVal, currencies: nmcVal ? ['₽'] : [],
       pub:TODAY, deadline:atDeadline.value,
-      dept:'', depts:[], decision:addSection === 'Ожидают решения' ? 'На рассмотрении' : '', rejectReason:'', rejectComment:'', appStatus:null,
+      dept:assignee ? assignee.depts[0] : '', depts:assignee ? assignee.depts : [], decision:addSection === 'Ожидают решения' ? 'На рассмотрении' : '', rejectReason:'', rejectComment:'', appStatus:null,
       rowCreated:TODAY, source:'', sourceLink: atSourceLink.value.trim() || '',
       unread:true, risk:false, fav:false,
       law:null, procType:null, checkoVerified:false, checkoUrl:'', aiReport:null,
       description:'', aiVerdict:null, aiComment:'', documents:[]
     });
+    if(assignee) TenderReferences.addReviewTask(tenders[0], assignee.manager);
     saveTenders(tenders);
     renderAll();
     closeAddTender();

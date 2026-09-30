@@ -502,7 +502,7 @@
 <div class="overlay" id="addTenderOverlay">
   <div class="modal">
     <h4>Добавить тендер</h4>
-    <p class="hint">Дата создания проставится автоматически. Ответственного назначите позже — любой администратор сможет сделать это прямо в таблице.</p>
+    <p class="hint">Дата создания проставится автоматически. Для раздела «Ожидают решения» сразу укажите направления и ответственного, для «Новых» — при взятии в работу.</p>
     <div class="field at-section-field">
       <label for="atSection">Раздел</label>
       <select id="atSection">
@@ -564,8 +564,8 @@
   <div class="toast-foot"><a class="link-ico" href="#" id="toastLink">Перейти в карточку ↗</a></div>
 </div>
 
-<script src="tendery-dannye.js"></script>
-<script src="spravochniki.js"></script>
+<script src="tendery-dannye.js?v=2026-09-30"></script>
+<script src="spravochniki.js?v=2026-09-30"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -948,7 +948,30 @@
     document.querySelectorAll('.cell-select').forEach(function(sel){
       sel.addEventListener('change', function(){
         var t = tenders.find(function(x){ return x.id === Number(sel.dataset.id); });
-        t[sel.dataset.field] = sel.value;
+        var field = sel.dataset.field, value = sel.value;
+        // ТЗ 5.7: в «Ожидают решения», «В работе», «Заявках» ответственного можно
+        // заменить, но не убрать; перенос туда — только с ответственным и направлением
+        if(field === 'manager' && !value && TenderReferences.assigneeRequiredSections.indexOf(bucket(t)) !== -1){
+          showToast('У тендера в разделе «'+bucket(t)+'» ответственного можно заменить, но не убрать.');
+          render();
+          return;
+        }
+        if(field === 'decision' && (value === 'На рассмотрении' || value === 'Участвуем')){
+          var destination = TenderReferences.resolveSection(Object.assign({}, t, {decision:value}));
+          TenderReferences.requireAssignee(t, destination, function(depts, manager){
+            var movedToReview = value === 'На рассмотрении' && t.decision !== 'На рассмотрении';
+            t.depts = depts;
+            t.dept = depts[0] || '';
+            t.manager = manager;
+            t.decision = value;
+            if(movedToReview) TenderReferences.addReviewTask(t, manager);
+            saveTenders(tenders);
+            refreshNavCounts();
+            render();
+          }, function(){ render(); });
+          return;
+        }
+        t[field] = value;
         saveTenders(tenders);
         refreshNavCounts();
         render();
@@ -1016,6 +1039,7 @@
 
   // ---- add tender modal ----
   var addOverlay = document.getElementById('addTenderOverlay');
+  var addAssignee = TenderReferences.addTenderAssignee(addOverlay, function(){ return atSection.value || 'Новые'; });
   var atName = document.getElementById('atName');
   var atCustomer = document.getElementById('atCustomer');
   var atNmc = document.getElementById('atNmc');
@@ -1048,6 +1072,7 @@
     atSection.value = 'Новые';
     atSection.dispatchEvent(new Event('change'));
     dupHint.hidden = true;
+    addAssignee.reset();
     addOverlay.classList.add('is-open');
     atName.focus();
     TenderReferences.setDirty('addTender', false);
@@ -1065,8 +1090,10 @@
     if(e.target === addOverlay) TenderReferences.guardedClose('addTender', closeAddTender, function(){ document.getElementById('atSave').click(); });
   });
 
-  function showToast(text){
+  function showToast(text, withLink){
     document.getElementById('toastText').textContent = text;
+    // ссылка «Перейти в карточку» — только у сообщения о добавленном тендере
+    document.querySelector('#toast .toast-foot, .toast-foot').hidden = !withLink;
     toast.classList.add('is-open');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function(){ toast.classList.remove('is-open'); }, 10000);
@@ -1083,22 +1110,25 @@
     var newId = tenders.length ? Math.max.apply(null, tenders.map(function(t){ return t.id; })) + 1 : 1;
     var nmcVal = atNmc.value ? Number(atNmc.value) : null;
     var addSection = atSection.value || 'Новые';
+    var assignee = null;
+    if(addSection === 'Ожидают решения'){ assignee = addAssignee.validate(); if(!assignee) return; }
     tenders.unshift({
-      id:newId, manager:'', name:atName.value.trim(), customer:atCustomer.value.trim(),
+      id:newId, manager:assignee ? assignee.manager : '', name:atName.value.trim(), customer:atCustomer.value.trim(),
       nmc: nmcVal, currencies: nmcVal ? ['₽'] : [],
       pub:TODAY, deadline:atDeadline.value,
-      dept:'', depts:[], decision:addSection === 'Ожидают решения' ? 'На рассмотрении' : '', rejectReason:'', rejectComment:'', appStatus:null,
+      dept:assignee ? assignee.depts[0] : '', depts:assignee ? assignee.depts : [], decision:addSection === 'Ожидают решения' ? 'На рассмотрении' : '', rejectReason:'', rejectComment:'', appStatus:null,
       rowCreated:TODAY, source:'', sourceLink: atSourceLink.value.trim() || '',
       unread:true, risk:false, fav:false,
       law:null, procType:null, checkoVerified:false, checkoUrl:'', aiReport:null,
       description:'', aiVerdict:null, aiComment:'', documents:[]
     });
+    if(assignee) TenderReferences.addReviewTask(tenders[0], assignee.manager);
     saveTenders(tenders);
     refreshNavCounts();
     render();
     closeAddTender();
     document.getElementById('toastLink').href = 'kartochka-tendera.html?tender='+newId+'&section='+encodeURIComponent(addSection);
-    showToast('Добавлено в раздел «'+addSection+'».');
+    showToast('Добавлено в раздел «'+addSection+'».', true);
   });
 
   window.addEventListener('storage', function(e){
