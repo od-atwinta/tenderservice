@@ -713,6 +713,12 @@
   }
   function resolveSection(tender, fallbackSection){
     if(tender && tender.decision === 'Отказ') return 'Архив';
+    // итоговый статус переводит в Архив и на этапе ПКО/НДА — отказ на ПКО закрывает
+    // тендер (ТЗ 5.2, решение Оксаны 01.10.2026)
+    if(tender && tender.appStatus && (LOSS_STATUSES.indexOf(tender.appStatus) !== -1 || tender.appStatus === 'Выиграли')){
+      var finalRule = statusRule(tender.appStatus);
+      if(finalRule.type === 'key' && finalRule.sections[0]) return internalSection(finalRule.sections[0]);
+    }
     if(isPkoStageTender(tender)) return 'В работе';
     if(tender && tender.appStatus){
       var rule = statusRule(tender.appStatus);
