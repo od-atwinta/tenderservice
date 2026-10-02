@@ -561,6 +561,7 @@
   .team-sub-head-spaced{margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
   .fact-row{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:12px 0;
     border-bottom:1px solid var(--border);}
+  .fact-row[hidden]{display:none;}
   .fact-row:last-child{border-bottom:none;}
   .fact-row .k{color:var(--ink-muted);}
   .fact-row .v{font-weight:600;text-align:right;}
@@ -874,10 +875,18 @@
           <div class="card" id="platformCard">
             <div class="rail-card-head">
               <h3>Площадка</h3>
-              <button class="btn btn-sm rail-edit-btn" type="button" id="platformEditOpen"
+              <div class="overview-card-tools"><button class="btn btn-sm rail-edit-btn" type="button" id="platformEditOpen"
                 title="Редактировать площадку" aria-label="Редактировать площадку"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>
+                <button class="icon-btn overview-collapse" type="button"
+                  data-collapse-overview="platform" aria-expanded="true"
+                  aria-label="Свернуть площадку">
+                  <svg viewBox="0 0 10 6" fill="none" aria-hidden="true">
+                    <path d="M1 5l4-4 4 4" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button></div>
             </div>
-            <div class="rail-card-content">
+            <div class="rail-card-content" data-overview-body="platform">
               <div class="fact-row"><span class="k">Тип подачи</span><span class="v" id="platformSubmitType">На площадке</span></div>
               <div class="fact-row" id="platformFinanceRow" data-submission-part="platform"><span class="k">Площадка</span><span class="v" id="platformFinanceName">—</span></div>
               <div class="fact-row" data-submission-part="platform"><span class="k">Обеспечение подачи</span><span class="v"><span id="platformFee">0 ₽</span><span id="platformFundsWarning" class="funds-warning" hidden title="На счету может быть недостаточно средств, проверьте л/с на площадке">⚠</span></span></div>
@@ -949,8 +958,18 @@
           <div class="card" id="teamCard">
             <div class="rail-card-head">
               <h3>Команда</h3>
+              <div class="overview-card-tools">
+                <button class="icon-btn overview-collapse" type="button"
+                  data-collapse-overview="team" aria-expanded="true"
+                  aria-label="Свернуть команду">
+                  <svg viewBox="0 0 10 6" fill="none" aria-hidden="true">
+                    <path d="M1 5l4-4 4 4" stroke="currentColor" stroke-width="1.5"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
             </div>
-            <div class="rail-card-content">
+            <div class="rail-card-content" data-overview-body="team">
               <div class="team-sub-head">
                 <span class="summary-label">Направления</span>
                 <button class="directions-edit" type="button" id="directionsEditOpen">Изменить</button>
@@ -1011,6 +1030,22 @@
                 <button class="btn btn-sm" id="taskCancelEdit">Отмена</button>
                 <button class="btn btn-primary btn-sm" id="taskSaveEdit">Сохранить</button>
               </div>
+            </div>
+          </div>
+          <!-- «Внешние»: ссылки на задачи в Jira и других системах (решение Оксаны 02.10.2026, ТЗ 6.3, 10.3) -->
+          <div class="card" id="externalLinksCard">
+            <div class="checklist-head">
+              <h3 style="margin:0">Внешние</h3>
+            </div>
+            <p style="font-size:13px;color:var(--ink-muted);margin:4px 0 12px">Ссылки на задачи в Jira и других внешних системах.</p>
+            <table class="edit-table">
+              <thead><tr><th style="width:240px">Подпись</th><th>Ссылка</th><th></th></tr></thead>
+              <tbody id="externalLinkRows"></tbody>
+            </table>
+            <datalist id="externalLinkLabels"><option value="Юрист"><option value="Бухгалтерия"><option value="Проверка договора"><option value="Специалист"></datalist>
+            <div class="modal-actions" id="externalLinkActions" style="justify-content:space-between">
+              <button class="btn btn-sm" type="button" id="externalLinkAdd">+ Добавить</button>
+              <button class="btn btn-primary btn-sm" type="button" id="externalLinksSave">Сохранить</button>
             </div>
           </div>
         </section>
@@ -1500,7 +1535,7 @@
 </aside>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02k"></script>
+<script src="spravochniki.js?v=2026-10-02l"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -3683,7 +3718,9 @@
       button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       button.setAttribute('aria-label', (collapsed ? 'Развернуть ' : 'Свернуть ')
         +String(section === 'description' ? 'описание'
-          : section === 'ai' ? 'отчёт и рекомендацию ИИ' : 'комментарий менеджера'));
+          : section === 'ai' ? 'отчёт и рекомендацию ИИ'
+          : section === 'platform' ? 'площадку'
+          : section === 'team' ? 'команду' : 'комментарий менеджера'));
     });
   }
   // ---- сумма договора: у выигранного тендера, правят Суперадмин, Админ и ответственный ----
@@ -3829,6 +3866,7 @@
     document.getElementById('currentTenderStatus').textContent = isRejectedTender ? 'Отказ' : (tender.appStatus || 'Не указан');
     renderStatusControl(tender);
     if(typeof renderAiPending === 'function') renderAiPending();
+    if(typeof renderExternalLinks === 'function') renderExternalLinks();
     renderPlatform(tender);
     renderDirections(tender);
     renderResponsibles(tender);
@@ -4055,6 +4093,63 @@
     closeSimpleOverlay(generateReportOverlay);
     applyTenderData();
     showToast('Отчёт ИИ готовится — пришлём уведомление, когда он будет готов.');
+  });
+  // «Внешние» (вкладка «Задачи»): по умолчанию 3 строки «Подпись + Ссылка», «Добавить» —
+  // ещё строка; правят все, кто редактирует карточку, Наблюдатель только смотрит (ТЗ 3.3)
+  var externalLinkRows = document.getElementById('externalLinkRows');
+  function externalLinksReadOnly(){
+    return TenderReferences.isObserverUser(CURRENT_USER) && !userIsAdmin();
+  }
+  function externalLinkRow(item){
+    var tr = document.createElement('tr');
+    var url = item && item.url ? item.url : '';
+    tr.innerHTML = '<td><input type="text" class="ext-label" list="externalLinkLabels" placeholder="Например: Юрист" value="'+escSynced(item && item.label ? item.label : '')+'"></td>'
+      + '<td><div style="display:flex;gap:8px;align-items:center"><input type="text" class="ext-url" placeholder="https://…" value="'+escSynced(url)+'">'
+      + (url ? '<a class="link-ico" href="'+escSynced(url)+'" target="_blank" rel="noopener" title="Открыть">↗</a>' : '')+'</div></td>'
+      + '<td><button class="icon-btn icon-danger" type="button" data-action="ext-delete" title="Удалить" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button></td>';
+    return tr;
+  }
+  function renderExternalLinks(){
+    externalLinkRows = document.getElementById('externalLinkRows');
+    if(!tender || !externalLinkRows) return;
+    var links = Array.isArray(tender.externalLinks) ? tender.externalLinks : [];
+    externalLinkRows.innerHTML = '';
+    var count = Math.max(3, links.length);
+    for(var i = 0; i < count; i++) externalLinkRows.appendChild(externalLinkRow(links[i]));
+    var readOnly = externalLinksReadOnly();
+    externalLinkRows.querySelectorAll('input').forEach(function(input){ input.disabled = readOnly; });
+    externalLinkRows.querySelectorAll('[data-action="ext-delete"]').forEach(function(btn){ btn.hidden = readOnly; });
+    document.getElementById('externalLinkActions').hidden = readOnly;
+  }
+  renderExternalLinks();
+  document.getElementById('externalLinkAdd').addEventListener('click', function(){
+    externalLinkRows.appendChild(externalLinkRow(null));
+  });
+  externalLinkRows.addEventListener('click', function(event){
+    var btn = event.target.closest('[data-action="ext-delete"]');
+    if(!btn) return;
+    btn.closest('tr').remove();
+    while(externalLinkRows.children.length < 3) externalLinkRows.appendChild(externalLinkRow(null));
+  });
+  document.getElementById('externalLinksSave').addEventListener('click', function(){
+    if(!tender || externalLinksReadOnly()) return;
+    var links = [], ok = true;
+    externalLinkRows.querySelectorAll('tr').forEach(function(tr){
+      var labelInput = tr.querySelector('.ext-label'), urlInput = tr.querySelector('.ext-url');
+      var label = labelInput.value.trim(), url = urlInput.value.trim();
+      labelInput.style.borderColor = urlInput.style.borderColor = '';
+      if(!label && !url) return;
+      if(!/^https?:\/\/\S+$/i.test(url)){ urlInput.style.borderColor = 'var(--danger)'; ok = false; }
+      if(!label){ labelInput.style.borderColor = 'var(--danger)'; ok = false; }
+      links.push({label:label, url:url});
+    });
+    if(!ok){ showToast('Заполните подпись и ссылку (начинается с https://).'); return; }
+    tender.externalLinks = links;
+    tender.events = Array.isArray(tender.events) ? tender.events : [];
+    tender.events.push({date:eventDate(), text:'Внешние ссылки обновлены: '+(links.length ? links.map(function(l){ return l.label; }).join(', ') : 'нет ссылок')+'.', actor:CURRENT_USER.name});
+    saveTenders(tenders);
+    renderExternalLinks();
+    showToast('Ссылки сохранены.');
   });
   function renderAiPending(){
     var btn = document.getElementById('generateOverviewReport');
