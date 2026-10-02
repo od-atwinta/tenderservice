@@ -1500,7 +1500,7 @@
 </aside>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02g"></script>
+<script src="spravochniki.js?v=2026-10-02h"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -4881,7 +4881,7 @@
     tender.dept = depts[0] || '';
     tender.manager = manager;
     var reviewTaskText = 'Изучить документы и принять решение по тендеру «'+tender.name+'»';
-    upsertAutoTask(tender, 'auto-review', reviewTaskText, '', manager, true);
+    upsertAutoTask(tender, 'auto-review', reviewTaskText, TenderReferences.reviewTaskDue(tender), manager, true);
     pushAutoTaskNotification(manager, reviewTaskText);
     decisionTakeOverlay.classList.remove('is-open');
     finishDecision('Ожидают решения', 'Взят в работу. Направления: '+depts.join(', ')+'. Ответственный: '+manager+'. Тендер перенесён в раздел «Ожидают решения».', '', 'Тендер перенесён в раздел «Ожидают решения».');
@@ -4953,7 +4953,7 @@
     });
     if(moved && change.destination === 'Ожидают решения' && tender.manager){
       upsertAutoTask(tender, 'auto-review',
-        'Изучить документы и принять решение по тендеру «'+tender.name+'»', '', tender.manager, true);
+        'Изучить документы и принять решение по тендеру «'+tender.name+'»', TenderReferences.reviewTaskDue(tender), tender.manager, true);
       pushAutoTaskNotification(tender.manager, 'Изучить документы и принять решение по тендеру «'+tender.name+'»');
     }
     saveTenders(tenders);

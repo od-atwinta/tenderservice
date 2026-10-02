@@ -584,7 +584,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02g"></script>
+<script src="spravochniki.js?v=2026-10-02h"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -1401,7 +1401,7 @@
       var reviewTaskIds = t.tasks.map(function(item){ return Number(item.id) || 0; });
       t.tasks.push({
         id:(reviewTaskIds.length ? Math.max.apply(null, reviewTaskIds) : 0) + 1,
-        text:reviewTaskText, due:'', assignee:manager, assignedBy:manager, done:false
+        text:reviewTaskText, due:TenderReferences.reviewTaskDue(t), assignee:manager, assignedBy:manager, done:false, autoMarker:'auto-review'
       });
       var acceptNotifications = [];
       try{ acceptNotifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}

@@ -1535,12 +1535,21 @@
     });
     document.body.appendChild(overlay);
   }
+  // срок задачи «Изучить документы…» — 24 часа с момента решения, но не позже срока
+  // подачи (решение Оксаны 02.10.2026, ТЗ 9.2); формат как у сроков задач: ГГГГ-ММ-ДДTЧЧ:ММ
+  function reviewTaskDue(tender){
+    var due = new Date(Date.now() + 24 * 3600 * 1000);
+    var deadline = tender && tender.deadline ? new Date(tender.deadline) : null;
+    if(deadline && !isNaN(deadline.getTime()) && deadline > new Date() && deadline < due) due = deadline;
+    function p(n){ return String(n).padStart(2, '0'); }
+    return due.getFullYear()+'-'+p(due.getMonth()+1)+'-'+p(due.getDate())+'T'+p(due.getHours())+':'+p(due.getMinutes());
+  }
   // задача и уведомление ответственному при попадании тендера в «Ожидают решения» (ТЗ 5.4)
   function addReviewTask(tender, manager){
     var text = 'Изучить документы и принять решение по тендеру «'+tender.name+'»';
     tender.tasks = Array.isArray(tender.tasks) ? tender.tasks : [];
     var ids = tender.tasks.map(function(item){ return Number(item.id) || 0; });
-    tender.tasks.push({ id:(ids.length ? Math.max.apply(null, ids) : 0) + 1, text:text, due:'', assignee:manager, assignedBy:manager, done:false });
+    tender.tasks.push({ id:(ids.length ? Math.max.apply(null, ids) : 0) + 1, text:text, due:reviewTaskDue(tender), assignee:manager, assignedBy:manager, done:false, autoMarker:'auto-review' });
     var notifications = [];
     try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
     notifications.push({ recipient:manager, text:text, date:new Date().toLocaleString('ru-RU'), href:'kartochka-tendera.html?tender='+tender.id });
@@ -1766,6 +1775,7 @@
     return done;
   }
   global.TenderReferences = {
+    reviewTaskDue: reviewTaskDue,
     markRefused: markRefused,
     notifyAuthorRefused: notifyAuthorRefused,
     undoRefusal: undoRefusal,
