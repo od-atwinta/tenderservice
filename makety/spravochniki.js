@@ -21,7 +21,7 @@
   // списка площадок на странице "Платежи" (там тарифы/депозиты, здесь доступ)
   var ACCESS_DIRECTORY_KEY = 'atvinta_jul_access_directory_v1';
   var THEME_KEY = 'atvinta_jul_theme_v1';
-  var REMOVE_AI_ANALYTICS_MIGRATION_KEY = 'atvinta_jul_remove_ai_analytics_v1';
+  var REMOVE_AI_ANALYTICS_MIGRATION_KEY = 'atvinta_jul_remove_directions_v2';
   var SYSTEM_ROLES = ['Суперадмин','Админ','Наблюдатель','Менеджер','Руководитель отдела','Сотрудник отдела'];
   var SECTION_ORDER = ['Новые','Ожидают решения','В работе','Заявки','Архив'];
   // статусы-исходы отказа/проигрыша, ведущие в Архив (без "Выиграли" — это не отказ);
@@ -30,8 +30,7 @@
   var LOSS_STATUSES = ['Отклонено','Отказались сами','Отменено','Без выбора победителя','Завершено без ответа','Не допущены'];
   var PROCESS_STAGES = ['Отбор','Изучение','Подготовка','Подача','Итог'];
   var DEFAULTS = {
-    departments: ['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф',
-      'Медботы'],
+    departments: ['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф'],
     rejectionReasons: ['Нейронка плохо определила','Прочее','Не наш стек','Не наш стек/профиль',
       'Не успеваем подготовиться','Не проходим по КТ','Жесткие условия','Малобюджетный',
       'Нереальные сроки','Отмена заказчиком','Закрытая от нас','Дубль','Не успели податься',
@@ -47,8 +46,8 @@
     foundations: ['223-ФЗ','44-ФЗ','Коммерческие закупки','внутренний конкурс','не указано']
   };
   var DEFAULT_USERS = [
-    {id:'u1', name:'Оксана Денисенко', login:'oksana.denisenko@atwinta.ru', roles:['Суперадмин'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф','Медботы'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
-    {id:'u13', name:'Никита Долинин', login:'nikita.dolinin@atwinta.ru', roles:['Админ'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф','Медботы'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
+    {id:'u1', name:'Оксана Денисенко', login:'oksana.denisenko@atwinta.ru', roles:['Суперадмин'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф'], status:'active', createdAt:'2026-01-12', mustChangePassword:false},
+    {id:'u13', name:'Никита Долинин', login:'nikita.dolinin@atwinta.ru', roles:['Админ'], directions:['Продвижение','Техническая поддержка','Разработка','Аналитика','Дизайн','Аутстафф'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
     {id:'u17', name:'Андрей Полковников', login:'andrey.polkovnikov@atwinta.ru', roles:['Руководитель отдела'], directions:['Продвижение'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
     {id:'u14', name:'Владислав Мильберг', login:'vladislav.milberg@atwinta.ru', roles:['Менеджер'], directions:['Разработка','Дизайн'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
     {id:'u16', name:'Дарья Щетинина', login:'darya.shchetinina@atwinta.ru', roles:['Руководитель отдела'], directions:['Техническая поддержка'], status:'active', createdAt:'2026-09-17', mustChangePassword:false},
@@ -939,13 +938,18 @@
   }
   // «Аналитика/ИИ» убрана (решение 28.09.2026): у справочника, пользователей
   // и тендеров, сохранённых в браузере, заменяется на «Аналитика».
+  // Убранные направления: «Аналитика/ИИ» → «Аналитика» (28.09.2026),
+  // «Медботы» → «Разработка» (02.10.2026). Заменяются у справочника, пользователей
+  // и тендеров, сохранённых в браузере.
+  var REMOVED_DIRECTIONS = {'Аналитика/ИИ':'Аналитика', 'Медботы':'Разработка'};
   function migrateRemoveAiAnalytics(){
     if(localStorage.getItem(REMOVE_AI_ANALYTICS_MIGRATION_KEY)) return;
-    var OLD = 'Аналитика/ИИ', NEW = 'Аналитика';
+    function replaced(v){ return Object.prototype.hasOwnProperty.call(REMOVED_DIRECTIONS, v) ? REMOVED_DIRECTIONS[v] : v; }
+    function isRemoved(v){ return Object.prototype.hasOwnProperty.call(REMOVED_DIRECTIONS, v); }
     function fixList(list){
-      if(!Array.isArray(list) || list.indexOf(OLD) === -1) return list;
+      if(!Array.isArray(list) || !list.some(isRemoved)) return list;
       var out = [];
-      list.forEach(function(v){ v = v === OLD ? NEW : v; if(out.indexOf(v) === -1) out.push(v); });
+      list.forEach(function(v){ v = replaced(v); if(out.indexOf(v) === -1) out.push(v); });
       return out;
     }
     function update(key, fix){
@@ -955,15 +959,15 @@
       localStorage.setItem(key, JSON.stringify(fix(value)));
     }
     update(STORAGE_KEY, function(stored){
-      if(stored && Array.isArray(stored.departments)) stored.departments = stored.departments.filter(function(v){ return v !== OLD; });
+      if(stored && Array.isArray(stored.departments)) stored.departments = stored.departments.filter(function(v){ return !isRemoved(v); });
       return stored;
     });
     update(REFERENCE_INACTIVE_KEY, function(stored){
-      if(stored && Array.isArray(stored.departments)) stored.departments = stored.departments.filter(function(v){ return v !== OLD; });
+      if(stored && Array.isArray(stored.departments)) stored.departments = stored.departments.filter(function(v){ return !isRemoved(v); });
       return stored;
     });
     update(DEPARTMENT_COLORS_KEY, function(stored){
-      if(stored && typeof stored === 'object') delete stored[OLD];
+      if(stored && typeof stored === 'object') Object.keys(REMOVED_DIRECTIONS).forEach(function(k){ delete stored[k]; });
       return stored;
     });
     update(USERS_KEY, function(users){
@@ -973,7 +977,7 @@
     update(TENDER_STORAGE_KEY, function(tenders){
       if(Array.isArray(tenders)) tenders.forEach(function(t){
         if(!t) return;
-        if(t.dept === OLD) t.dept = NEW;
+        if(isRemoved(t.dept)) t.dept = replaced(t.dept);
         t.depts = fixList(t.depts);
       });
       return tenders;
@@ -985,7 +989,7 @@
     var stored = {};
     try{ stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }catch(error){ stored = {}; }
     if(stored && typeof stored === 'object'){
-      [['departments',['Медботы']],
+      [['departments',[]],
        ['rejectionReasons',['Не успели податься','Невыполнимые условия']]].forEach(function(pair){
         if(!Array.isArray(stored[pair[0]])) return;
         pair[1].forEach(function(value){
