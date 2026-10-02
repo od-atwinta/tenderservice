@@ -647,6 +647,7 @@
   // и карточке вместо статуса показывается «Отказ» (решение Оксаны 02.10.2026); «Отклонено»
   // — это отказ заказчика (5.3). Этап отбора/изучения завершается, дата «Закрыто» — сегодня.
   function markRefused(tender){
+    closeReviewTask(tender);
     ensureTenderStructure(tender);
     var active = activeTenderSection(tender);
     if(active){
@@ -658,7 +659,19 @@
     tender.appStatus = null;
     tender.archivedAt = tender.archivedAt || new Date().toISOString().slice(0,10);
   }
+  // задача «Изучить документы и принять решение» закрывается, как только у тендера
+  // сменился статус (второе решение, отказ, любой перенос) — решение Оксаны 02.10.2026, ТЗ 9.2
+  function closeReviewTask(tender){
+    (Array.isArray(tender.tasks) ? tender.tasks : []).forEach(function(item){
+      if(item && !item.done && (item.autoMarker === 'auto-review'
+        || String(item.text || '').indexOf('Изучить документы и принять решение') === 0)){
+        item.done = true;
+        item.closedAuto = true;
+      }
+    });
+  }
   function updateActiveSectionFromStatus(tender,status){
+    if(status !== 'На рассмотрении') closeReviewTask(tender);
     ensureTenderStructure(tender);
     var active = activeTenderSection(tender);
     if(!active) return null;
@@ -1535,12 +1548,16 @@
     });
     document.body.appendChild(overlay);
   }
-  // срок задачи «Изучить документы…» — 24 часа с момента решения, но не позже срока
-  // подачи (решение Оксаны 02.10.2026, ТЗ 9.2); формат как у сроков задач: ГГГГ-ММ-ДДTЧЧ:ММ
+  // срок задачи «Изучить документы…» (решения Оксаны 02.10.2026, ТЗ 9.2): 24 часа с момента
+  // решения; если до подачи меньше суток — 2 часа; и не позже самого срока подачи.
+  // Формат как у сроков задач: ГГГГ-ММ-ДДTЧЧ:ММ
   function reviewTaskDue(tender){
-    var due = new Date(Date.now() + 24 * 3600 * 1000);
+    var now = Date.now();
+    var due = new Date(now + 24 * 3600 * 1000);
     var deadline = tender && tender.deadline ? new Date(tender.deadline) : null;
-    if(deadline && !isNaN(deadline.getTime()) && deadline > new Date() && deadline < due) due = deadline;
+    if(deadline && !isNaN(deadline.getTime()) && deadline.getTime() > now && deadline < due){
+      due = new Date(Math.min(now + 2 * 3600 * 1000, deadline.getTime()));
+    }
     function p(n){ return String(n).padStart(2, '0'); }
     return due.getFullYear()+'-'+p(due.getMonth()+1)+'-'+p(due.getDate())+'T'+p(due.getHours())+':'+p(due.getMinutes());
   }
@@ -1776,6 +1793,7 @@
   }
   global.TenderReferences = {
     reviewTaskDue: reviewTaskDue,
+    closeReviewTask: closeReviewTask,
     markRefused: markRefused,
     notifyAuthorRefused: notifyAuthorRefused,
     undoRefusal: undoRefusal,

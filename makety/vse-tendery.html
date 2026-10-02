@@ -565,7 +565,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02h"></script>
+<script src="spravochniki.js?v=2026-10-02i"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -999,6 +999,8 @@
               t.dept = depts[0] || '';
               t.manager = manager;
               t.decision = value;
+              // второе решение — задача «Изучить документы…» закрывается (ТЗ 9.2)
+              if(value === 'Участвуем') TenderReferences.closeReviewTask(t);
               if(movedToReview) TenderReferences.addReviewTask(t, manager);
               saveTenders(tenders);
               refreshNavCounts();
