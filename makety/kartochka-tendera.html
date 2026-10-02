@@ -1500,7 +1500,7 @@
 </aside>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02j"></script>
+<script src="spravochniki.js?v=2026-10-02k"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -4443,7 +4443,7 @@
       // каждого этапа (маркер по id этапа), без уведомления (решение Оксаны 2026-08-19)
       if(tender.manager){
         upsertAutoTask(tender, 'auto-submission-'+editingProcessDraft.id,
-          'Подать заявку по тендеру «'+tender.name+'»', sectionDeadline.slice(0,10), tender.manager, false);
+          'Подать заявку по тендеру «'+tender.name+'»', TenderReferences.submitTaskDue(sectionDeadline), tender.manager, false);
       }
       editingProcessSectionId = '';
       editingProcessDraft = null;
@@ -4821,30 +4821,43 @@
     decisionRejectOverlay.classList.remove('is-open');
     if(from === 'Новые') TenderReferences.notifyAuthorRefused(tender, reason);
     finishDecision('Архив', 'Отказ ('+from+'). Причина: '+reason+'. Тендер перенесён в раздел «Архив».', comment, 'Перемещено в архив.');
-    if(from === 'Новые'){
-      // «Отменить» 15 секунд после отказа на отборе (решение 02.10.2026)
+    if(from === 'Новые' || from === 'Ожидают решения'){
+      // «Отменить» 15 секунд после отказа — на первом и втором решении (решения 02.10.2026)
       var refusedTender = tender;
       TenderReferences.showUndoToast('Перемещено в архив.', function(){
-        TenderReferences.undoRefusal(refusedTender, refusalSnapshot);
+        TenderReferences.undoRefusal(refusedTender, refusalSnapshot, from);
         saveTenders(tenders);
-        targetSection = 'Новые';
+        targetSection = from;
         history.replaceState(null, '', sectionHref(refusedTender));
         applyTenderData();
         renderSyncedNotifications();
-        showToast('Отказ отменён — тендер снова в «Новых».');
+        showToast('Отказ отменён — тендер снова в «'+(from === 'Новые' ? 'Новых' : 'Ожидают решения')+'».');
       });
     }
   });
   document.getElementById('decisionAccept').addEventListener('click', function(){
     if(!tender) return;
     if(this.dataset.stage === 'second'){
+      var participationSnapshot = JSON.parse(JSON.stringify(tender));
       tender.decision = 'Участвуем';
       tender.lifecycleSection = 'В работе';
       TenderReferences.updateActiveSectionFromStatus(tender, 'Формирование заявки');
       tender.appStatus = 'Формирование заявки';
       tender.rejectReason = '';
       tender.rejectComment = '';
+      // «Подать заявку» — за 2 часа до срока подачи (ТЗ 9.2, решение 02.10.2026)
+      TenderReferences.addSubmitTask(tender);
       finishDecision('В работе', 'Решение: участвуем. Тендер перенесён в раздел «В работе».', '', 'Тендер перенесён в раздел «В работе».');
+      var participatedTender = tender;
+      TenderReferences.showUndoToast('Тендер перенесён в раздел «В работе».', function(){
+        TenderReferences.undoParticipation(participatedTender, participationSnapshot);
+        saveTenders(tenders);
+        targetSection = 'Ожидают решения';
+        history.replaceState(null, '', sectionHref(participatedTender));
+        applyTenderData();
+        renderSyncedNotifications();
+        showToast('Решение «участвуем» отменено — тендер снова в «Ожидают решения».');
+      });
       return;
     }
     var deptSlot = document.getElementById('decisionDeptSlot');

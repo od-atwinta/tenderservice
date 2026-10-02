@@ -565,7 +565,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02j"></script>
+<script src="spravochniki.js?v=2026-10-02k"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -975,17 +975,18 @@
               t.events = Array.isArray(t.events) ? t.events : [];
               t.events.push({date:new Date().toLocaleString('ru-RU'), text:'Отказ ('+from+'). Причина: '+reason+'. Тендер перенесён в раздел «Архив».', comment:comment, actor:current.name});
               if(from === 'Новые') TenderReferences.notifyAuthorRefused(t, reason);
+              var canUndoRefusal = from === 'Новые' || from === 'Ожидают решения';
               saveTenders(tenders);
               refreshNavCounts();
               render();
               showToast('Перемещено в архив.');
-              if(from === 'Новые'){
+              if(canUndoRefusal){
                 TenderReferences.showUndoToast('Перемещено в архив.', function(){
-                  TenderReferences.undoRefusal(t, snapshotBefore);
+                  TenderReferences.undoRefusal(t, snapshotBefore, from);
                   saveTenders(tenders);
                   refreshNavCounts();
                   render();
-                  showToast('Отказ отменён — тендер снова в «Новых».');
+                  showToast('Отказ отменён — тендер снова в «'+(from === 'Новые' ? 'Новых' : 'Ожидают решения')+'».');
                 });
               }
             }, function(){ render(); });
@@ -999,13 +1000,22 @@
               t.dept = depts[0] || '';
               t.manager = manager;
               t.decision = value;
-              // второе решение — задача «Изучить документы…» закрывается (ТЗ 9.2)
-              if(value === 'Участвуем') TenderReferences.closeReviewTask(t);
+              // второе решение — задача «Изучить документы…» закрывается, ставится «Подать заявку» (ТЗ 9.2)
+              if(value === 'Участвуем'){ TenderReferences.closeReviewTask(t); TenderReferences.addSubmitTask(t); }
               if(movedToReview) TenderReferences.addReviewTask(t, manager);
               saveTenders(tenders);
               refreshNavCounts();
               render();
               // «Отменить» 15 секунд после «Взять в работу» (ТЗ 5.4)
+              if(value === 'Участвуем' && fromSection === 'Ожидают решения'){
+                TenderReferences.showUndoToast('Тендер перенесён в раздел «В работе».', function(){
+                  TenderReferences.undoParticipation(t, snapshotBefore);
+                  saveTenders(tenders);
+                  refreshNavCounts();
+                  render();
+                  showToast('Решение «участвуем» отменено — тендер снова в «Ожидают решения».');
+                });
+              }
               if(movedToReview && (fromSection === 'Новые' || fromSection === 'Новый')){
                 TenderReferences.showUndoToast('Тендер перенесён в раздел «Ожидают решения».', function(){
                   TenderReferences.undoTakeInWork(t, snapshotBefore);

@@ -1745,15 +1745,51 @@
     notifications.forEach(function(n){
       var text = String(n.text);
       if(!n.cancelled && n.href && n.href.indexOf('tender='+tender.id) !== -1
-        && (text.indexOf('Изучить документы и принять решение') === 0 || text.indexOf('не взят в работу:') !== -1)){
+        && (text.indexOf('Изучить документы и принять решение') === 0 || text.indexOf('не взят в работу:') !== -1
+          || text.indexOf('Изменён статус тендера') === 0 || text.indexOf('Подать заявку по тендеру') === 0)){
         n.cancelled = true;
         n.text = 'Отменено: ' + n.text;
       }
     });
     try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
   }
-  function undoRefusal(tender, snapshot){
-    undoDecision(tender, snapshot, 'Отказ отменён. Тендер возвращён в «Новые».');
+  function undoRefusal(tender, snapshot, from){
+    var section = from || 'Новые';
+    undoDecision(tender, snapshot, 'Отказ отменён. Тендер возвращён в «'+section+'».');
+  }
+  function undoParticipation(tender, snapshot){
+    undoDecision(tender, snapshot, 'Решение «участвуем» отменено. Тендер возвращён в «Ожидают решения».');
+  }
+  // задача «Подать заявку по тендеру «…»» (ТЗ 9.2, решение Оксаны 02.10.2026): ставится
+  // ответственному при «Участвовать», срок — за 2 часа до срока подачи (если до подачи
+  // меньше 2 часов — сейчас); у каждого этапа своя (маркер по id этапа)
+  function submitTaskDue(deadline){
+    var d = deadline ? new Date(deadline) : null;
+    if(!d || isNaN(d.getTime())) return '';
+    var due = new Date(Math.max(Date.now(), d.getTime() - 2 * 3600 * 1000));
+    if(due > d) due = d;
+    function p(n){ return String(n).padStart(2, '0'); }
+    return due.getFullYear()+'-'+p(due.getMonth()+1)+'-'+p(due.getDate())+'T'+p(due.getHours())+':'+p(due.getMinutes());
+  }
+  function addSubmitTask(tender){
+    if(!tender || !tender.manager) return;
+    ensureTenderStructure(tender);
+    var active = activeTenderSection(tender);
+    var marker = 'auto-submission-' + (active && active.id ? active.id : 'main');
+    var deadline = (active && active.deadline) || tender.deadline;
+    var text = 'Подать заявку по тендеру «'+tender.name+'»';
+    tender.tasks = Array.isArray(tender.tasks) ? tender.tasks : [];
+    var existing = tender.tasks.filter(function(item){ return item.autoMarker === marker; })[0];
+    if(existing){
+      existing.text = text; existing.due = submitTaskDue(deadline); existing.assignee = tender.manager; existing.done = false;
+    } else {
+      var ids = tender.tasks.map(function(item){ return Number(item.id) || 0; });
+      tender.tasks.push({id:(ids.length ? Math.max.apply(null, ids) : 0) + 1, text:text, due:submitTaskDue(deadline), assignee:tender.manager, assignedBy:tender.manager, done:false, autoMarker:marker});
+    }
+    var notifications = [];
+    try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
+    notifications.push({recipient:tender.manager, text:text, date:new Date().toLocaleString('ru-RU'), href:'kartochka-tendera.html?tender='+tender.id});
+    try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
   }
   // отмена «Взять в работу»: тендер — как до решения (журнал сохраняется и дополняется),
   // уведомления ответственному о задаче помечаются отменёнными
@@ -1814,6 +1850,9 @@
   }
   function urgentClass(t){ return isUrgentDeadline(t) ? ' is-urgent' : ''; }
   global.TenderReferences = {
+    submitTaskDue: submitTaskDue,
+    addSubmitTask: addSubmitTask,
+    undoParticipation: undoParticipation,
     isUrgentDeadline: isUrgentDeadline,
     urgentLabelHtml: urgentLabelHtml,
     urgentClass: urgentClass,
