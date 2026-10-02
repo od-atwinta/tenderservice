@@ -584,7 +584,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02c"></script>
+<script src="spravochniki.js?v=2026-10-02d"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -1396,7 +1396,7 @@
       });
       try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(acceptNotifications.slice(-50))); }catch(e){}
       TenderReferences.setDirty('accept-'+id, false);
-      resolveCard(id, 'Передано в работу.');
+      resolveCard(id, 'Тендер перенесён в раздел «Ожидают решения».');
       return;
     }
   }

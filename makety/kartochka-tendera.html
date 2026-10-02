@@ -1500,7 +1500,7 @@
 </aside>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02c"></script>
+<script src="spravochniki.js?v=2026-10-02d"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -4858,7 +4858,7 @@
     upsertAutoTask(tender, 'auto-review', reviewTaskText, '', manager, true);
     pushAutoTaskNotification(manager, reviewTaskText);
     decisionTakeOverlay.classList.remove('is-open');
-    finishDecision('Ожидают решения', 'Взят в работу. Направления: '+depts.join(', ')+'. Ответственный: '+manager+'. Тендер перенесён в раздел «Ожидают решения».', '', 'Передано в работу.');
+    finishDecision('Ожидают решения', 'Взят в работу. Направления: '+depts.join(', ')+'. Ответственный: '+manager+'. Тендер перенесён в раздел «Ожидают решения».', '', 'Тендер перенесён в раздел «Ожидают решения».');
   });
 
   document.getElementById('statusOpen').addEventListener('click', function(){
