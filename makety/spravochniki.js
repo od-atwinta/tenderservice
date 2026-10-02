@@ -1791,7 +1791,32 @@
     });
     return done;
   }
+  // «До подачи меньше суток» (решение Оксаны 02.10.2026, ТЗ 6.1): карточка тендера в «Новых»,
+  // «Ожидают решения», «В работе» выделяется — розовый фон, красная полоса слева, надпись
+  var URGENT_CSS = '.tcard.is-urgent{background:var(--accent-wash);border-left:4px solid var(--danger);}'
+    + '.urgent-label{margin-left:12px;font-size:11px;font-weight:600;color:var(--danger);white-space:nowrap;}';
+  function isUrgentDeadline(t){
+    if(!t || !t.deadline || t.decision === 'Отказ') return false;
+    var section = resolveSection(t);
+    if(['Новый','Новые','Ожидают решения','В работе'].indexOf(section) === -1) return false;
+    var left = new Date(t.deadline).getTime() - Date.now();
+    return left > 0 && left < 24 * 3600 * 1000;
+  }
+  function urgentLabelHtml(t){
+    if(!isUrgentDeadline(t)) return '';
+    if(typeof document !== 'undefined' && !document.getElementById('urgentCss')){
+      var style = document.createElement('style');
+      style.id = 'urgentCss';
+      style.textContent = URGENT_CSS;
+      document.head.appendChild(style);
+    }
+    return '<span class="urgent-label">До подачи меньше суток</span>';
+  }
+  function urgentClass(t){ return isUrgentDeadline(t) ? ' is-urgent' : ''; }
   global.TenderReferences = {
+    isUrgentDeadline: isUrgentDeadline,
+    urgentLabelHtml: urgentLabelHtml,
+    urgentClass: urgentClass,
     reviewTaskDue: reviewTaskDue,
     closeReviewTask: closeReviewTask,
     markRefused: markRefused,

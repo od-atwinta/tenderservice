@@ -630,7 +630,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02i"></script>
+<script src="spravochniki.js?v=2026-10-02j"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -899,10 +899,10 @@
       : '<span class="checko-missing">'+CHECKO_WARNING_SVG+'<span>Проверка отсутствует</span></span>';
 
     return ''
-      + '<div class="tcard" data-id="'+t.id+'">'
+      + '<div class="tcard'+TenderReferences.urgentClass(t)+'" data-id="'+t.id+'">'
       +   '<div class="tcard-row1">'
       +     '<div class="tcard-left">'
-      +       '<div class="tcard-meta"><span class="status-tag"><span class="dot"></span>'+esc(t.appStatus || 'Подготовка')+'</span><span class="tcard-date">Создано '+fmtDateShort(t.rowCreated)+'</span></div>'
+      +       '<div class="tcard-meta"><span class="status-tag"><span class="dot"></span>'+esc(t.appStatus || 'Подготовка')+'</span><span class="tcard-date">Создано '+fmtDateShort(t.rowCreated)+'</span>'+TenderReferences.urgentLabelHtml(t)+'</div>'
       +       '<div class="tcard-title-line"><button class="fav-star'+(t.fav?' is-fav':'')+'" data-action="toggle-fav" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button><a class="'+titleClass+'" href="kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent('В работе')+'">'+esc(t.name)+'</a></div>'
       +       '<div class="tcard-customer"><span>Заказчик: '+esc(t.customer)+'</span>'+checkoBtn+'</div>'
       +       '<div class="tcard-links">'
