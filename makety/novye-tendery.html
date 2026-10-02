@@ -584,7 +584,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02b"></script>
+<script src="spravochniki.js?v=2026-10-02c"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -916,7 +916,7 @@
       + '<div class="tcard" data-id="'+t.id+'">'
       +   '<div class="tcard-row1">'
       +     '<div class="tcard-left">'
-      +       '<div class="tcard-date">Создано '+fmtDateShort(t.rowCreated)+'</div>'
+      +       '<div class="tcard-date">Создано '+fmtDateShort(t.rowCreated)+'<span data-presence-tender="'+t.id+'"></span></div>'
       +       '<div class="tcard-title-line"><button class="fav-star'+(t.fav?' is-fav':'')+'" data-action="toggle-fav" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button><span class="'+titleClass+'">'+esc(t.name)+'</span></div>'
       +       '<div class="tcard-customer"><span>Заказчик: '+esc(t.customer)+'</span>'+checkoBtn+'</div>'
       +       '<div class="tcard-links">'
@@ -1231,6 +1231,7 @@
   }
 
   function render(){
+    setTimeout(function(){ if(refreshPresence) refreshPresence(); }, 0);
     var list = document.getElementById('tlist');
     var visible = visibleTenders();
     if(!visible.length){
@@ -1438,6 +1439,7 @@
     document.querySelector('.app').classList.toggle('nav-collapsed');
   });
   document.getElementById('refreshBtn').addEventListener('click', function(){ render(); });
+  var refreshPresence = TenderReferences.mountPresence();
 
   // ---- add tender modal ----
   var addOverlay = document.getElementById('addTenderOverlay');

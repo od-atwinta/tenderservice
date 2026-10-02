@@ -1508,7 +1508,74 @@
     notifyAdmins(me.name+' добавил тендер «'+tender.name+'», необходимо распределить', tender);
     return 'Тендер добавлен в «Новые» — его распределит администратор.';
   }
+  // «Сейчас смотрит» (ТЗ 6.3, 12, решение 02.10.2026): кто открыл карточку тендера.
+  // В макете — отметки в localStorage (видно при переключении пользователя в том же
+  // браузере); в сервисе — на сервере. Отметка живёт 60 с, карточка обновляет её каждые 20 с.
+  var PRESENCE_KEY = 'atvinta_jul_presence_v1';
+  var PRESENCE_TTL = 60000;
+  var PRESENCE_CSS = '.presence{display:inline-flex;align-items:center;gap:6px;margin-left:12px;font-size:11px;line-height:1;color:var(--ink-muted);vertical-align:middle;}'
+    + '.presence-dot{width:8px;height:8px;border-radius:50%;background:var(--warning);flex:none;animation:presencePulse 1.6s ease-in-out infinite;}'
+    + '@keyframes presencePulse{0%,100%{opacity:1}50%{opacity:.25}}'
+    + '@media (prefers-reduced-motion:reduce){.presence-dot{animation:none}}'
+    + '.presence-line:empty{display:none}.presence-line{margin:0 0 10px;font-size:12px}.presence-line .presence{margin-left:0;font-size:12px}';
+  function ensurePresenceCss(){
+    if(document.getElementById('presenceCss')) return;
+    var style = document.createElement('style');
+    style.id = 'presenceCss';
+    style.textContent = PRESENCE_CSS;
+    document.head.appendChild(style);
+  }
+  function readPresence(){
+    try{ return JSON.parse(localStorage.getItem(PRESENCE_KEY) || '{}') || {}; }catch(e){ return {}; }
+  }
+  function touchPresence(tenderId){
+    var map = readPresence();
+    map[currentUser().name] = {tenderId:String(tenderId), at:Date.now()};
+    try{ localStorage.setItem(PRESENCE_KEY, JSON.stringify(map)); }catch(e){}
+  }
+  function leavePresence(){
+    var map = readPresence();
+    delete map[currentUser().name];
+    try{ localStorage.setItem(PRESENCE_KEY, JSON.stringify(map)); }catch(e){}
+  }
+  function viewersOf(tenderId){
+    var map = readPresence(), me = currentUser().name, now = Date.now();
+    return Object.keys(map).filter(function(name){
+      var entry = map[name];
+      return name !== me && entry && entry.tenderId === String(tenderId) && now - entry.at < PRESENCE_TTL;
+    }).sort();
+  }
+  function presenceHtml(tenderId, full){
+    var viewers = viewersOf(tenderId);
+    if(!viewers.length) return '';
+    var text = viewers[0] + (viewers.length > 1 ? ' и ещё ' + (viewers.length - 1) : '')
+      + (full ? ' сейчас смотр' + (viewers.length > 1 ? 'ят' : 'ит') + ' этот тендер' : ' сейчас смотр' + (viewers.length > 1 ? 'ят' : 'ит'));
+    return '<span class="presence" role="status"><span class="presence-dot" aria-hidden="true"></span><span>' + escHtml(text) + '</span></span>';
+  }
+  // обновляет все места с data-presence-tender на странице (каждые 5 с и при изменении в другой вкладке)
+  function mountPresence(){
+    ensurePresenceCss();
+    function refresh(){
+      document.querySelectorAll('[data-presence-tender]').forEach(function(el){
+        var id = el.getAttribute('data-presence-tender');
+        var html = id ? presenceHtml(id, el.hasAttribute('data-presence-full')) : '';
+        if(el.innerHTML !== html) el.innerHTML = html;
+      });
+    }
+    refresh();
+    setInterval(refresh, 5000);
+    window.addEventListener('storage', function(e){ if(e.key === PRESENCE_KEY) refresh(); });
+    return refresh;
+  }
+  // карточка тендера: отмечает присутствие, пока открыта
+  function watchTenderPresence(tenderId){
+    touchPresence(tenderId);
+    setInterval(function(){ touchPresence(tenderId); }, 20000);
+    window.addEventListener('pagehide', leavePresence);
+  }
   global.TenderReferences = {
+    mountPresence: mountPresence,
+    watchTenderPresence: watchTenderPresence,
     manualAddMessage: manualAddMessage,
     assigneeNames: assigneeNames,
     canFirstDecision: canFirstDecision,
