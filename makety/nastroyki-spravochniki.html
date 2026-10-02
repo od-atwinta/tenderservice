@@ -993,7 +993,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02l"></script>
+<script src="spravochniki.js?v=2026-10-02m"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -1582,6 +1582,7 @@
     t.checkoVerified = !!checkoUrl;
     t.risk = editNode.querySelector('[data-field="risk"]').checked;
     t.taskLink = editNode.querySelector('[data-field="taskLink"]').value.trim();
+    TenderReferences.syncTaskLinkToExternal(t);
     t.description = editNode.querySelector('[data-field="description"]').value.trim();
     t.contacts = editNode.querySelector('[data-field="contacts"]').value.trim();
     t.managerComment = editNode.querySelector('[data-field="managerComment"]').value.trim();

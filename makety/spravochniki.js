@@ -1849,7 +1849,20 @@
     return '<span class="urgent-label">До подачи меньше суток</span>';
   }
   function urgentClass(t){ return isUrgentDeadline(t) ? ' is-urgent' : ''; }
+  // ссылка на задачу из формы «Новых» сама попадает в блок «Внешние» карточки
+  // (решение Оксаны 02.10.2026, ТЗ 6.2, 6.3): добавляется, если такой ссылки ещё нет
+  function syncTaskLinkToExternal(tender){
+    var url = String(tender && tender.taskLink || '').trim();
+    if(!/^https?:\/\/\S+$/i.test(url)) return false;
+    tender.externalLinks = Array.isArray(tender.externalLinks) ? tender.externalLinks : [];
+    if(tender.externalLinks.some(function(link){ return link && link.url === url; })) return false;
+    tender.externalLinks.push({label:'Задача в Jira', url:url});
+    tender.events = Array.isArray(tender.events) ? tender.events : [];
+    tender.events.push({date:new Date().toLocaleString('ru-RU'), text:'Ссылка на задачу добавлена во «Внешние»: '+url+'.', comment:'', actor:currentUser().name});
+    return true;
+  }
   global.TenderReferences = {
+    syncTaskLinkToExternal: syncTaskLinkToExternal,
     submitTaskDue: submitTaskDue,
     addSubmitTask: addSubmitTask,
     undoParticipation: undoParticipation,
