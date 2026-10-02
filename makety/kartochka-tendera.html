@@ -1500,7 +1500,7 @@
 </aside>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02d"></script>
+<script src="spravochniki.js?v=2026-10-02f"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -3827,6 +3827,7 @@
     document.getElementById('headerStatusDivider').hidden = isRejectedTender;
     document.getElementById('currentTenderStatus').textContent = tender.appStatus || 'Не указан';
     renderStatusControl(tender);
+    if(typeof renderAiPending === 'function') renderAiPending();
     renderPlatform(tender);
     renderDirections(tender);
     renderResponsibles(tender);
@@ -4047,26 +4048,33 @@
   });
   document.getElementById('generateReportConfirm').addEventListener('click', function(){
     if(!tender) return;
-    var createdAt = new Date().toISOString();
-    var report = generatedReportFor(tender);
-    tender.aiReports = Array.isArray(tender.aiReports) ? tender.aiReports : [];
-    tender.aiReports.push({createdAt:createdAt,report:report});
-    tender.aiReport = report;
-    tender.aiReportCreatedAt = createdAt;
-    tender.aiComment = tender.risk
-      ? 'Перед продолжением требуется консультация юриста по условиям закупки.'
-      : 'Критичных ограничений по заполненным данным не найдено; можно переходить к детальной оценке.';
-    tender.events = tender.events || [];
-    tender.events.push({
-      date:eventDate(),
-      text:'Сформирован новый отчёт ИИ.',
-      actor:CURRENT_USER.name
-    });
+    // отчёт готовится не сразу (ТЗ 10.1): «Отчёт готовится…», затем уведомление (9.1)
+    TenderReferences.startAiReport(tender);
     saveTenders(tenders);
     closeSimpleOverlay(generateReportOverlay);
     applyTenderData();
-    showToast('Отчёт готов!');
+    showToast('Отчёт ИИ готовится — пришлём уведомление, когда он будет готов.');
   });
+  function renderAiPending(){
+    var btn = document.getElementById('generateOverviewReport');
+    if(!btn || !tender) return;
+    btn.disabled = Boolean(tender.aiPending);
+    btn.textContent = tender.aiPending ? 'Отчёт готовится…' : 'Сгенерировать отчёт';
+  }
+  // завершение отчётов: в сервисе — событие от n8n, в макете — проверка раз в 2 секунды
+  setInterval(function(){
+    var done = TenderReferences.finishAiReports(tenders, function(t){
+      t.aiComment = t.risk
+        ? 'Перед продолжением требуется консультация юриста по условиям закупки.'
+        : 'Критичных ограничений по заполненным данным не найдено; можно переходить к детальной оценке.';
+      return generatedReportFor(t);
+    });
+    if(!done.length) return;
+    saveTenders(tenders);
+    applyTenderData();
+    renderSyncedNotifications();
+    showToast('Отчёт ИИ по тендеру «'+done[0].name+'» готов.');
+  }, 2000);
 
   document.getElementById('multiStageOverview').addEventListener('change', function(event){
     if(!tender || !userCanManageStages()) return;
@@ -4848,6 +4856,7 @@
     if(!depts.length){ decisionDeptMulti.querySelector('.xmulti-trigger').style.borderColor = 'var(--danger)'; ok = false; }
     if(!manager){ decisionManagerSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; ok = false; }
     if(!ok) return;
+    var snapshotBefore = JSON.parse(JSON.stringify(tender));
     tender.decision = 'На рассмотрении';
     tender.lifecycleSection = 'Ожидают решения';
     TenderReferences.updateActiveSectionFromStatus(tender, 'На рассмотрении');
@@ -4859,6 +4868,17 @@
     pushAutoTaskNotification(manager, reviewTaskText);
     decisionTakeOverlay.classList.remove('is-open');
     finishDecision('Ожидают решения', 'Взят в работу. Направления: '+depts.join(', ')+'. Ответственный: '+manager+'. Тендер перенесён в раздел «Ожидают решения».', '', 'Тендер перенесён в раздел «Ожидают решения».');
+    // «Отменить» 15 секунд (ТЗ 5.4, решение 02.10.2026)
+    var undoTender = tender;
+    TenderReferences.showUndoToast('Тендер перенесён в раздел «Ожидают решения».', function(){
+      TenderReferences.undoTakeInWork(undoTender, snapshotBefore);
+      saveTenders(tenders);
+      targetSection = 'Новые';
+      history.replaceState(null, '', sectionHref(undoTender));
+      applyTenderData();
+      renderSyncedNotifications();
+      showToast('Взятие в работу отменено — тендер снова в «Новых».');
+    });
   });
 
   document.getElementById('statusOpen').addEventListener('click', function(){

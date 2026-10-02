@@ -584,7 +584,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02d"></script>
+<script src="spravochniki.js?v=2026-10-02f"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -921,7 +921,9 @@
       +       '<div class="tcard-customer"><span>Заказчик: '+esc(t.customer)+'</span>'+checkoBtn+'</div>'
       +       '<div class="tcard-links">'
       +         (t.sourceLink ? '<a class="link-ico" href="'+t.sourceLink+'" target="_blank" rel="noopener">Тендерплан ↗</a>' : '<span style="color:var(--ink-muted);font-size:12.5px">Источник не указан</span>')
-      +         (latestReport
+      +         (t.aiPending
+            ? '<span style="color:var(--ink-muted);font-size:12.5px">Отчёт готовится…</span>'
+            : latestReport
             ? '<span class="report-trigger"><button class="link-btn" data-action="open-report" data-id="'+t.id+'">Отчёт ИИ</button><button class="icon-btn-xs" data-action="download-report" data-id="'+t.id+'" title="Скачать отчёт" aria-label="Скачать отчёт">'+DOWNLOAD_SVG+'</button></span>'
             : (t.aiReportUrl
               ? '<a class="link-ico" href="'+esc(t.aiReportUrl)+'" target="_blank" rel="noopener">Отчёт ИИ ↗</a>'
@@ -1005,7 +1007,7 @@
       +       '<div class="tedit-split">'
       +         '<div class="tform-field"><label>Отчёт нейронки</label><div class="ai-report-edit">'
       +           reportFilesHtml(t)
-      +           '<button type="button" class="btn btn-sm btn-ai" data-action="generate-report" data-id="'+t.id+'"'+((t.documents && t.documents.length) ? '' : ' disabled')+'>Сгенерировать отчёт</button>'
+      +           '<button type="button" class="btn btn-sm btn-ai" data-action="generate-report" data-id="'+t.id+'"'+((t.documents && t.documents.length && !t.aiPending) ? '' : ' disabled')+'>'+(t.aiPending ? 'Отчёт готовится…' : 'Сгенерировать отчёт')+'</button>'
       +         '</div></div>'
       +         '<div class="tform-field"><label>Рекомендация от ИИ</label><textarea data-field="aiComment" readonly placeholder="Появится после генерации отчёта">'+esc(t.aiComment || '')+'</textarea></div>'
       +       '</div>'
@@ -1146,7 +1148,8 @@
         +'<button type="button" class="doc-remove" data-action="remove-doc" data-id="'+cardId+'" data-index="'+i+'" aria-label="Удалить документ">✕</button></li>';
     }).join('') : '<li style="border:none;color:var(--ink-muted);padding:0">Пока нет документов</li>';
     var generateBtn = editNode.querySelector('[data-action="generate-report"]');
-    if(generateBtn) generateBtn.disabled = !docs.length;
+    var pendingTender = tenders.find(function(x){ return x.id === Number(cardId); });
+    if(generateBtn) generateBtn.disabled = !docs.length || Boolean(pendingTender && pendingTender.aiPending);
   }
 
   function openEdit(cardEl, t){
@@ -1372,6 +1375,7 @@
       if(!depts.length){ cardEl._deptMulti.querySelector('.xmulti-trigger').style.borderColor = 'var(--danger)'; ok = false; }
       if(!manager){ cardEl._managerSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; ok = false; }
       if(!ok) return;
+      var snapshotBefore = JSON.parse(JSON.stringify(t));
       t.decision = 'На рассмотрении';
       t.lifecycleSection = 'Ожидают решения';
       TenderReferences.updateActiveSectionFromStatus(t, 'На рассмотрении');
@@ -1397,6 +1401,13 @@
       try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(acceptNotifications.slice(-50))); }catch(e){}
       TenderReferences.setDirty('accept-'+id, false);
       resolveCard(id, 'Тендер перенесён в раздел «Ожидают решения».');
+      // «Отменить» 15 секунд (ТЗ 5.4, решение 02.10.2026)
+      TenderReferences.showUndoToast('Тендер перенесён в раздел «Ожидают решения».', function(){
+        TenderReferences.undoTakeInWork(t, snapshotBefore);
+        saveTenders(tenders);
+        render();
+        showToast('Взятие в работу отменено — тендер снова в «Новых».');
+      });
       return;
     }
   }
@@ -1628,24 +1639,30 @@
       showToast('Заполните обязательные поля перед генерацией.');
       return;
     }
-    var createdAt = new Date().toISOString();
-    var generatedReport = generatedReportFor(t);
-    var history = reportHistory(t);
-    history.push({createdAt:createdAt,report:generatedReport});
-    t.aiReports = history;
-    t.aiReport = generatedReport;
-    t.aiReportCreatedAt = createdAt;
-    t.aiComment = t.risk
-      ? 'Перед участием рекомендуется передать условия закупки юристу и дождаться заключения.'
-      : 'Критичных ограничений по заполненным данным не найдено; можно переходить к детальной оценке.';
-    t.aiVerdict = null;
+    // отчёт готовится не сразу (ТЗ 10.1): «Отчёт готовится…», затем уведомление (9.1)
+    TenderReferences.startAiReport(t);
     saveTenders(tenders);
     closeGenerateReportConfirm();
     render();
     var updatedCard = document.querySelector('.tcard[data-id="'+id+'"]');
     if(updatedCard) openEdit(updatedCard, t);
-    showToast('Отчёт готов!');
+    showToast('Отчёт ИИ готовится — пришлём уведомление, когда он будет готов.');
   });
+  // завершение отчётов: в сервисе — событие от n8n, в макете — проверка раз в 2 секунды
+  function completeAiReports(){
+    var done = TenderReferences.finishAiReports(tenders, function(t){
+      t.aiComment = t.risk
+        ? 'Перед участием рекомендуется передать условия закупки юристу и дождаться заключения.'
+        : 'Критичных ограничений по заполненным данным не найдено; можно переходить к детальной оценке.';
+      t.aiVerdict = null;
+      return generatedReportFor(t);
+    });
+    if(!done.length) return;
+    saveTenders(tenders);
+    render();
+    showToast('Отчёт ИИ по тендеру «'+done[0].name+'» готов.');
+  }
+  setInterval(completeAiReports, 2000);
 
   document.getElementById('reportClose').addEventListener('click', closeReportModal);
   reportOverlay.addEventListener('click', function(e){ if(e.target === reportOverlay) closeReportModal(); });

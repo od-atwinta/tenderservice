@@ -565,7 +565,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02d"></script>
+<script src="spravochniki.js?v=2026-10-02f"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -956,19 +956,55 @@
           render();
           return;
         }
-        if(field === 'decision' && (value === 'На рассмотрении' || value === 'Участвуем')){
+        // решение, которое переносит тендер в другой раздел, — только после подтверждения
+        // (ТЗ 6.2, решение 02.10.2026)
+        if(field === 'decision' && (value === 'На рассмотрении' || value === 'Участвуем' || value === 'Отказ')){
           var destination = TenderReferences.resolveSection(Object.assign({}, t, {decision:value}));
-          TenderReferences.requireAssignee(t, destination, function(depts, manager){
-            var movedToReview = value === 'На рассмотрении' && t.decision !== 'На рассмотрении';
-            t.depts = depts;
-            t.dept = depts[0] || '';
-            t.manager = manager;
-            t.decision = value;
-            if(movedToReview) TenderReferences.addReviewTask(t, manager);
-            saveTenders(tenders);
-            refreshNavCounts();
-            render();
-          }, function(){ render(); });
+          var fromSection = bucket(t);
+          if(destination === fromSection){ t[field] = value; saveTenders(tenders); refreshNavCounts(); render(); return; }
+          var snapshotBefore = JSON.parse(JSON.stringify(t));
+          // «Отказ»: причина обязательна, окно причины и есть подтверждение переноса в Архив
+          if(value === 'Отказ'){
+            TenderReferences.requireRejectReason(t, function(reason, comment){
+              var from = fromSection === 'Новый' ? 'Новые' : fromSection;
+              t.decision = 'Отказ';
+              t.lifecycleSection = 'Архив';
+              TenderReferences.updateActiveSectionFromStatus(t, 'Отклонено');
+              t.rejectReason = reason;
+              t.rejectComment = comment;
+              t.events = Array.isArray(t.events) ? t.events : [];
+              t.events.push({date:new Date().toLocaleString('ru-RU'), text:'Отказ ('+from+'). Причина: '+reason+'. Тендер перенесён в раздел «Архив».', comment:comment, actor:current.name});
+              saveTenders(tenders);
+              refreshNavCounts();
+              render();
+              showToast('Перемещено в архив.');
+            }, function(){ render(); });
+            return;
+          }
+          TenderReferences.confirmDialog('Тендер будет перенесён в раздел «'+destination+'».', function(ok){
+            if(!ok){ render(); return; }
+            TenderReferences.requireAssignee(t, destination, function(depts, manager){
+              var movedToReview = value === 'На рассмотрении' && t.decision !== 'На рассмотрении';
+              t.depts = depts;
+              t.dept = depts[0] || '';
+              t.manager = manager;
+              t.decision = value;
+              if(movedToReview) TenderReferences.addReviewTask(t, manager);
+              saveTenders(tenders);
+              refreshNavCounts();
+              render();
+              // «Отменить» 15 секунд после «Взять в работу» (ТЗ 5.4)
+              if(movedToReview && (fromSection === 'Новые' || fromSection === 'Новый')){
+                TenderReferences.showUndoToast('Тендер перенесён в раздел «Ожидают решения».', function(){
+                  TenderReferences.undoTakeInWork(t, snapshotBefore);
+                  saveTenders(tenders);
+                  refreshNavCounts();
+                  render();
+                  showToast('Взятие в работу отменено — тендер снова в «Новых».');
+                });
+              }
+            }, function(){ render(); });
+          }, {title:'Перенести тендер?', okLabel:'Перенести'});
           return;
         }
         t[field] = value;

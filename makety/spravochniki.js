@@ -1221,6 +1221,8 @@
   // 30.09.2026, ТЗ 5.6 и 5.7): в «Ожидают решения» тендер не попадает без
   // ответственного и направления. Показывается только при разделе «Ожидают решения».
   var ASSIGNEE_CSS = '.at-assignee[hidden]{display:none;}'
+    // комментарий в окне «Отказ» Сводной — как поле комментария в карточке тендера
+    + '.rr-comment{width:100%;border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:9px 10px;font-family:var(--font-body);font-size:14px;background:var(--surface);color:var(--ink);resize:vertical;min-height:76px;box-sizing:border-box;}'
     + '.at-pick{position:relative;display:block;}'
     + '.at-pick-trigger{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;'
     + 'min-height:36px;padding:0 10px;border:1px solid var(--border-strong);border-radius:var(--radius-sm,8px);'
@@ -1412,6 +1414,35 @@
     });
     document.body.appendChild(overlay);
   }
+  // Отказ в строке Сводной (ТЗ 5.3, 5.4, решение 02.10.2026): причина обязательна, окно
+  // одновременно служит подтверждением переноса в «Архив». Поля — как в окне «Отказ»
+  // карточки: причина из справочника и комментарий.
+  function requireRejectReason(tender, onDone, onCancel){
+    ensureAssigneeCss();
+    var overlay = document.createElement('div');
+    overlay.className = 'overlay is-open';
+    overlay.style.zIndex = '90';
+    overlay.innerHTML = '<div class="modal" role="dialog" aria-modal="true">'
+      + '<h4>Отказ</h4>'
+      + '<p class="hint">Тендер «'+escHtml(tender.name)+'» будет перенесён в раздел «Архив».</p>'
+      + '<div class="field"><label>Причина</label><span class="rr-reason"></span></div>'
+      + '<div class="field"><label>Комментарий</label><textarea class="rr-comment" placeholder="Необязательно"></textarea></div>'
+      + '<div class="modal-actions"><button class="btn" type="button" data-rr="cancel">Отмена</button>'
+      + '<button class="btn btn-primary" type="button" data-rr="save">Перенести в Архив</button></div></div>';
+    var reason = buildPick(activeReferenceValues('rejectionReasons'), false, 'Выбрать причину');
+    overlay.querySelector('.rr-reason').appendChild(reason);
+    overlay.addEventListener('click', function(event){
+      var action = event.target.getAttribute && event.target.getAttribute('data-rr');
+      if(event.target === overlay || action === 'cancel'){ overlay.remove(); if(onCancel) onCancel(); return; }
+      if(action !== 'save') return;
+      var value = reason.getValues()[0] || '';
+      if(!value){ reason.markInvalid(); return; }
+      var comment = overlay.querySelector('.rr-comment').value.trim();
+      overlay.remove();
+      onDone(value, comment);
+    });
+    document.body.appendChild(overlay);
+  }
   // Деактивация пользователя-ответственного (ТЗ 3.4, решение 30.09.2026):
   // сначала — новый ответственный по его тендерам в «Новых», «Ожидают решения»,
   // «В работе», «Заявках». onDone вызывается после сохранения переназначения.
@@ -1573,7 +1604,118 @@
     setInterval(function(){ touchPresence(tenderId); }, 20000);
     window.addEventListener('pagehide', leavePresence);
   }
+  // «Отменить» в уведомлении на 15 секунд (ТЗ 5.4, решение 02.10.2026). Использует
+  // уведомление страницы (#toastText) и добавляет под текстом строку с кнопкой, как
+  // строка «Перейти в карточку ↗» в Сводной таблице.
+  var UNDO_MS = 15000;
+  var UNDO_CSS = '.toast-undo-foot{display:flex;align-items:center;gap:10px;}.toast-undo-foot[hidden]{display:none;}'
+    + '.toast-undo{background:none;border:none;padding:0;font:inherit;font-size:13px;font-weight:600;color:var(--accent);cursor:pointer;}'
+    + '.toast-undo:hover{text-decoration:underline;}'
+    + '.toast-undo-left{font-size:12px;color:var(--ink-muted);}';
+  var undoState = null;
+  function stopUndo(){
+    if(!undoState) return;
+    clearInterval(undoState.timer);
+    if(undoState.observer) undoState.observer.disconnect();
+    undoState.foot.hidden = true;
+    undoState = null;
+  }
+  function showUndoToast(text, onUndo){
+    var textEl = document.getElementById('toastText');
+    if(!textEl) return;
+    var toast = textEl.closest('.toast');
+    if(!document.getElementById('toastUndoCss')){
+      var style = document.createElement('style');
+      style.id = 'toastUndoCss';
+      style.textContent = UNDO_CSS;
+      document.head.appendChild(style);
+    }
+    stopUndo();
+    var foot = toast.querySelector('.toast-undo-foot');
+    if(!foot){
+      foot = document.createElement('div');
+      foot.className = 'toast-foot toast-undo-foot';
+      foot.innerHTML = '<button type="button" class="toast-undo">Отменить</button><span class="toast-undo-left"></span>';
+      toast.appendChild(foot);
+      var closeBtn = toast.querySelector('.toast-close');
+      if(closeBtn) closeBtn.addEventListener('click', stopUndo);
+    }
+    toast.querySelectorAll('.toast-foot:not(.toast-undo-foot)').forEach(function(el){ el.hidden = true; });
+    textEl.textContent = text;
+    foot.hidden = false;
+    toast.classList.add('is-open');
+    var endAt = Date.now() + UNDO_MS;
+    var left = foot.querySelector('.toast-undo-left');
+    function tick(){
+      var sec = Math.ceil((endAt - Date.now()) / 1000);
+      if(sec <= 0){ stopUndo(); toast.classList.remove('is-open'); return; }
+      left.textContent = sec + ' с';
+      toast.classList.add('is-open');
+    }
+    undoState = {foot:foot, timer:setInterval(tick, 250)};
+    tick();
+    // страница показала другое сообщение — отменять уже нечего
+    undoState.observer = new MutationObserver(function(){ if(textEl.textContent !== text) stopUndo(); });
+    undoState.observer.observe(textEl, {childList:true, characterData:true, subtree:true});
+    foot.querySelector('.toast-undo').onclick = function(){ stopUndo(); onUndo(); };
+  }
+  // отмена «Взять в работу»: тендер — как до решения (журнал сохраняется и дополняется),
+  // уведомления ответственному о задаче помечаются отменёнными
+  function undoTakeInWork(tender, snapshot){
+    var events = Array.isArray(tender.events) ? tender.events.slice() : [];
+    Object.keys(tender).forEach(function(key){ if(!(key in snapshot)) delete tender[key]; });
+    Object.keys(snapshot).forEach(function(key){ tender[key] = clone(snapshot[key]); });
+    events.push({date:new Date().toLocaleString('ru-RU'), text:'Взятие в работу отменено. Тендер возвращён в «Новые».', comment:'', actor:currentUser().name});
+    tender.events = events;
+    var notifications = [];
+    try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
+    notifications.forEach(function(n){
+      if(!n.cancelled && n.href && n.href.indexOf('tender='+tender.id) !== -1
+        && String(n.text).indexOf('Изучить документы и принять решение') === 0){
+        n.cancelled = true;
+        n.text = 'Отменено: ' + n.text;
+      }
+    });
+    try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
+  }
+  // отчёт ИИ готовится не сразу (ТЗ 10.1): в макете — 8 секунд, затем новая версия
+  // отчёта и уведомления «Отчёт ИИ по тендеру «…» готов» (ТЗ 9.1)
+  var AI_REPORT_MS = 8000;
+  function startAiReport(tender){
+    tender.aiPending = {by:currentUser().name, startedAt:Date.now()};
+  }
+  function finishAiReports(list, build){
+    var now = Date.now(), done = [];
+    (list || []).forEach(function(t){
+      if(!t || !t.aiPending || now - t.aiPending.startedAt < AI_REPORT_MS) return;
+      var createdAt = new Date().toISOString();
+      var report = build(t);
+      t.aiReports = Array.isArray(t.aiReports) ? t.aiReports : [];
+      t.aiReports.push({createdAt:createdAt, report:report});
+      t.aiReport = report;
+      t.aiReportCreatedAt = createdAt;
+      t.events = Array.isArray(t.events) ? t.events : [];
+      t.events.push({date:new Date().toLocaleString('ru-RU'), text:'Сформирован новый отчёт ИИ.', comment:'', actor:t.aiPending.by});
+      var notifications = [];
+      try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
+      var recipients = [t.aiPending.by];
+      if(t.manager && recipients.indexOf(t.manager) === -1) recipients.push(t.manager);
+      recipients.forEach(function(name){
+        notifications.push({recipient:name, text:'Отчёт ИИ по тендеру «'+t.name+'» готов', date:new Date().toLocaleString('ru-RU'), href:'kartochka-tendera.html?tender='+t.id});
+      });
+      try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
+      delete t.aiPending;
+      done.push(t);
+    });
+    return done;
+  }
   global.TenderReferences = {
+    requireRejectReason: requireRejectReason,
+    showUndoToast: showUndoToast,
+    undoTakeInWork: undoTakeInWork,
+    startAiReport: startAiReport,
+    finishAiReports: finishAiReports,
+    aiReportDelayMs: AI_REPORT_MS,
     mountPresence: mountPresence,
     watchTenderPresence: watchTenderPresence,
     manualAddMessage: manualAddMessage,
