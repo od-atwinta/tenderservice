@@ -242,6 +242,8 @@
   .tcard-row2-default{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
   .tcard-row2-default[hidden]{display:none;}
   .tcard-row2-actions{display:flex;gap:12px;}
+  .access-denied{max-width:460px;margin:60px auto;text-align:center;color:var(--ink-muted);
+    font-size:14px;line-height:1.6;}
 
   .tform{display:flex;align-items:flex-end;column-gap:14px;row-gap:16px;flex-wrap:wrap;}
   .tform[hidden]{display:none;}
@@ -420,7 +422,7 @@
         </a>
         <ul class="nav-sub">
           <li data-admin-observer-only="1"><a href="vse-tendery.html"><span class="nav-label">Сводная таблица</span></a></li>
-          <li><a href="#" class="is-active"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
+          <li data-nav-new-section="1"><a href="#" class="is-active"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
           <li><a href="ozhidayut-resheniya.html"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
           <li><a href="v-rabote.html"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
           <li><a href="arhiv.html"><span class="nav-label">Архив</span></a></li>
@@ -466,7 +468,7 @@
     </a>
   </aside>
 
-  <div class="app">
+  <div class="app" id="appRoot">
     <div class="page-head">
       <h1 class="page-title">Новые тендеры</h1>
       <div class="page-actions">
@@ -582,10 +584,19 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02"></script>
+<script src="spravochniki.js?v=2026-10-02b"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
+  // раздел «Новые» — только Админ, Суперадмин и Наблюдатель (решение Оксаны 02.10.2026, ТЗ 3.2);
+  // первое решение — только Админ и Суперадмин, Наблюдатель смотрит
+  var CURRENT = TenderReferences.currentUser();
+  var CAN_DECIDE = TenderReferences.canFirstDecision(CURRENT);
+  if(!CAN_DECIDE && !TenderReferences.isObserverUser(CURRENT)){
+    document.getElementById('appRoot').innerHTML =
+      '<div class="access-denied"><p>Доступ ограничен, обратитесь к администратору.</p></div>';
+    return;
+  }
   (function(){
     var navToday = document.getElementById('navToday');
     if(navToday){
@@ -931,10 +942,10 @@
       +         '<button class="link-btn" data-action="toggle-details" data-id="'+t.id+'" data-label="1">Подробнее</button>'
       +         '<button class="link-btn" data-action="open-edit" data-id="'+t.id+'">Редактировать <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button>'
       +       '</div>'
-      +       '<div class="tcard-row2-actions">'
+      +       (CAN_DECIDE ? '<div class="tcard-row2-actions">'
       +         '<button class="btn btn-outline" data-action="open-reject" data-id="'+t.id+'">Отказ</button>'
       +         '<button class="btn btn-primary" data-action="open-accept" data-id="'+t.id+'">Взять в работу</button>'
-      +       '</div>'
+      +       '</div>' : '')
       +     '</div>'
 
       +     '<div class="tform" data-part="reject" data-id="'+t.id+'" hidden>'
@@ -949,7 +960,6 @@
       +     '<div class="tform" data-part="accept" data-id="'+t.id+'" hidden>'
       +       '<div class="tform-field"><label>Направления</label><span class="xmulti-slot"></span></div>'
       +       '<div class="tform-field"><label>Ответственный</label><span class="xselect-manager-slot"></span></div>'
-      +       '<div class="tform-hint" data-part="multi-hint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</div>'
       +       '<div class="tform-actions">'
       +         '<button class="btn" data-action="cancel-form" data-id="'+t.id+'">Отмена</button>'
       +         '<button class="btn btn-primary" data-action="save-accept" data-id="'+t.id+'">Сохранить</button>'
@@ -1058,11 +1068,17 @@
     var procurementSelect = buildXSelect(PROCUREMENT_TYPES, t.procType || '', 'Выбрать тип');
     cardEl.querySelector('.xselect-procurement-slot').appendChild(procurementSelect);
 
-    var multiHint = cardEl.querySelector('[data-part="multi-hint"]');
-    deptMulti.addEventListener('xchange', function(){
-      var vals = JSON.parse(deptMulti.dataset.values);
-      multiHint.hidden = vals.length < 2;
-    });
+    // ответственный — сотрудник выбранных направлений (решение 02.10.2026, ТЗ 4.4)
+    function rebuildManagerSelect(){
+      var vals = JSON.parse(deptMulti.dataset.values || '[]');
+      var keep = cardEl._managerSelect ? cardEl._managerSelect.dataset.value : '';
+      var names = TenderReferences.assigneeNames(vals);
+      var next = buildXSelect(names, names.indexOf(keep) !== -1 ? keep : '', 'Выбрать ответственного');
+      managerSlot.innerHTML = '';
+      managerSlot.appendChild(next);
+      cardEl._managerSelect = next;
+    }
+    deptMulti.addEventListener('xchange', rebuildManagerSelect);
 
     var submissionTypeSelect = buildXSelect(TenderReferences.submissionTypes, t.submissionType || 'На площадке', 'Выбрать тип подачи');
     cardEl.querySelector('.xselect-submission-type-slot').appendChild(submissionTypeSelect);
@@ -1502,7 +1518,7 @@
     saveTenders(tenders);
     render();
     closeAddTender();
-    showToast('Добавлено в раздел «'+addSection+'».');
+    showToast(TenderReferences.manualAddMessage(tenders[0], addSection));
   });
 
   document.getElementById('tlist').addEventListener('change', function(e){

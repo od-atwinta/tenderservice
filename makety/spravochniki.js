@@ -749,12 +749,41 @@
   function activeUsers(){
     return loadUsers().filter(function(u){ return u.status !== 'inactive'; });
   }
+  // ответственным может быть любой сотрудник направления — Сотрудник отдела, Менеджер,
+  // Руководитель отдела (решение Оксаны 02.10.2026, ТЗ 4.4); только Наблюдатель — нет
   function managerNames(){
     return sortOptions(activeUsers().filter(function(u){
-      return (u.roles || []).some(function(role){
-        return role === 'Менеджер' || role === 'Админ' || role === 'Суперадмин';
-      });
+      return (u.roles || []).some(function(role){ return role !== 'Наблюдатель'; });
     }).map(function(u){ return u.name; }));
+  }
+  // ответственные для выбранных направлений: сотрудники этих направлений; у Руководителя
+  // отдела (не Админа) — только сотрудники его отдела (ТЗ 3.3, 4.4)
+  function assigneeNames(depts, user){
+    depts = Array.isArray(depts) ? depts : [];
+    user = user || currentUser();
+    var ownOnly = isDeptHeadUser(user) && !isAdminUser(user);
+    var own = ownOnly ? userDirections(user) : [];
+    return sortOptions(activeUsers().filter(function(u){
+      if(!(u.roles || []).some(function(role){ return role !== 'Наблюдатель'; })) return false;
+      var dirs = Array.isArray(u.directions) ? u.directions : [];
+      if(!dirs.some(function(d){ return depts.indexOf(d) !== -1; })) return false;
+      // Руководитель отдела назначает только сотрудников своего отдела — Админы с доступом
+      // ко всем направлениям в его список не попадают
+      return !ownOnly || (!isAdminUser(u) && dirs.some(function(d){ return own.indexOf(d) !== -1; }));
+    }).map(function(u){ return u.name; }));
+  }
+  function userDirections(user){
+    var found = loadUsers().filter(function(u){ return u.name === (user && user.name); })[0];
+    return found && Array.isArray(found.directions) ? found.directions.slice() : (user && Array.isArray(user.directions) ? user.directions.slice() : []);
+  }
+  // направления, которые пользователь может выбрать при «Добавить тендер» в «Ожидают решения»:
+  // Руководитель отдела — только свои (решение 02.10.2026), Админ — все
+  function pickableDirections(user){
+    user = user || currentUser();
+    var all = activeReferenceValues('departments');
+    if(isAdminUser(user) || !isDeptHeadUser(user)) return all;
+    var own = userDirections(user);
+    return all.filter(function(d){ return own.indexOf(d) !== -1; });
   }
   function participantDirectory(){
     var list = [];
@@ -798,6 +827,27 @@
       return value === 'админ' || value === 'администратор'
         || value === 'суперадмин' || value === 'суперадминистратор';
     });
+  }
+  function isDeptHeadUser(user){
+    var roles = user && Array.isArray(user.roles) ? user.roles : [];
+    return roles.some(function(role){ return String(role).toLocaleLowerCase('ru-RU') === 'руководитель отдела'; });
+  }
+  function isManagerUser(user){
+    var roles = user && Array.isArray(user.roles) ? user.roles : [];
+    return roles.some(function(role){ return String(role).toLocaleLowerCase('ru-RU') === 'менеджер'; });
+  }
+  // первое решение и раздел «Новые» — только Админ и Суперадмин (решение 02.10.2026, ТЗ 3.2, 3.3)
+  function canFirstDecision(user){ return isAdminUser(user || currentUser()); }
+  // второе решение — Админ, Суперадмин, Руководитель отдела; Менеджер — только если он ответственный
+  function canSecondDecision(user, tender){
+    user = user || currentUser();
+    if(isAdminUser(user) || isDeptHeadUser(user)) return true;
+    return isManagerUser(user) && Boolean(tender) && tender.manager === user.name;
+  }
+  // выбор «Ожидают решения» в окне «Добавить тендер» — Админ, Суперадмин, Руководитель отдела (ТЗ 5.6)
+  function canChooseAddSection(user){
+    user = user || currentUser();
+    return isAdminUser(user) || isDeptHeadUser(user);
   }
   function isObserverUser(user){
     var roles = user && Array.isArray(user.roles) ? user.roles : [];
@@ -911,8 +961,12 @@
     if(!admin) document.querySelectorAll('[data-admin-only]').forEach(function(el){ el.remove(); });
     if(!admin && !isObserverUser(user)){
       document.querySelectorAll('[data-admin-observer-only]').forEach(function(el){ el.remove(); });
-      // пункт «Тендеры» ведёт на Сводную таблицу; кому она недоступна — на «Новые»
-      document.querySelectorAll('[data-nav-tenders]').forEach(function(el){ el.setAttribute('href', 'novye-tendery.html'); });
+      // пункт «Тендеры» ведёт на Сводную таблицу; кому недоступны и она, и «Новые»
+      // (Менеджер, Руководитель, Сотрудник отдела — решение 02.10.2026, ТЗ 6.1) — на «Ожидают решения»
+      document.querySelectorAll('[data-nav-tenders]').forEach(function(el){ el.setAttribute('href', 'ozhidayut-resheniya.html'); });
+      document.querySelectorAll('a[href="novye-tendery.html?add=1"]').forEach(function(el){ el.setAttribute('href', 'ozhidayut-resheniya.html?add=1'); });
+      // пункт «Новые» скрывается, а не удаляется: страницы пишут в него счётчик (navNew)
+      document.querySelectorAll('[data-nav-new-section]').forEach(function(el){ el.style.display = 'none'; });
     }
   }
 
@@ -1262,26 +1316,40 @@
     ensureAssigneeCss();
     var sectionField = overlay.querySelector('.at-section-field');
     if(!sectionField){ var sectionSelect = overlay.querySelector('#atSection'); sectionField = sectionSelect && sectionSelect.closest('.field'); }
+    // выбор раздела видят Админ, Суперадмин и Руководитель отдела; остальные добавляют
+    // только в «Новые» (решение Оксаны 02.10.2026, ТЗ 5.6)
+    if(!canChooseAddSection()){
+      sectionField.hidden = true;
+      var addHint = overlay.querySelector('.modal > .hint');
+      if(addHint) addHint.textContent = 'Дата создания проставится автоматически. Тендер попадёт в «Новые» — его распределит администратор.';
+    }
     var box = document.createElement('div');
     box.className = 'at-assignee';
     box.hidden = true;
     box.innerHTML = '<div class="field"><label>Направления</label><span class="at-assignee-depts"></span></div>'
-      + '<div class="field"><label>Ответственный</label><span class="at-assignee-manager"></span></div>'
-      + '<p class="at-assignee-hint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</p>';
+      + '<div class="field"><label>Ответственный</label><span class="at-assignee-manager"></span></div>';
     sectionField.parentNode.insertBefore(box, sectionField.nextSibling);
-    var depts = buildPick(activeReferenceValues('departments'), true, 'Выбрать направления');
-    var manager = buildPick(managerNames(), false, 'Выбрать ответственного');
+    var depts = buildPick(pickableDirections(), true, 'Выбрать направления');
+    var manager = buildPick([], false, 'Выбрать ответственного');
     box.querySelector('.at-assignee-depts').appendChild(depts);
     box.querySelector('.at-assignee-manager').appendChild(manager);
-    var hint = box.querySelector('.at-assignee-hint');
+    // ответственный — сотрудник выбранных направлений: список пересобирается при смене направлений
+    function rebuildManager(){
+      var keep = manager.getValues();
+      var slot = box.querySelector('.at-assignee-manager');
+      manager = buildPick(assigneeNames(depts.getValues()), false, 'Выбрать ответственного');
+      manager.setValues(keep);
+      slot.innerHTML = '';
+      slot.appendChild(manager);
+    }
+    depts.addEventListener('xchange', rebuildManager);
     function sync(){
       box.hidden = getSection() !== 'Ожидают решения';
-      hint.hidden = depts.getValues().length < 2;
     }
     overlay.addEventListener('xchange', sync);
     overlay.addEventListener('change', sync);
     return {
-      reset: function(){ depts.reset(); manager.reset(); sync(); },
+      reset: function(){ depts.reset(); rebuildManager(); manager.reset(); sync(); },
       // null — если не заполнено (поля подсвечиваются), иначе {depts, manager}
       validate: function(){
         var d = depts.getValues(), m = manager.getValues()[0] || '';
@@ -1313,18 +1381,22 @@
       + '<p class="hint">В разделе «'+escHtml(destination)+'» у тендера должны быть ответственный и хотя бы одно направление.</p>'
       + '<div class="field"><label>Направления</label><span class="ra-depts"></span></div>'
       + '<div class="field"><label>Ответственный</label><span class="ra-manager"></span></div>'
-      + '<p class="at-assignee-hint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</p>'
       + '<div class="modal-actions"><button class="btn" type="button" data-ra="cancel">Отмена</button>'
       + '<button class="btn btn-primary" type="button" data-ra="save">Сохранить</button></div></div>';
     var depts = buildPick(activeReferenceValues('departments'), true, 'Выбрать направления');
-    var manager = buildPick(managerNames(), false, 'Выбрать ответственного');
     depts.setValues(prefill.depts || []);
-    if(prefill.manager) manager.setValues([prefill.manager]);
+    var manager = null;
+    // ответственный — сотрудник выбранных направлений (ТЗ 4.4)
+    function rebuildManager(keep){
+      manager = buildPick(assigneeNames(depts.getValues()), false, 'Выбрать ответственного');
+      if(keep) manager.setValues([keep]);
+      var slot = overlay.querySelector('.ra-manager');
+      slot.innerHTML = '';
+      slot.appendChild(manager);
+    }
     overlay.querySelector('.ra-depts').appendChild(depts);
-    overlay.querySelector('.ra-manager').appendChild(manager);
-    var hint = overlay.querySelector('.at-assignee-hint');
-    overlay.addEventListener('xchange', function(){ hint.hidden = depts.getValues().length < 2; });
-    hint.hidden = depts.getValues().length < 2;
+    rebuildManager(prefill.manager || '');
+    depts.addEventListener('xchange', function(){ rebuildManager(manager.getValues()[0] || ''); });
     function close(){ overlay.remove(); }
     overlay.addEventListener('click', function(event){
       var action = event.target.getAttribute && event.target.getAttribute('data-ra');
@@ -1414,7 +1486,35 @@
     notifications.push({ recipient:manager, text:text, date:new Date().toLocaleString('ru-RU'), href:'kartochka-tendera.html?tender='+tender.id });
     try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
   }
+  // после «Добавить тендер» (ТЗ 5.6, 9.1, решение 02.10.2026): уведомления Админам и
+  // Суперадминам и текст сообщения автору
+  function notifyAdmins(text, tender){
+    var me = currentUser();
+    var notifications = [];
+    try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
+    var date = new Date().toLocaleString('ru-RU');
+    activeUsers().filter(function(u){ return isAdminUser(u) && u.name !== me.name; }).forEach(function(u){
+      notifications.push({ recipient:u.name, text:text, date:date, href:'kartochka-tendera.html?tender='+tender.id });
+    });
+    try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
+  }
+  function manualAddMessage(tender, section){
+    var me = currentUser();
+    if(section === 'Ожидают решения'){
+      if(!isAdminUser(me)) notifyAdmins(me.name+' добавил и взял в работу тендер «'+tender.name+'»', tender);
+      return 'Добавлено в раздел «Ожидают решения».';
+    }
+    if(isAdminUser(me)) return 'Добавлено в раздел «Новые».';
+    notifyAdmins(me.name+' добавил тендер «'+tender.name+'», необходимо распределить', tender);
+    return 'Тендер добавлен в «Новые» — его распределит администратор.';
+  }
   global.TenderReferences = {
+    manualAddMessage: manualAddMessage,
+    assigneeNames: assigneeNames,
+    canFirstDecision: canFirstDecision,
+    canSecondDecision: canSecondDecision,
+    canChooseAddSection: canChooseAddSection,
+    isDeptHeadUser: isDeptHeadUser,
     addTenderAssignee: addTenderAssignee,
     addReviewTask: addReviewTask,
     requireAssignee: requireAssignee,

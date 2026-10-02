@@ -416,7 +416,7 @@
         </a>
         <ul class="nav-sub">
           <li data-admin-observer-only="1"><a href="vse-tendery.html"><span class="nav-label">Сводная таблица</span></a></li>
-          <li><a href="novye-tendery.html"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
+          <li data-nav-new-section="1"><a href="novye-tendery.html"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
           <li><a href="#" class="is-active"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
           <li><a href="v-rabote.html"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
           <li><a href="arhiv.html"><span class="nav-label">Архив</span></a></li>
@@ -566,7 +566,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02"></script>
+<script src="spravochniki.js?v=2026-10-02b"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -877,10 +877,11 @@
       +   '<div class="tcard-row2">'
       +     '<div class="tcard-row2-default" data-part="default">'
       +       '<a class="link-ico" href="kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent('Ожидают решения')+'">Перейти в карточку ↗</a>'
-      +       '<div class="tcard-row2-actions">'
+      // второе решение: Админ, Суперадмин, Руководитель отдела; Менеджер — если ответственный (02.10.2026)
+      +       (TenderReferences.canSecondDecision(null, t) ? '<div class="tcard-row2-actions">'
       +         '<button class="btn btn-outline" data-action="open-reject" data-id="'+t.id+'">Отказ</button>'
       +         '<button class="btn btn-primary" data-action="confirm-participation" data-id="'+t.id+'">Участвовать</button>'
-      +       '</div>'
+      +       '</div>' : '')
       +     '</div>'
 
       +     '<div class="tform" data-part="reject" data-id="'+t.id+'" hidden>'
@@ -895,7 +896,6 @@
       +     '<div class="tform" data-part="accept" data-id="'+t.id+'" hidden>'
       +       '<div class="tform-field"><label>Направления</label><span class="xmulti-slot"></span></div>'
       +       '<div class="tform-field"><label>Ответственный</label><span class="xselect-manager-slot"></span></div>'
-      +       '<div class="tform-hint" data-part="multi-hint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</div>'
       +       '<div class="tform-actions">'
       +         '<button class="btn" data-action="cancel-form" data-id="'+t.id+'">Отмена</button>'
       +         '<button class="btn btn-primary" data-action="save-accept" data-id="'+t.id+'">Сохранить</button>'
@@ -929,11 +929,17 @@
     var deptMulti = buildXMulti();
     multiSlot.appendChild(deptMulti);
 
-    var multiHint = cardEl.querySelector('[data-part="multi-hint"]');
-    deptMulti.addEventListener('xchange', function(){
-      var vals = JSON.parse(deptMulti.dataset.values);
-      multiHint.hidden = vals.length < 2;
-    });
+    // ответственный — сотрудник выбранных направлений (решение 02.10.2026, ТЗ 4.4)
+    function rebuildManagerSelect(){
+      var vals = JSON.parse(deptMulti.dataset.values || '[]');
+      var keep = cardEl._managerSelect ? cardEl._managerSelect.dataset.value : '';
+      var names = TenderReferences.assigneeNames(vals);
+      var next = buildXSelect(names, names.indexOf(keep) !== -1 ? keep : '', 'Выбрать ответственного');
+      managerSlot.innerHTML = '';
+      managerSlot.appendChild(next);
+      cardEl._managerSelect = next;
+    }
+    deptMulti.addEventListener('xchange', rebuildManagerSelect);
 
     cardEl._reasonSelect = reasonSelect;
     cardEl._managerSelect = managerSelect;
@@ -1174,6 +1180,7 @@
   }
   function closeAddTender(){ addOverlay.classList.remove('is-open'); TenderReferences.setDirty('addTender', false); }
   document.getElementById('addTenderBtn').addEventListener('click', openAddTender);
+  if(new URLSearchParams(location.search).get('add') === '1') openAddTender();
   addOverlay.addEventListener('input', function(){ TenderReferences.setDirty('addTender', true); });
   addOverlay.addEventListener('xchange', function(){ TenderReferences.setDirty('addTender', true); });
   document.getElementById('atCancel').addEventListener('click', function(){
@@ -1206,7 +1213,7 @@
     saveTenders(tenders);
     render();
     closeAddTender();
-    showToast('Добавлено в раздел «'+addSection+'».');
+    showToast(TenderReferences.manualAddMessage(tenders[0], addSection));
   });
 
   // ---- отчёт ИИ: модалка для чтения + скачивание ----

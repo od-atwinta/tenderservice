@@ -720,7 +720,7 @@
         <a href="vse-tendery.html" class="is-active" title="Тендеры" data-nav-tenders="1"><svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg><span class="nav-label">Тендеры</span></a>
         <ul class="nav-sub">
           <li data-admin-observer-only="1"><a href="vse-tendery.html"><span class="nav-label">Сводная таблица</span></a></li>
-          <li><a href="novye-tendery.html"><span class="nav-label">Новые</span><span class="nav-badge" id="navNew"></span></a></li>
+          <li data-nav-new-section="1"><a href="novye-tendery.html"><span class="nav-label">Новые</span><span class="nav-badge" id="navNew"></span></a></li>
           <li><a href="ozhidayut-resheniya.html"><span class="nav-label">Ожидают решения</span><span class="nav-badge muted" id="navWaiting"></span></a></li>
           <li><a href="v-rabote.html"><span class="nav-label">В работе</span><span class="nav-badge muted" id="navProgress"></span></a></li>
           <li><a href="arhiv.html"><span class="nav-label">Архив</span></a></li>
@@ -1153,7 +1153,6 @@
       <label>Ответственный</label>
       <span id="decisionManagerSlot"></span>
     </div>
-    <p class="hint" id="decisionMultiHint" hidden>При нескольких направлениях ответственным может быть только менеджер отдела продаж.</p>
     <div class="modal-actions">
       <button class="btn" type="button" id="decisionTakeCancel">Отмена</button>
       <button class="btn btn-primary" type="button" id="decisionTakeSave">Сохранить</button>
@@ -1500,7 +1499,7 @@
 </aside>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02"></script>
+<script src="spravochniki.js?v=2026-10-02b"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -4611,10 +4610,10 @@
   // Кнопки решения в шапке вместо «Изменить», пока решение не принято
   // (решение Оксаны 30.09.2026, ТЗ 6.3): «Новые» — «Отказ» / «Взять в работу»,
   // «Ожидают решения» — «Отказ» / «Участвовать». Право — первое/второе решение (ТЗ 3.3).
-  function canDecide(user){
-    var DECISION_ROLES = ['суперадмин','админ','менеджер','руководитель отдела'];
-    var roles = user && Array.isArray(user.roles) ? user.roles : [];
-    return roles.some(function(role){ return DECISION_ROLES.indexOf(String(role).toLocaleLowerCase('ru-RU')) !== -1; });
+  // первое решение — Админ и Суперадмин; второе — они же, Руководитель отдела и Менеджер-ответственный
+  // (решение Оксаны 02.10.2026, ТЗ 3.3)
+  function canDecide(user, stage, t){
+    return stage === 'first' ? TenderReferences.canFirstDecision(user) : TenderReferences.canSecondDecision(user, t);
   }
   function decisionStage(t){
     if(t.decision === 'Отказ') return '';
@@ -4635,7 +4634,7 @@
       btn.dataset.mode = 'restore';
     }else if(stage){
       btn.hidden = true;
-      if(canDecide(CURRENT_USER)){
+      if(canDecide(CURRENT_USER, stage, t)){
         rejectBtn.hidden = acceptBtn.hidden = false;
         acceptBtn.textContent = stage === 'first' ? 'Взять в работу' : 'Участвовать';
         acceptBtn.dataset.stage = stage;
@@ -4820,14 +4819,16 @@
     deptSlot.innerHTML = '';
     decisionDeptMulti = buildXMulti(DIRECTIONS, tender.depts || [], 'Выбрать направления');
     deptSlot.appendChild(decisionDeptMulti);
-    var hint = document.getElementById('decisionMultiHint');
-    function syncHint(){ hint.hidden = JSON.parse(decisionDeptMulti.dataset.values).length < 2; }
-    decisionDeptMulti.addEventListener('xchange', syncHint);
-    syncHint();
     var managerSlot = document.getElementById('decisionManagerSlot');
-    managerSlot.innerHTML = '';
-    decisionManagerSelect = buildXSelect(MANAGERS, tender.manager || '', 'Выбрать ответственного');
-    managerSlot.appendChild(decisionManagerSelect);
+    // ответственный — сотрудник выбранных направлений (решение 02.10.2026, ТЗ 4.4)
+    function rebuildDecisionManager(keep){
+      var names = TenderReferences.assigneeNames(JSON.parse(decisionDeptMulti.dataset.values || '[]'));
+      managerSlot.innerHTML = '';
+      decisionManagerSelect = buildXSelect(names, names.indexOf(keep) !== -1 ? keep : '', 'Выбрать ответственного');
+      managerSlot.appendChild(decisionManagerSelect);
+    }
+    decisionDeptMulti.addEventListener('xchange', function(){ rebuildDecisionManager(decisionManagerSelect ? decisionManagerSelect.dataset.value : ''); });
+    rebuildDecisionManager(tender.manager || '');
     decisionTakeOverlay.classList.add('is-open');
   });
   document.getElementById('decisionTakeCancel').addEventListener('click', function(){ decisionTakeOverlay.classList.remove('is-open'); });
