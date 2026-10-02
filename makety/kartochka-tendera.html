@@ -1500,7 +1500,7 @@
 </aside>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02f"></script>
+<script src="spravochniki.js?v=2026-10-02g"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -3823,9 +3823,10 @@
       activeProcessSection && activeProcessSection.name ? activeProcessSection.name : 'Основной';
     document.getElementById('currentTenderStage').textContent = stageName(tender);
     var isRejectedTender = tender.decision === 'Отказ';
-    document.getElementById('currentTenderStatus').hidden = isRejectedTender;
-    document.getElementById('headerStatusDivider').hidden = isRejectedTender;
-    document.getElementById('currentTenderStatus').textContent = tender.appStatus || 'Не указан';
+    // отказ на отборе или изучении — без статуса, показывается «Отказ» (решение 02.10.2026)
+    document.getElementById('currentTenderStatus').hidden = false;
+    document.getElementById('headerStatusDivider').hidden = false;
+    document.getElementById('currentTenderStatus').textContent = isRejectedTender ? 'Отказ' : (tender.appStatus || 'Не указан');
     renderStatusControl(tender);
     if(typeof renderAiPending === 'function') renderAiPending();
     renderPlatform(tender);
@@ -4810,13 +4811,29 @@
     if(!reason){ decisionReasonSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; return; }
     var comment = document.getElementById('decisionRejectComment').value.trim();
     var from = bucket(tender) === 'Новый' ? 'Новые' : bucket(tender);
+    var refusalSnapshot = JSON.parse(JSON.stringify(tender));
     tender.decision = 'Отказ';
     tender.lifecycleSection = 'Архив';
-    TenderReferences.updateActiveSectionFromStatus(tender, 'Отклонено');
+    // без статуса — вместо статуса «Отказ» (решение 02.10.2026)
+    TenderReferences.markRefused(tender);
     tender.rejectReason = reason;
     tender.rejectComment = comment;
     decisionRejectOverlay.classList.remove('is-open');
+    if(from === 'Новые') TenderReferences.notifyAuthorRefused(tender, reason);
     finishDecision('Архив', 'Отказ ('+from+'). Причина: '+reason+'. Тендер перенесён в раздел «Архив».', comment, 'Перемещено в архив.');
+    if(from === 'Новые'){
+      // «Отменить» 15 секунд после отказа на отборе (решение 02.10.2026)
+      var refusedTender = tender;
+      TenderReferences.showUndoToast('Перемещено в архив.', function(){
+        TenderReferences.undoRefusal(refusedTender, refusalSnapshot);
+        saveTenders(tenders);
+        targetSection = 'Новые';
+        history.replaceState(null, '', sectionHref(refusedTender));
+        applyTenderData();
+        renderSyncedNotifications();
+        showToast('Отказ отменён — тендер снова в «Новых».');
+      });
+    }
   });
   document.getElementById('decisionAccept').addEventListener('click', function(){
     if(!tender) return;

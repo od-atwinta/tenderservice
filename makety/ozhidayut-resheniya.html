@@ -566,7 +566,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02f"></script>
+<script src="spravochniki.js?v=2026-10-02g"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -1073,7 +1073,8 @@
       var comment = cardEl.querySelector('[data-part="reject"] textarea[data-field="comment"]').value.trim();
       t.decision = 'Отказ';
       t.lifecycleSection = 'Архив';
-      TenderReferences.updateActiveSectionFromStatus(t, 'Отклонено');
+      // без статуса — в списках «Отказ» (решение 02.10.2026)
+      TenderReferences.markRefused(t);
       t.rejectReason = reason;
       t.rejectComment = comment;
       TenderReferences.setDirty('reject-'+id, false);

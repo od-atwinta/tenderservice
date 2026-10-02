@@ -704,7 +704,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02f"></script>
+<script src="spravochniki.js?v=2026-10-02g"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -1075,7 +1075,8 @@
       + '<td><button class="fav-star'+(t.fav?' is-fav':'')+'" data-action="toggle-fav" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button></td>'
       + '<td>'+esc(t.manager || '—')+'</td>'
       + '<td class="name-cell"><a class="'+titleClass+'" href="'+nameHref+'">'+esc(t.name)+'</a>'+lotsBadge(t)+'</td>'
-      + '<td>'+(t.decision === 'Отказ' ? '' : '<span class="status-tag"><span class="dot"></span>'+esc(t.appStatus || 'Архив')+'</span>')+'</td>'
+      // отказ на отборе или изучении — без статуса, показывается «Отказ» (решение 02.10.2026)
+      + '<td><span class="status-tag"><span class="dot"></span>'+esc(t.decision === 'Отказ' ? 'Отказ' : (t.appStatus || 'Архив'))+'</span></td>'
       + '<td>'+esc(t.customer)+'</td>'
       + '<td class="num">'+(t.nmc ? fmtNum(t.nmc) : '—')+'</td>'
       + '<td class="num">'+fmtDate(t.pub)+'</td>'

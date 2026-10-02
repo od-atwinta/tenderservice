@@ -584,7 +584,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02f"></script>
+<script src="spravochniki.js?v=2026-10-02g"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -1359,13 +1359,25 @@
       var reason = cardEl._reasonSelect.dataset.value;
       if(!reason){ cardEl._reasonSelect.querySelector('.xselect-trigger').style.borderColor = 'var(--danger)'; return; }
       var comment = cardEl.querySelector('[data-part="reject"] textarea[data-field="comment"]').value.trim();
+      var refusalSnapshot = JSON.parse(JSON.stringify(t));
       t.decision = 'Отказ';
       t.lifecycleSection = 'Архив';
-      TenderReferences.updateActiveSectionFromStatus(t, 'Отклонено');
+      // без статуса — в списках «Отказ» (решение 02.10.2026)
+      TenderReferences.markRefused(t);
       t.rejectReason = reason;
       t.rejectComment = comment;
+      t.events = Array.isArray(t.events) ? t.events : [];
+      t.events.push({date:new Date().toLocaleString('ru-RU'), text:'Отказ (Новые). Причина: '+reason+'. Тендер перенесён в раздел «Архив».', comment:comment, actor:TenderReferences.currentUser().name});
+      TenderReferences.notifyAuthorRefused(t, reason);
       TenderReferences.setDirty('reject-'+id, false);
       resolveCard(id, 'Перемещено в архив.');
+      // «Отменить» 15 секунд (решение 02.10.2026)
+      TenderReferences.showUndoToast('Перемещено в архив.', function(){
+        TenderReferences.undoRefusal(t, refusalSnapshot);
+        saveTenders(tenders);
+        render();
+        showToast('Отказ отменён — тендер снова в «Новых».');
+      });
       return;
     }
     if(action === 'save-accept'){

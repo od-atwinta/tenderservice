@@ -643,6 +643,21 @@
     }
     return sections[sections.length-1] || null;
   }
+  // отказ на отборе или изучении (решение «отказ», ТЗ 5.2): статус не ставится — в списках
+  // и карточке вместо статуса показывается «Отказ» (решение Оксаны 02.10.2026); «Отклонено»
+  // — это отказ заказчика (5.3). Этап отбора/изучения завершается, дата «Закрыто» — сегодня.
+  function markRefused(tender){
+    ensureTenderStructure(tender);
+    var active = activeTenderSection(tender);
+    if(active){
+      active.status = '';
+      active.completed = true;
+      active.completedAt = new Date().toISOString();
+      active.snapshot = sectionSnapshot(active);
+    }
+    tender.appStatus = null;
+    tender.archivedAt = tender.archivedAt || new Date().toISOString().slice(0,10);
+  }
   function updateActiveSectionFromStatus(tender,status){
     ensureTenderStructure(tender);
     var active = activeTenderSection(tender);
@@ -929,6 +944,20 @@
     applyTheme(value);
   }
   applyTheme(getTheme());
+  // причина отказа «Дубль» отключена: дубли удаляются (ТЗ 5.9, решение 02.10.2026);
+  // в старых тендерах значение остаётся и показывается
+  (function(){
+    var KEY = 'atvinta_jul_duplicate_reason_off_v1';
+    try{
+      if(localStorage.getItem(KEY)) return;
+      var stored = JSON.parse(localStorage.getItem(REFERENCE_INACTIVE_KEY) || '{}') || {};
+      var list = Array.isArray(stored.rejectionReasons) ? stored.rejectionReasons : [];
+      if(list.indexOf('Дубль') === -1) list.push('Дубль');
+      stored.rejectionReasons = list;
+      localStorage.setItem(REFERENCE_INACTIVE_KEY, JSON.stringify(stored));
+      localStorage.setItem(KEY, '1');
+    }catch(e){}
+  })();
   if(typeof window !== 'undefined'){
     window.addEventListener('storage', function(e){
       if(e.key === THEME_KEY) applyTheme(getTheme());
@@ -1531,6 +1560,13 @@
   }
   function manualAddMessage(tender, section){
     var me = currentUser();
+    // автор ручного тендера — чтобы сообщить ему об отказе (ТЗ 9.1, решение 02.10.2026)
+    try{
+      var stored = JSON.parse(localStorage.getItem('atvinta_jul_tenders_v2') || '[]');
+      var own = stored.filter(function(x){ return x.id === tender.id; })[0];
+      if(own){ own.createdBy = me.name; localStorage.setItem('atvinta_jul_tenders_v2', JSON.stringify(stored)); }
+      tender.createdBy = me.name;
+    }catch(e){}
     if(section === 'Ожидают решения'){
       if(!isAdminUser(me)) notifyAdmins(me.name+' добавил и взял в работу тендер «'+tender.name+'»', tender);
       return 'Добавлено в раздел «Ожидают решения».';
@@ -1659,24 +1695,44 @@
     undoState.observer.observe(textEl, {childList:true, characterData:true, subtree:true});
     foot.querySelector('.toast-undo').onclick = function(){ stopUndo(); onUndo(); };
   }
-  // отмена «Взять в работу»: тендер — как до решения (журнал сохраняется и дополняется),
-  // уведомления ответственному о задаче помечаются отменёнными
-  function undoTakeInWork(tender, snapshot){
+  // отказ по ручному тендеру, который добавил не Админ: автор не видит «Новые» (ТЗ 9.1)
+  function notifyAuthorRefused(tender, reason){
+    var author = tender.createdBy;
+    if(!author) return;
+    var user = loadUsers().filter(function(u){ return u.name === author; })[0];
+    if(!user || isAdminUser(user)) return;
+    var notifications = [];
+    try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
+    notifications.push({recipient:author, text:'Тендер «'+tender.name+'» не взят в работу: '+reason, date:new Date().toLocaleString('ru-RU'), href:'kartochka-tendera.html?tender='+tender.id});
+    try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
+  }
+  // отмена решения в течение 15 секунд: тендер — как до решения (журнал сохраняется и
+  // дополняется), уведомления, отправленные этим решением, помечаются отменёнными
+  function undoDecision(tender, snapshot, eventText){
     var events = Array.isArray(tender.events) ? tender.events.slice() : [];
     Object.keys(tender).forEach(function(key){ if(!(key in snapshot)) delete tender[key]; });
     Object.keys(snapshot).forEach(function(key){ tender[key] = clone(snapshot[key]); });
-    events.push({date:new Date().toLocaleString('ru-RU'), text:'Взятие в работу отменено. Тендер возвращён в «Новые».', comment:'', actor:currentUser().name});
+    events.push({date:new Date().toLocaleString('ru-RU'), text:eventText, comment:'', actor:currentUser().name});
     tender.events = events;
     var notifications = [];
     try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
     notifications.forEach(function(n){
+      var text = String(n.text);
       if(!n.cancelled && n.href && n.href.indexOf('tender='+tender.id) !== -1
-        && String(n.text).indexOf('Изучить документы и принять решение') === 0){
+        && (text.indexOf('Изучить документы и принять решение') === 0 || text.indexOf('не взят в работу:') !== -1)){
         n.cancelled = true;
         n.text = 'Отменено: ' + n.text;
       }
     });
     try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
+  }
+  function undoRefusal(tender, snapshot){
+    undoDecision(tender, snapshot, 'Отказ отменён. Тендер возвращён в «Новые».');
+  }
+  // отмена «Взять в работу»: тендер — как до решения (журнал сохраняется и дополняется),
+  // уведомления ответственному о задаче помечаются отменёнными
+  function undoTakeInWork(tender, snapshot){
+    undoDecision(tender, snapshot, 'Взятие в работу отменено. Тендер возвращён в «Новые».');
   }
   // отчёт ИИ готовится не сразу (ТЗ 10.1): в макете — 8 секунд, затем новая версия
   // отчёта и уведомления «Отчёт ИИ по тендеру «…» готов» (ТЗ 9.1)
@@ -1710,6 +1766,9 @@
     return done;
   }
   global.TenderReferences = {
+    markRefused: markRefused,
+    notifyAuthorRefused: notifyAuthorRefused,
+    undoRefusal: undoRefusal,
     requireRejectReason: requireRejectReason,
     showUndoToast: showUndoToast,
     undoTakeInWork: undoTakeInWork,

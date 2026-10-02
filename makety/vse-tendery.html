@@ -565,7 +565,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02f"></script>
+<script src="spravochniki.js?v=2026-10-02g"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -969,15 +969,25 @@
               var from = fromSection === 'Новый' ? 'Новые' : fromSection;
               t.decision = 'Отказ';
               t.lifecycleSection = 'Архив';
-              TenderReferences.updateActiveSectionFromStatus(t, 'Отклонено');
+              TenderReferences.markRefused(t);
               t.rejectReason = reason;
               t.rejectComment = comment;
               t.events = Array.isArray(t.events) ? t.events : [];
               t.events.push({date:new Date().toLocaleString('ru-RU'), text:'Отказ ('+from+'). Причина: '+reason+'. Тендер перенесён в раздел «Архив».', comment:comment, actor:current.name});
+              if(from === 'Новые') TenderReferences.notifyAuthorRefused(t, reason);
               saveTenders(tenders);
               refreshNavCounts();
               render();
               showToast('Перемещено в архив.');
+              if(from === 'Новые'){
+                TenderReferences.showUndoToast('Перемещено в архив.', function(){
+                  TenderReferences.undoRefusal(t, snapshotBefore);
+                  saveTenders(tenders);
+                  refreshNavCounts();
+                  render();
+                  showToast('Отказ отменён — тендер снова в «Новых».');
+                });
+              }
             }, function(){ render(); });
             return;
           }
