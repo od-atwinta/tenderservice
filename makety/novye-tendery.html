@@ -441,6 +441,11 @@
         <span class="nav-label">Календарь</span>
         <span class="nav-badge" id="navToday"></span>
       </a></li>
+      <li><a href="pochta.html" title="Почта">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
+        <span class="nav-label">Почта</span>
+        <span class="nav-badge" id="navMail"></span>
+      </a></li>
       <li><a href="kopilka.html" title="Копилка">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="nav-label">Копилка</span>
@@ -584,7 +589,7 @@
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
-<script src="spravochniki.js?v=2026-10-02m"></script>
+<script src="spravochniki.js?v=2026-10-02p"></script>
 <script>
 (function(){
   TenderReferences.applyAdminOnlyNav();
@@ -1519,7 +1524,20 @@
   addOverlay.addEventListener('click', function(e){
     if(e.target === addOverlay) TenderReferences.guardedClose('addTender', closeAddTender, function(){ document.getElementById('atSave').click(); });
   });
-  if(new URLSearchParams(location.search).get('add') === '1') openAddTender();
+  // создание тендера из письма-приглашения в «Почте» (ТЗ 10.4) — только Админ и Суперадмин
+  var pendingMailId = null;
+  (function(){
+    var params = new URLSearchParams(location.search);
+    if(params.get('add') !== '1') return;
+    openAddTender();
+    var mailId = params.get('mail'); var raw = params.get('prefill');
+    if(!mailId || !raw || !TenderReferences.isAdminUser(TenderReferences.currentUser())) return;
+    var invite = null; try{ invite = JSON.parse(raw); }catch(e){ return; }
+    atName.value = invite.name || ''; atCustomer.value = invite.customer || '';
+    atSourceLink.value = invite.link || ''; atDeadline.value = invite.deadline || '';
+    pendingMailId = mailId;
+    checkDuplicate();
+  })();
 
   document.getElementById('atSave').addEventListener('click', function(){
     if(!atName.value.trim()){ atName.focus(); return; }
@@ -1542,9 +1560,17 @@
     });
     if(assignee) TenderReferences.addReviewTask(tenders[0], assignee.manager);
     saveTenders(tenders);
+    var fromMail = pendingMailId;
+    if(fromMail){
+      // письмо-приглашение привязывается к новому тендеру и попадает в его «События»
+      TenderReferences.linkMail(fromMail, newId);
+      tenders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      pendingMailId = null;
+      history.replaceState(null, '', 'novye-tendery.html');
+    }
     render();
     closeAddTender();
-    showToast(TenderReferences.manualAddMessage(tenders[0], addSection));
+    showToast(TenderReferences.manualAddMessage(tenders[0], addSection) + (fromMail ? ' Письмо-приглашение привязано к тендеру.' : ''));
   });
 
   document.getElementById('tlist').addEventListener('change', function(e){

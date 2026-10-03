@@ -999,6 +999,9 @@
     if(typeof document === 'undefined') return;
     var user = currentUser();
     applyNavUser(user);
+    // счётчик «Почта» — неразобранные письма (ТЗ 6.1, 10.4)
+    var navMail = document.getElementById('navMail');
+    if(navMail){ var unparsedMail = loadMail().filter(function(m){ return !m.tenderId; }).length; navMail.textContent = unparsedMail; navMail.hidden = !unparsedMail; }
     var admin = isAdminUser(user);
     if(!admin) document.querySelectorAll('[data-admin-only]').forEach(function(el){ el.remove(); });
     if(!admin && !isObserverUser(user)){
@@ -1861,7 +1864,172 @@
     tender.events.push({date:new Date().toLocaleString('ru-RU'), text:'Ссылка на задачу добавлена во «Внешние»: '+url+'.', comment:'', actor:currentUser().name});
     return true;
   }
+  // «Подано» (ТЗ 5.4, решение Оксаны 02.10.2026): в окне «Изменить статус» обязательна дата
+  // фактической подачи (по умолчанию сегодня, не позже сегодня) и по желанию — дата
+  // ожидания ответа; задача «Подать заявку» по этапу закрывается автоматически
+  function todayDateString(){
+    var d = new Date(); function p(n){ return String(n).padStart(2,'0'); }
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+  }
+  function mountSubmissionFields(){
+    var overlay = document.getElementById('statusOverlay');
+    if(!overlay) return null;
+    var box = overlay.querySelector('.submission-fields');
+    if(!box){
+      box = document.createElement('div');
+      box.className = 'submission-fields';
+      box.innerHTML = '<div class="field"><label for="submissionDate">Дата фактической подачи</label><input type="date" id="submissionDate"></div>'
+        + '<div class="field"><label for="responseDueDate">Дата ожидания ответа <span style="text-transform:none;font-weight:400">(по желанию)</span></label><input type="date" id="responseDueDate"></div>';
+      var anchor = document.getElementById('statusReasonField');
+      anchor.parentNode.insertBefore(box, anchor.nextSibling);
+      if(!document.getElementById('submissionCss')){
+        var style = document.createElement('style');
+        style.id = 'submissionCss';
+        style.textContent = '.submission-fields[hidden]{display:none;}.submission-fields input[type="date"]{width:100%;height:32px;border:1px solid var(--border-strong);border-radius:6px;padding:0 10px;font-family:inherit;font-size:14px;background:var(--surface);color:var(--ink);box-sizing:border-box;}';
+        document.head.appendChild(style);
+      }
+    }
+    box.hidden = true;
+    box.querySelector('#submissionDate').value = '';
+    box.querySelector('#responseDueDate').value = '';
+    box.querySelector('#submissionDate').style.borderColor = '';
+    return box;
+  }
+  function syncSubmissionFields(status){
+    var box = document.querySelector('#statusOverlay .submission-fields');
+    if(!box) return;
+    box.hidden = status !== 'Подано';
+    var date = box.querySelector('#submissionDate');
+    date.max = todayDateString();
+    if(!box.hidden && !date.value) date.value = todayDateString();
+  }
+  function readSubmissionFields(status){
+    if(status !== 'Подано') return {ok:true, submission:null};
+    var date = document.getElementById('submissionDate');
+    var due = document.getElementById('responseDueDate');
+    if(!date || !date.value || date.value > todayDateString()){
+      if(date) date.style.borderColor = 'var(--danger)';
+      return {ok:false};
+    }
+    return {ok:true, submission:{date:date.value, responseDue:due ? due.value : ''}};
+  }
+  function applySubmission(tender, submission){
+    if(!tender || !submission) return;
+    ensureTenderStructure(tender);
+    var active = activeTenderSection(tender);
+    if(active){
+      active.actualSubmissionDate = submission.date;
+      if(submission.responseDue) active.responseDueDate = submission.responseDue;
+    }
+    tender.submittedAt = submission.date;
+    if(submission.responseDue) tender.responseDueDate = submission.responseDue;
+    (Array.isArray(tender.tasks) ? tender.tasks : []).forEach(function(item){
+      if(item && !item.done && String(item.autoMarker || '').indexOf('auto-submission-') === 0){ item.done = true; item.closedAuto = true; }
+    });
+  }
+  // «Реквизиты компании» (Настройки, Админ и Суперадмин; ТЗ 6.2, решение 02.10.2026) —
+  // для кнопки «Заполнить данными компании» в формах. В макете хранятся в браузере.
+  var REQUISITES_KEY = 'atvinta_jul_company_requisites_v1';
+  var REQUISITE_FIELDS = [{key:'name',label:'Название организации'},{key:'inn',label:'ИНН'},{key:'kpp',label:'КПП'},{key:'ogrn',label:'ОГРН'},{key:'legalAddress',label:'Юридический адрес'},{key:'postAddress',label:'Почтовый адрес'},{key:'bank',label:'Банк'},{key:'account',label:'Расчётный счёт'},{key:'bik',label:'БИК'},{key:'corrAccount',label:'Корреспондентский счёт'},{key:'director',label:'Руководитель (ФИО)'},{key:'directorPosition',label:'Должность руководителя'},{key:'phone',label:'Телефон'},{key:'email',label:'Электронная почта'}];
+  function getCompanyRequisites(){
+    var stored = {};
+    try{ stored = JSON.parse(localStorage.getItem(REQUISITES_KEY) || '{}') || {}; }catch(e){}
+    if(!stored.name) stored.name = 'ООО «Атвинта»';
+    return stored;
+  }
+  function saveCompanyRequisites(values){
+    try{ localStorage.setItem(REQUISITES_KEY, JSON.stringify(values)); }catch(e){}
+  }
+  // ---- «Почта» (ТЗ 6.2, 10.4, решение Оксаны 02.10.2026) ----
+  // В сервисе письма забирает n8n из ящика компании; в макете — демо-письма в браузере.
+  var MAIL_KEY = 'atvinta_jul_mail_v1';
+  var MAIL_TYPES = ['Изменение условий или сроков','Ответ на запрос','Протокол','Переторжка','Приглашение','Прочее'];
+  function loadMail(){
+    var list = null;
+    try{ list = JSON.parse(localStorage.getItem(MAIL_KEY) || 'null'); }catch(e){}
+    if(Array.isArray(list)) return list;
+    var tenders = [];
+    try{ tenders = JSON.parse(localStorage.getItem('atvinta_jul_tenders_v2') || '[]'); }catch(e){}
+    var inApps = tenders.filter(function(t){ return resolveSection(t) === 'Заявки'; })[0];
+    var inWork = tenders.filter(function(t){ return resolveSection(t) === 'В работе'; })[0];
+    list = [
+      {id:'m1', date:'2026-10-02T09:14', platform:'Bidzaar', from:'noreply@bidzaar.com', type:'Изменение условий или сроков',
+        subject:'Изменения в закупке: перенесён срок подачи предложений', tenderId:inWork ? inWork.id : null, linkedBy:'автоматически',
+        body:'Демо. Организатор внёс изменения в закупку. Новый срок окончания приёма предложений: 09.10.2026 12:00 (МСК). Ссылка на процедуру — в личном кабинете площадки.', attachments:['Изменения в документацию.pdf']},
+      {id:'m2', date:'2026-10-01T16:40', platform:'Росэлторг', from:'info@roseltorg.ru', type:'Ответ на запрос',
+        subject:'Опубликован ответ на запрос разъяснений', tenderId:inWork ? inWork.id : null, linkedBy:'автоматически',
+        body:'Демо. По процедуре опубликовано разъяснение положений документации в ответ на ваш запрос.', attachments:['Разъяснение.docx']},
+      {id:'m3', date:'2026-10-01T11:05', platform:'Сбербанк-АСТ', from:'robot@sberbank-ast.ru', type:'Протокол',
+        subject:'Размещён протокол рассмотрения заявок', tenderId:inApps ? inApps.id : null, linkedBy:'автоматически',
+        body:'Демо. Заказчик разместил протокол рассмотрения первых частей заявок. Ваша заявка допущена.', attachments:['Протокол рассмотрения.pdf']},
+      {id:'m4', date:'2026-10-02T08:30', platform:'РТС-тендер', from:'notify@rts-tender.ru', type:'Приглашение',
+        subject:'Приглашение к участию: разработка мобильного приложения для сети клиник', tenderId:null,
+        invite:{name:'Разработка мобильного приложения для сети клиник (демо)', customer:'АО «Демо-Клиника»', link:'https://www.rts-tender.ru/', deadline:'2026-10-20T10:00'},
+        body:'Демо. Приглашаем принять участие в запросе предложений. Окончание подачи заявок: 20.10.2026 10:00 (МСК).', attachments:['Техническое задание.docx','Форма заявки.docx']},
+      {id:'m5', date:'2026-09-30T18:20', platform:'B2B-Center', from:'noreply@b2b-center.ru', type:'Переторжка',
+        subject:'Объявлена переторжка по процедуре № 0000000 (демо)', tenderId:null,
+        body:'Демо. Организатор объявил переторжку. Подача новых цен — до 05.10.2026 15:00 (МСК). Номер процедуры не найден среди тендеров сервиса — письмо нужно привязать вручную.', attachments:[]},
+      {id:'m6', date:'2026-09-30T10:02', platform:'ЕИС', from:'noreply@zakupki.gov.ru', type:'Изменение условий или сроков',
+        subject:'Внесены изменения в извещение № 0000000000000 (демо)', tenderId:null,
+        body:'Демо. В извещение о закупке внесены изменения: изменена начальная (максимальная) цена контракта.', attachments:['Извещение (изм. 1).pdf']}
+    ];
+    try{ localStorage.setItem(MAIL_KEY, JSON.stringify(list)); }catch(e){}
+    return list;
+  }
+  function saveMail(list){ try{ localStorage.setItem(MAIL_KEY, JSON.stringify(list)); }catch(e){} }
+  // привязать письмо к тендеру: письмо — во вкладке «События», уведомление ответственному
+  function linkMail(mailId, tenderId){
+    var list = loadMail(); var mail = list.filter(function(m){ return m.id === mailId; })[0];
+    var tenders = []; try{ tenders = JSON.parse(localStorage.getItem('atvinta_jul_tenders_v2') || '[]'); }catch(e){}
+    var t = tenders.filter(function(x){ return String(x.id) === String(tenderId); })[0];
+    if(!mail || !t) return false;
+    if(mail.tenderId) unlinkMail(mailId);
+    tenders = JSON.parse(localStorage.getItem('atvinta_jul_tenders_v2') || '[]');
+    t = tenders.filter(function(x){ return String(x.id) === String(tenderId); })[0];
+    list = loadMail(); mail = list.filter(function(m){ return m.id === mailId; })[0];
+    mail.tenderId = t.id; mail.linkedBy = currentUser().name;
+    t.manualEvents = Array.isArray(t.manualEvents) ? t.manualEvents : [];
+    var ids = t.manualEvents.map(function(e){ return Number(e.id) || 0; });
+    t.manualEvents.push({id:(ids.length ? Math.max.apply(null, ids) : 0) + 1, date:String(mail.date).slice(0,10), text:'Письмо с площадки ('+mail.platform+', '+mail.type.toLowerCase()+'): '+mail.subject, mailId:mail.id});
+    t.events = Array.isArray(t.events) ? t.events : [];
+    t.events.push({date:new Date().toLocaleString('ru-RU'), text:'Привязано письмо из «Почты»: '+mail.subject+'.', comment:'', actor:currentUser().name});
+    localStorage.setItem('atvinta_jul_tenders_v2', JSON.stringify(tenders));
+    saveMail(list);
+    if(t.manager){
+      var notifications = []; try{ notifications = JSON.parse(localStorage.getItem('atvinta_jul_notifications_v1') || '[]'); }catch(e){}
+      notifications.push({recipient:t.manager, text:'По тендеру «'+t.name+'» пришло письмо: '+mail.type.toLowerCase(), date:new Date().toLocaleString('ru-RU'), href:'kartochka-tendera.html?tender='+t.id});
+      try{ localStorage.setItem('atvinta_jul_notifications_v1', JSON.stringify(notifications.slice(-50))); }catch(e){}
+    }
+    return true;
+  }
+  function unlinkMail(mailId){
+    var list = loadMail(); var mail = list.filter(function(m){ return m.id === mailId; })[0];
+    if(!mail || !mail.tenderId) return false;
+    var tenders = []; try{ tenders = JSON.parse(localStorage.getItem('atvinta_jul_tenders_v2') || '[]'); }catch(e){}
+    var t = tenders.filter(function(x){ return String(x.id) === String(mail.tenderId); })[0];
+    if(t){
+      t.manualEvents = (t.manualEvents || []).filter(function(e){ return e.mailId !== mail.id; });
+      t.events = Array.isArray(t.events) ? t.events : [];
+      t.events.push({date:new Date().toLocaleString('ru-RU'), text:'Письмо отвязано: '+mail.subject+'.', comment:'', actor:currentUser().name});
+      localStorage.setItem('atvinta_jul_tenders_v2', JSON.stringify(tenders));
+    }
+    mail.tenderId = null; mail.linkedBy = '';
+    saveMail(list);
+    return true;
+  }
   global.TenderReferences = {
+    mailTypes: MAIL_TYPES.slice(),
+    loadMail: loadMail,
+    saveMail: saveMail,
+    linkMail: linkMail,
+    unlinkMail: unlinkMail,
+    requisiteFields: REQUISITE_FIELDS,
+    getCompanyRequisites: getCompanyRequisites,
+    saveCompanyRequisites: saveCompanyRequisites,
+    mountSubmissionFields: mountSubmissionFields,
+    syncSubmissionFields: syncSubmissionFields,
+    readSubmissionFields: readSubmissionFields,
+    applySubmission: applySubmission,
     syncTaskLinkToExternal: syncTaskLinkToExternal,
     submitTaskDue: submitTaskDue,
     addSubmitTask: addSubmitTask,

@@ -2,7 +2,7 @@
 <html lang="ru">
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
-<title>Тендеры — сводная таблица</title>
+<title>Почта</title>
 <style>
   :root{
     --bg:#faf8f9;--surface:#ffffff;--surface-2:#f4eef1;--ink:#1c1720;--ink-muted:#6b6270;
@@ -41,7 +41,6 @@
     --shadow-md:0 8px 24px rgba(28,23,32,.14);
   }
 
-  [hidden]{display:none !important;}
   *{box-sizing:border-box;}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);
     -webkit-font-smoothing:antialiased;}
@@ -128,7 +127,7 @@
   h1.page-title{font-family:var(--font-display);font-weight:600;font-size:28px;margin:0;}
   .page-actions{display:flex;align-items:center;gap:16px;flex:none;}
 
-  /* custom dropdown widget — replaces native selects everywhere, closed AND open state both styled */
+  /* custom dropdown widget — переиспользован из vse-tendery.html/v-rabote.html */
   .xselect{position:relative;display:inline-block;}
   .xselect-native{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;}
   .xselect-trigger{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;
@@ -145,18 +144,15 @@
   .xselect-item{padding:7px 10px;border-radius:6px;font-size:12.5px;cursor:pointer;white-space:nowrap;}
   .xselect-item:hover{background:var(--surface-2);}
   .xselect-item.is-selected{background:var(--accent-wash);color:var(--accent);font-weight:600;}
-  .xselect-cell .xselect-trigger{min-width:0;max-width:170px;padding:0 10px;font-size:12px;}
-  .xselect-cell .xselect-menu{font-size:12px;}
 
   .filter-bar{display:flex;flex-wrap:wrap;align-items:end;gap:18px;margin-bottom:24px;}
   .toolbar-right{display:flex;align-items:end;gap:12px;margin-left:auto;}
   .filter-field{display:flex;flex-direction:column;gap:6px;}
   .filter-field label{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted);
     font-weight:700;}
-  .filter-field select,.filter-field input[type="date"]{border:1px solid var(--border-strong);
+  .filter-field select{border:1px solid var(--border-strong);
     border-radius:6px;padding:7px 10px;font-family:var(--font-body);font-size:12.5px;background:var(--surface);
-    color:var(--ink);min-width:140px;}
-  .filter-field select{padding-right:26px;}
+    color:var(--ink);min-width:140px;padding-right:26px;}
   .filter-check{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-muted);
     padding-bottom:8px;white-space:nowrap;}
   .filter-check input{width:15px;height:15px;accent-color:var(--accent);}
@@ -174,8 +170,6 @@
   .search-clear:hover{background:var(--surface-2);color:var(--ink);}
   .search-clear svg{width:12px;height:12px;}
   .search-clear[hidden]{display:none;}
-  /* колонка «Заказчик»: фиксированная ширина, длинное название обрезается многоточием */
-  .data-table .col-customer{width:200px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .icon-btn-sm{width:34px;height:34px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);
     background:var(--surface);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;
     cursor:pointer;flex:none;}
@@ -185,10 +179,6 @@
   /* ---------- table ---------- */
   .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-md);
     background:var(--surface);box-shadow:var(--shadow-sm);}
-  /* таблица занимает высоту до пагинации внизу экрана даже при 1–2 строках, чтобы
-     выпадающие списки в строках (решение, причина, ответственный) открывались без прокрутки */
-  #appRoot{display:flex;flex-direction:column;min-height:100vh;}
-  #appRoot > .table-wrap{flex:1 0 320px;}
   table.data-table{width:100%;border-collapse:collapse;font-size:13px;}
   .data-table th,.data-table td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;
     vertical-align:middle;white-space:nowrap;}
@@ -201,7 +191,7 @@
     background:currentColor;opacity:.55;vertical-align:middle;}
   .data-table tbody tr:last-child td{border-bottom:none;}
   .data-table tbody tr:hover{background:var(--surface-2);}
-  td.name-cell{white-space:normal;min-width:240px;max-width:320px;}
+  td.name-cell{white-space:normal;min-width:220px;max-width:300px;}
   .row-title{font-size:13.5px;font-weight:500;color:var(--ink-muted);text-decoration:none;line-height:1.4;}
   .row-title.is-unread{color:var(--ink);font-weight:700;}
   .row-title:hover{text-decoration:underline;}
@@ -211,19 +201,9 @@
     background:var(--ink);color:var(--bg);font-size:12px;font-weight:400;line-height:1.5;
     padding:10px 12px;border-radius:6px;box-shadow:var(--shadow-md);z-index:6;white-space:normal;}
   .risk-flag:hover .tip{display:block;}
-  .dup-flag{font-size:9.5px;font-weight:700;color:var(--warning);border:1px solid var(--warning);
-    border-radius:4px;padding:1px 4px;margin-left:6px;white-space:nowrap;}
   .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
   .link-ico{color:var(--accent);text-decoration:none;font-weight:600;font-size:12.5px;}
   .link-ico:hover{text-decoration:underline;}
-  .link-btn{background:none;border:none;padding:0;color:var(--inline-action);font-family:var(--font-body);
-    font-size:13px;font-weight:600;cursor:pointer;}
-  .link-btn:hover{text-decoration:underline;}
-  .report-trigger{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
-  .icon-btn-xs{width:20px;height:20px;border:none;background:none;color:var(--ink-muted);cursor:pointer;
-    display:inline-flex;align-items:center;justify-content:center;padding:0;flex:none;}
-  .icon-btn-xs:hover{color:var(--accent);}
-  .icon-btn-xs svg{width:14px;height:14px;}
   .fav-star{background:none;border:none;cursor:pointer;padding:0;font-size:16px;color:var(--border-strong);
     line-height:1;}
   .fav-star.is-fav{color:var(--accent);}
@@ -231,12 +211,7 @@
     padding:3px 9px;border-radius:999px;background:var(--surface-2);color:var(--ink);
     border:1px solid var(--border-strong);white-space:nowrap;}
   .status-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--border-strong);}
-  .status-tag.b-progress .dot{background:var(--accent);}
   .status-tag.b-submitted .dot{background:var(--warning);}
-  .status-tag.b-archive .dot{background:var(--success);}
-  .cell-select{border:1px solid var(--border-strong);border-radius:6px;padding:5px 20px 5px 6px;
-    font-family:var(--font-body);font-size:12px;background:var(--surface);color:var(--ink);max-width:170px;
-    background-position:right 6px center;}
   .dl-cell{padding:7px 8px;border-radius:6px;display:inline-block;background:var(--deadline-bg);}
   .dl-pink{color:var(--accent);font-weight:700;}
   .dl-yellow{color:var(--warning);font-weight:700;}
@@ -257,6 +232,7 @@
   .overlay.is-open{display:flex;}
   .modal{background:var(--surface);border-radius:var(--radius-md);box-shadow:var(--shadow-md);
     width:100%;max-width:440px;padding:22px;}
+  .status-modal{max-height:calc(100vh - 40px);overflow-y:auto;}
   .modal h4{margin:0 0 4px;font-size:16px;}
   .modal p.hint{margin:0 0 16px;font-size:13px;color:var(--ink-muted);}
   .dup-hint{display:flex;align-items:flex-start;gap:6px;background:var(--warning-bg);color:var(--warning);
@@ -267,26 +243,21 @@
   .field label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
     color:var(--ink-muted);margin-bottom:6px;}
   .field input{width:100%;border:1px solid var(--border-strong);border-radius:var(--radius-sm);
-    padding:9px 10px;font-family:var(--font-body);font-size:14px;background:var(--surface);color:var(--ink);}
-  .field input{height:32px;padding-top:0;padding-bottom:0;}
+    padding:9px 10px;font-family:var(--font-body);font-size:14px;background:var(--surface);color:var(--ink);
+    height:32px;padding-top:0;padding-bottom:0;}
+  .field textarea{width:100%;min-height:76px;resize:vertical;border:1px solid var(--border-strong);
+    border-radius:var(--radius-sm);padding:9px 10px;font-family:var(--font-body);font-size:14px;
+    background:var(--surface);color:var(--ink);}
   .at-section-field .xselect{display:block;width:100%;}
   .at-section-field .xselect-trigger{width:100%;}
+  .status-modal .xselect{display:block;width:100%;}
+  .status-modal .xselect-menu{position:static;width:100%;min-width:0;margin-top:8px;
+    max-height:240px;box-shadow:none;}
+  .status-move-overlay{z-index:50;}
+  .status-move-copy{margin:16px 0 0;font-size:14px;line-height:1.55;color:var(--ink);}
   .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;}
   @media (prefers-reduced-motion:no-preference){.overlay.is-open .modal{animation:pop .16s ease-out;}}
   @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.98);}to{opacity:1;transform:none;}}
-
-  .modal-wide{max-width:640px;}
-  .report-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
-  .report-modal-head .r-subtitle{margin:0;font-size:13px;color:var(--ink-muted);}
-  .report-modal-actions{display:flex;gap:8px;align-items:center;flex:none;}
-  .report-body{max-height:60vh;overflow-y:auto;margin-top:16px;padding-right:6px;}
-  .report-section{margin-bottom:16px;}
-  .report-section:last-child{margin-bottom:0;}
-  .report-section h5{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.03em;
-    color:var(--ink-muted);font-weight:700;}
-  .report-section p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink);}
-  .access-denied{max-width:460px;margin:60px auto;text-align:center;color:var(--ink-muted);
-    font-size:14px;line-height:1.6;}
 
   /* ---------- toast ---------- */
   .toast{position:fixed;top:20px;right:20px;max-width:340px;background:var(--surface);
@@ -297,7 +268,6 @@
   .toast-head p{margin:0;font-size:13.5px;line-height:1.5;}
   .toast-close{background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:16px;
     line-height:1;padding:0;flex:none;}
-  .toast-foot{margin-top:8px;}
 
   @media (max-width:860px){
     .portal-nav{position:static;width:100%;border-right:none;border-bottom:1px solid var(--border);}
@@ -305,8 +275,6 @@
     .search-field{margin-left:0;width:100%;}
     .search-field input{width:100%;}
   }
-  .lots-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:600;
-    line-height:1.6;white-space:nowrap;vertical-align:1px;background:var(--surface-2);color:var(--ink-muted);border:1px solid var(--border);}
 </style>
 
 <div class="shell">
@@ -326,12 +294,12 @@
         <span class="nav-label">Дашборд</span>
       </a></li>
       <li>
-        <a href="vse-tendery.html" class="is-active" title="Тендеры" data-nav-tenders="1">
+        <a href="vse-tendery.html" title="Тендеры" data-nav-tenders="1">
           <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><polyline points="14 3 14 8 19 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
           <span class="nav-label">Тендеры</span>
         </a>
         <ul class="nav-sub">
-          <li data-admin-observer-only="1"><a href="#" class="is-active"><span class="nav-label">Сводная таблица</span></a></li>
+          <li data-admin-observer-only="1"><a href="vse-tendery.html"><span class="nav-label">Сводная таблица</span></a></li>
           <li data-nav-new-section="1"><a href="novye-tendery.html"><span class="nav-label">Новые</span> <span class="nav-badge" id="navNew"></span></a></li>
           <li><a href="ozhidayut-resheniya.html"><span class="nav-label">Ожидают решения</span> <span class="nav-badge muted" id="navWaiting"></span></a></li>
           <li><a href="v-rabote.html"><span class="nav-label">В работе</span> <span class="nav-badge muted" id="navProgress"></span></a></li>
@@ -351,7 +319,7 @@
         <span class="nav-label">Календарь</span>
         <span class="nav-badge" id="navToday"></span>
       </a></li>
-      <li><a href="pochta.html" title="Почта">
+      <li><a href="pochta.html" class="is-active" title="Почта">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
         <span class="nav-label">Почта</span>
         <span class="nav-badge" id="navMail"></span>
@@ -383,9 +351,9 @@
     </a>
   </aside>
 
-  <div class="app" id="appRoot">
+  <div class="app">
     <div class="page-head">
-      <h1 class="page-title">Сводная таблица</h1>
+      <h1 class="page-title">Почта</h1>
       <div class="page-actions">
         <div class="icon-popover-wrap">
           <button class="icon-btn" id="bellBtn" aria-label="Уведомления">
@@ -416,45 +384,23 @@
 
     <div class="filter-bar">
       <div class="filter-field">
-        <label for="fStatus">Статус</label>
-        <select id="fStatus">
-          <option value="all">Все</option>
-          <option value="Новый">Новые</option>
-          <option value="Ожидают решения">Ожидают решения</option>
-          <option value="В работе">В работе</option>
-          <option value="Заявки">Заявки (подано)</option>
-          <option value="Архив">Архив</option>
-        </select>
+        <label for="fPlatform">Площадка</label>
+        <select id="fPlatform"></select>
       </div>
       <div class="filter-field">
-        <label for="fDeadline">Дедлайн до</label>
-        <input type="date" id="fDeadline">
+        <label for="fType">Тип письма</label>
+        <select id="fType"></select>
       </div>
-      <div class="filter-field">
-        <label for="fSource">Источник</label>
-        <select id="fSource"></select>
-      </div>
-      <div class="filter-field">
-        <label for="fManager">Менеджер</label>
-        <select id="fManager"></select>
-      </div>
-      <div class="filter-field">
-        <label for="fDept">Направление</label>
-        <select id="fDept"></select>
-      </div>
-      <label class="filter-check"><input type="checkbox" id="fFav"> Только избранные</label>
+      <label class="filter-check"><input type="checkbox" id="fUnparsed"> Только неразобранные</label>
       <div class="toolbar-right">
         <div class="filter-field search-field">
           <label for="searchInput">Поиск</label>
           <div class="search">
             <span class="ico">🔍</span>
-            <input type="text" id="searchInput" placeholder="Название или заказчик…">
+            <input type="text" id="searchInput" placeholder="Тема или текст письма…">
             <button type="button" class="search-clear" id="searchClear" aria-label="Очистить поиск" title="Очистить" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
           </div>
         </div>
-        <button class="icon-btn-sm" id="exportBtn" aria-label="Выгрузить в Excel" title="Выгрузить в Excel">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </button>
       </div>
     </div>
 
@@ -462,20 +408,11 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th></th>
-            <th>Ответственный</th>
-            <th class="sortable" data-sort="name">Название<span class="sort-arrow"></span></th>
-            <th>Статус</th>
-            <th class="col-customer">Заказчик</th>
-            <th>НМЦ</th>
-            <th>Публикация</th>
-            <th>Источник</th>
-            <th>Отчёт</th>
-            <th class="sortable" data-sort="deadline">Окончание сбора<span class="sort-arrow"></span></th>
-            <th>Отдел</th>
-            <th>Решение</th>
-            <th>Причина отказа</th>
-            <th>Создано</th>
+            <th class="sortable" data-sort="date">Дата<span class="sort-arrow"></span></th>
+            <th>Площадка</th>
+            <th>Тема</th>
+            <th>Тип</th>
+            <th>Тендер</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -543,30 +480,37 @@
   </div>
 </div>
 
-<!-- AI REPORT MODAL -->
-<div class="overlay" id="reportOverlay">
-  <div class="modal modal-wide">
-    <div class="report-modal-head">
-      <div>
-        <h4>Отчёт ИИ</h4>
-        <p class="r-subtitle" id="reportSubtitle"></p>
-      </div>
-      <div class="report-modal-actions">
-        <button class="icon-btn-sm" id="reportDownloadBtn" title="Скачать отчёт" aria-label="Скачать отчёт"></button>
-        <button class="icon-btn-sm" id="reportClose" aria-label="Закрыть">✕</button>
-      </div>
+<!-- MAIL MESSAGE -->
+<div class="overlay" id="mailOverlay">
+  <div class="modal" style="max-width:720px;width:calc(100% - 32px)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <h4 id="mailSubject" style="margin:0">Письмо</h4>
+      <button class="icon-btn-sm" type="button" id="mailClose" aria-label="Закрыть">✕</button>
     </div>
-    <div class="report-body" id="reportBody"></div>
+    <p class="hint" id="mailMeta" style="margin:6px 0 12px"></p>
+    <div id="mailBody" style="font-size:14px;line-height:1.55;white-space:pre-line;margin-bottom:12px"></div>
+    <div id="mailAttachments" style="font-size:13px;color:var(--ink-muted);margin-bottom:16px"></div>
+    <div class="field" style="margin-bottom:8px">
+      <label>Тендер</label>
+      <div id="mailTender"></div>
+    </div>
+    <div id="mailLinkBox" hidden>
+      <div class="field" style="margin-bottom:8px">
+        <label for="mailTenderSearch">Привязать к тендеру — номер закупки, название или заказчик</label>
+        <input type="text" id="mailTenderSearch" placeholder="Начните вводить…" style="width:100%;height:32px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:0 10px;font-family:inherit;font-size:14px;background:var(--surface);color:var(--ink);box-sizing:border-box">
+      </div>
+      <div id="mailTenderResults" style="max-height:180px;overflow:auto;margin-bottom:12px"></div>
+    </div>
+    <div class="modal-actions" id="mailActions"></div>
   </div>
 </div>
 
 <!-- TOAST -->
-<div class="toast" id="addToast">
+<div class="toast" id="saveToast">
   <div class="toast-head">
-    <p id="toastText">Добавлено в раздел «Новые».</p>
+    <p id="toastText"></p>
     <button class="toast-close" id="toastClose" aria-label="Закрыть">✕</button>
   </div>
-  <div class="toast-foot"><a class="link-ico" href="#" id="toastLink">Перейти в карточку ↗</a></div>
 </div>
 
 <script src="tendery-dannye.js?v=2026-10-02"></script>
@@ -582,23 +526,13 @@
       navToday.hidden = !count;
     }
   })();
-  var current = TenderReferences.currentUser();
-  // страницу видят Админ, Суперадмин и Наблюдатель; редактировать (ответственный, решение, причина
-  // отказа, избранное, добавление тендера) может только Админ и Суперадмин — Наблюдатель только смотрит
-  var canEdit = TenderReferences.isAdminUser(current);
-  var canView = canEdit || TenderReferences.isObserverUser(current);
-  if(!canView){
-    document.getElementById('appRoot').innerHTML =
-      '<div class="access-denied"><p>Доступ ограничен, обратитесь к администратору.</p></div>';
-    return;
-  }
   var DEPTS = TenderReferences.get('departments');
-  var DECISIONS = ['Участвуем','Отказ','На рассмотрении'];
-  var REASONS = TenderReferences.get('rejectionReasons');
   var MANAGERS = TenderReferences.managerNames();
+  var APP_STATUSES = TenderReferences.get('applicationStatuses');
+  var REASONS = TenderReferences.get('rejectionReasons');
   var CARD_URL = 'https://claude.ai/code/artifact/cc2156ed-e65b-4080-9434-48e8241591fe';
 
-  // общее хранилище с novye-tendery.html (псевдо-синхронизация через localStorage, см. Дизайн-система.md)
+  // общее хранилище со vse-tendery.html/v-rabote.html (псевдо-синхронизация через localStorage, см. Дизайн-система.md)
   var STORAGE_KEY = 'atvinta_jul_tenders_v2';
   function loadTenders(seedFn){
     try{
@@ -637,6 +571,10 @@
     }catch(e){}
   }
 
+  // тот же исходный список демо-тендеров, что в vse-tendery.html — тендеры №8 и №9 уже находятся на
+  // этапе «Заявки» (appStatus «Подали»/«Переторжка» → «Подано»); для них добавлены три новых поля,
+  // которых раньше не было в общей модели данных: bidAmount, submittedAt, responseDueDate, а также
+  // заполнена ссылка на площадку (platformLink), см. Открытые вопросы.md
   // реальные тендеры — общий файл tendery-dannye.js (см. spravochniki.js → applyTenderSeed)
   function seedTenders(){
     return TenderReferences.seedTenderList();
@@ -645,130 +583,26 @@
   var tenders = loadTenders(seedTenders);
   var TODAY = TenderReferences.todayIso();
 
-  function bucket(t){
-    return TenderReferences.resolveSection(t);
-  }
-  function bucketClass(b){
-    return {'Новый':'','Ожидают решения':'b-progress','В работе':'b-progress','Заявки':'b-submitted','Архив':'b-archive'}[b] || '';
-  }
-  function fmtDate(iso){ if(!iso) return '—'; var d = String(iso).slice(0,10); var p = d.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
-  function fmtDeadlineDateTime(iso){
-    if(!iso) return '—';
-    var match = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/);
-    if(!match) return String(iso);
-    return match[3]+'.'+match[2]+'.'+match[1]+' '+(match[4] ? match[4]+':'+match[5] : '—:—');
-  }
+  function bucket(t){ return TenderReferences.resolveSection(t); }
+  function sectionTenders(){ return tenders.filter(function(t){ return bucket(t) === 'Заявки'; }); }
+
+  function fmtDate(iso){ if(!iso) return '—'; var d = String(iso).slice(0,10); var p = d.split('-'); return p.length===3 ? p[2]+'.'+p[1]+'.'+p[0] : String(iso); }
   function fmtNum(n){ if(n===null||n===undefined) return '—'; return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽'; }
-  // значок многолотового тендера: сколько лотов выиграно из скольких
-  function lotsBadge(t){
-    if(!t.multiLot) return '';
-    var lots = Array.isArray(t.lots) ? t.lots : [];
-    var won = lots.filter(function(l){ return l.result === 'Выиграли'; }).length;
-    return ' <span class="lots-badge" title="Многолотовый тендер">'+(lots.length ? 'Лоты: '+won+' из '+lots.length : 'Лоты')+'</span>';
-  }
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function daysUntil(iso){
     var d = String(iso).slice(0,10), t = String(TODAY).slice(0,10);
     return Math.round((new Date(d+'T00:00:00') - new Date(t+'T00:00:00')) / 86400000);
   }
-  function optionsHtml(values, current){
-    return TenderReferences.sortOptions(values).map(function(v){ return '<option value="'+esc(v)+'"'+(v===current?' selected':'')+'>'+esc(v)+'</option>'; }).join('');
+  // подсветка срочности — переиспользован тот же принцип, что у «Срока подачи» (см. Дизайн-система.md),
+  // применён здесь к дате ожидания ответа на заявку
+  function waitHtml(iso){
+    if(!iso) return '—';
+    var d = daysUntil(iso);
+    var cls = 'dl-grey';
+    if(d <= 0) cls = 'dl-pink';
+    else if(d === 1 || d === 2) cls = 'dl-yellow';
+    return '<span class="dl-cell '+cls+' num">'+fmtDate(iso)+'</span>';
   }
-
-  // ---- отчёт ИИ: та же логика, что в novye-tendery.html ----
-  var DOWNLOAD_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
-    + '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
-  var REPORT_SECTIONS = [
-    ['stack', 'Стек'], ['requirements', 'Требования к поставщику'], ['nmc', 'НМЦК'],
-    ['scope', 'Скоуп работ'], ['deadlines', 'Сроки'], ['criteria', 'Критерии оценки'], ['risks', 'Риски']
-  ];
-  function reportSectionsHtml(report){
-    return REPORT_SECTIONS.map(function(s){
-      var val = report[s[0]];
-      return val ? '<div class="report-section"><h5>'+esc(s[1])+'</h5><p>'+esc(val)+'</p></div>' : '';
-    }).join('');
-  }
-  function reportSectionsWordHtml(report){
-    return REPORT_SECTIONS.filter(function(s){ return report[s[0]]; })
-      .map(function(s){ return '<h2>'+esc(s[1])+'</h2><p>'+esc(report[s[0]])+'</p>'; }).join('');
-  }
-  function sanitizeFilename(s){ return String(s).replace(/[\/\\:*?"<>|]/g, ' ').trim(); }
-  function reportHistory(t){
-    var history = Array.isArray(t.aiReports) ? t.aiReports.slice() : [];
-    if(!history.length && t.aiReport){
-      history.push({createdAt:t.aiReportCreatedAt || t.rowCreated || t.pub || new Date().toISOString(), report:t.aiReport});
-    }
-    return history.filter(function(entry){ return entry && entry.report; }).sort(function(a,b){
-      return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
-    });
-  }
-  function latestReportEntry(t){
-    var history = reportHistory(t);
-    return history.length ? history[history.length-1] : null;
-  }
-  function reportCreatedLabel(createdAt){
-    var d = new Date(createdAt);
-    if(isNaN(d.getTime())) return 'дата не указана';
-    var pad = function(n){ return n<10 ? '0'+n : ''+n; };
-    return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes());
-  }
-
-  var reportOverlay = document.getElementById('reportOverlay');
-  var currentReportId = null;
-  document.getElementById('reportDownloadBtn').innerHTML = DOWNLOAD_SVG;
-
-  function openReportModal(t){
-    var latest = latestReportEntry(t);
-    if(!latest) return;
-    currentReportId = t.id;
-    document.getElementById('reportSubtitle').textContent = t.name;
-    document.getElementById('reportBody').innerHTML = reportSectionsHtml(latest.report);
-    reportOverlay.classList.add('is-open');
-  }
-  function closeReportModal(){ reportOverlay.classList.remove('is-open'); currentReportId = null; }
-  function downloadReport(t){
-    var latest = latestReportEntry(t);
-    if(!latest) return;
-    var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'
-      + '<head><meta charset="utf-8"><title>Отчёт ИИ</title></head>'
-      + '<body><h1>Отчёт ИИ — '+esc(t.name)+'</h1>'
-      + '<p><b>Создан:</b> '+reportCreatedLabel(latest.createdAt)+'</p>'
-      + '<p><b>Заказчик:</b> '+esc(t.customer)+'</p>'
-      + reportSectionsWordHtml(latest.report)
-      + '</body></html>';
-    var blob = new Blob(['﻿'+html], {type:'application/msword;charset=utf-8;'});
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'Отчёт ИИ — '+sanitizeFilename(reportCreatedLabel(latest.createdAt))+' — '+sanitizeFilename(t.name).slice(0,45)+'.doc';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
-  }
-  document.getElementById('reportClose').addEventListener('click', closeReportModal);
-  reportOverlay.addEventListener('click', function(e){ if(e.target === reportOverlay) closeReportModal(); });
-  document.getElementById('reportDownloadBtn').addEventListener('click', function(){
-    var t = tenders.find(function(x){ return x.id === currentReportId; });
-    if(t) downloadReport(t);
-  });
-  document.getElementById('tableBody').addEventListener('click', function(e){
-    var el = e.target.closest('[data-action]');
-    if(!el) return;
-    e.preventDefault();
-    var t = tenders.find(function(x){ return x.id === Number(el.dataset.id); });
-    if(!t) return;
-    if(el.dataset.action === 'open-report') openReportModal(t);
-    if(el.dataset.action === 'download-report') downloadReport(t);
-  });
-
-  function uniqueSorted(arr){ return arr.filter(function(v,i){ return arr.indexOf(v)===i; }).sort(); }
-  function fillSelect(sel, values, allLabel){
-    sel.innerHTML = '<option value="all">'+allLabel+'</option>' +
-      values.map(function(v){ return '<option value="'+esc(v)+'">'+esc(v)+'</option>'; }).join('');
-  }
-  fillSelect(document.getElementById('fSource'), uniqueSorted(tenders.map(function(t){return t.source;})), 'Все');
-  fillSelect(document.getElementById('fManager'), uniqueSorted(tenders.map(function(t){return t.manager;})), 'Все');
-  fillSelect(document.getElementById('fDept'), DEPTS, 'Все');
 
   var CHEVRON_SVG = '<svg class="chev" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">'
     + '<path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -776,10 +610,12 @@
   function enhanceSelect(sel){
     TenderReferences.sortSelect(sel);
     var wrap = document.createElement('span');
-    wrap.className = 'xselect' + (sel.classList.contains('cell-select') ? ' xselect-cell' : '');
+    wrap.className = 'xselect';
     sel.parentNode.insertBefore(wrap, sel);
     wrap.appendChild(sel);
     sel.classList.add('xselect-native');
+    sel.style.position = 'absolute'; sel.style.width='1px'; sel.style.height='1px'; sel.style.opacity='0';
+    sel.style.pointerEvents='none'; sel.style.overflow='hidden';
     sel.tabIndex = -1;
 
     var trigger = document.createElement('button');
@@ -825,15 +661,67 @@
     });
     renderTrigger();
   }
+
+  // ---- кастомный select для модалки статуса — тот же виджет, что в v-rabote.html/kartochka-tendera.html ----
+  function buildXSelect(values, current, placeholder){
+    values = TenderReferences.sortOptions(values);
+    var wrap = document.createElement('span');
+    wrap.className = 'xselect';
+    wrap.dataset.value = current || '';
+
+    var trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'xselect-trigger';
+    wrap.appendChild(trigger);
+
+    var menu = document.createElement('div');
+    menu.className = 'xselect-menu';
+    wrap.appendChild(menu);
+
+    function renderTrigger(){
+      trigger.innerHTML = '<span>'+esc(wrap.dataset.value || placeholder)+'</span>' + CHEVRON_SVG;
+    }
+    function renderMenu(){
+      menu.innerHTML = '';
+      values.forEach(function(v){
+        var item = document.createElement('div');
+        item.className = 'xselect-item' + (v === wrap.dataset.value ? ' is-selected' : '');
+        item.textContent = v;
+        item.addEventListener('click', function(){
+          wrap.dataset.value = v;
+          renderTrigger();
+          trigger.style.borderColor = '';
+          menu.classList.remove('is-open');
+          wrap.dispatchEvent(new Event('xchange', {bubbles:true}));
+        });
+        menu.appendChild(item);
+      });
+    }
+    trigger.addEventListener('click', function(e){
+      e.stopPropagation();
+      var willOpen = !menu.classList.contains('is-open');
+      document.querySelectorAll('.xselect-menu.is-open').forEach(function(m){ m.classList.remove('is-open'); });
+      if(willOpen){ renderMenu(); menu.classList.add('is-open'); }
+    });
+    renderTrigger();
+    return wrap;
+  }
   document.addEventListener('click', function(){
     document.querySelectorAll('.xselect-menu.is-open').forEach(function(m){ m.classList.remove('is-open'); });
   });
-  var initialParams = new URLSearchParams(location.search);
-  var initialStatus = initialParams.get('status');
-  if(initialStatus && Array.prototype.some.call(document.getElementById('fStatus').options, function(opt){ return opt.value === initialStatus; })){
-    document.getElementById('fStatus').value = initialStatus;
+
+  function uniqueSorted(arr){ return arr.filter(function(v,i){ return v && arr.indexOf(v)===i; }).sort(); }
+  function fillSelect(sel, values, allLabel){
+    sel.innerHTML = '<option value="all">'+allLabel+'</option>' +
+      values.map(function(v){ return '<option value="'+esc(v)+'">'+esc(v)+'</option>'; }).join('');
   }
-  document.getElementById('fFav').checked = initialParams.get('fav') === '1';
+  // ---- «Почта» (ТЗ 6.2, 10.4, решение Оксаны 02.10.2026): читают все; привязать письмо
+  // к тендеру, отвязать и создать тендер из приглашения — Админ и Суперадмин ----
+  var CURRENT = TenderReferences.currentUser();
+  var CAN_MANAGE_MAIL = TenderReferences.isAdminUser(CURRENT);
+  var mail = TenderReferences.loadMail();
+  fillSelect(document.getElementById('fPlatform'), uniqueSorted(mail.map(function(m){ return m.platform; })), 'Все');
+  fillSelect(document.getElementById('fType'), TenderReferences.mailTypes, 'Все');
   document.querySelectorAll('.filter-field select, #pageSize, #atSection').forEach(enhanceSelect);
 
   function refreshNavCounts(){
@@ -842,265 +730,157 @@
     document.getElementById('navNew').hidden = newCount === 0;
     document.getElementById('navWaiting').textContent = tenders.filter(function(t){return bucket(t)==='Ожидают решения';}).length;
     document.getElementById('navProgress').textContent = tenders.filter(function(t){return bucket(t)==='В работе';}).length;
+    var unparsed = mail.filter(function(m){ return !m.tenderId; }).length;
+    var navMail = document.getElementById('navMail');
+    if(navMail){ navMail.textContent = unparsed; navMail.hidden = !unparsed; }
   }
 
-  var state = { search:'', status:document.getElementById('fStatus').value, deadline:'', source:'all', manager:'all', dept:'all',
-                fav:document.getElementById('fFav').checked,
-                sortKey:'deadline', sortDir:'asc', page:1, pageSize:20 };
-
+  var state = {search:'', platform:'all', type:'all', unparsed:false, sortDir:'desc', page:1, pageSize:20};
+  function tenderById(id){ return tenders.find(function(t){ return String(t.id) === String(id); }); }
+  function fmtDateTime(v){ if(!v) return '—'; var d = String(v).slice(0,10).split('-'); return d[2]+'.'+d[1]+'.'+d[0]+(String(v).length > 10 ? ' '+String(v).slice(11,16) : ''); }
   function getFiltered(){
-    return tenders.filter(function(t){
-      var text = (t.name+' '+t.customer).toLowerCase();
-      if(state.search && text.indexOf(state.search.toLowerCase()) === -1) return false;
-      if(state.status !== 'all' && bucket(t) !== state.status) return false;
-      if(state.deadline && !(t.deadline && t.deadline <= state.deadline)) return false;
-      if(state.source !== 'all' && t.source !== state.source) return false;
-      if(state.manager !== 'all' && t.manager !== state.manager) return false;
-      if(state.dept !== 'all' && (!t.depts || t.depts.indexOf(state.dept) === -1)) return false;
-      if(state.fav && !t.fav) return false;
+    return mail.filter(function(m){
+      if(state.platform !== 'all' && m.platform !== state.platform) return false;
+      if(state.type !== 'all' && m.type !== state.type) return false;
+      if(state.unparsed && m.tenderId) return false;
+      if(state.search){
+        var text = (m.subject+' '+m.body+' '+m.platform).toLowerCase();
+        if(text.indexOf(state.search.toLowerCase()) === -1) return false;
+      }
       return true;
-    });
+    }).sort(function(a,b){ return state.sortDir === 'desc' ? String(b.date).localeCompare(String(a.date)) : String(a.date).localeCompare(String(b.date)); });
   }
-  function getSorted(list){
-    var dir = state.sortDir === 'asc' ? 1 : -1;
-    return list.slice().sort(function(a,b){
-      if(state.sortKey === 'name') return a.name.localeCompare(b.name, 'ru') * dir;
-      var da = a.deadline || '9999-99-99', db = b.deadline || '9999-99-99';
-      return (da < db ? -1 : da > db ? 1 : 0) * dir;
-    });
+  function rowHtml(m){
+    var t = m.tenderId ? tenderById(m.tenderId) : null;
+    var tenderCell = t
+      ? '<a class="link-ico" href="kartochka-tendera.html?tender='+t.id+'">'+esc(t.name.length > 60 ? t.name.slice(0,60)+'…' : t.name)+' ↗</a>'
+      : '<span class="status-tag" style="color:var(--warning)"><span class="dot" style="background:var(--warning)"></span>Не привязано</span>';
+    return '<tr data-mail-id="'+esc(m.id)+'" style="cursor:pointer">'
+      + '<td style="white-space:nowrap">'+fmtDateTime(m.date)+'</td>'
+      + '<td>'+esc(m.platform)+'</td>'
+      + '<td style="white-space:normal;min-width:240px">'+(m.tenderId ? '' : '<b>')+esc(m.subject)+(m.tenderId ? '' : '</b>')+'</td>'
+      + '<td style="white-space:normal">'+esc(m.type)+'</td>'
+      + '<td style="white-space:normal;max-width:260px">'+tenderCell+'</td></tr>';
   }
-
-  document.querySelectorAll('th.sortable').forEach(function(th){
-    th.addEventListener('click', function(){
-      var key = th.dataset.sort;
-      if(state.sortKey === key){ state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc'; }
-      else { state.sortKey = key; state.sortDir = 'asc'; }
-      document.querySelectorAll('.sort-arrow').forEach(function(a){ a.textContent = ''; });
-      th.querySelector('.sort-arrow').textContent = state.sortDir === 'asc' ? '▲' : '▼';
-      state.page = 1; render();
-    });
-  });
-
-  function deadlineHtml(deadline){
-    if(!deadline) return '—';
-    var d = daysUntil(deadline);
-    var cls = 'dl-grey';
-    if(d <= 0) cls = 'dl-pink';
-    else if(d === 1 || d === 2) cls = 'dl-yellow';
-    var hasTime = /T\d{2}:\d{2}/.test(String(deadline));
-    var label = (d <= 1 && hasTime) ? fmtDeadlineDateTime(deadline) : fmtDate(deadline);
-    return '<span class="dl-cell '+cls+' num">'+label+'</span>';
-  }
-
-  function rowHtml(t){
-    var titleClass = 'row-title' + (t.unread ? ' is-unread' : '');
-    var latestReport = latestReportEntry(t);
-    var riskIco = t.risk
-      ? '<span class="risk-flag"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z"/><path d="M8 5.5v4"/><path d="M8 11.8h.01"/></svg><span class="tip">Возможно нужна консультация юриста — приёмка поэтапная или другие условия из отчёта ИИ требуют проверки.</span></span>'
-      : '';
-    var dupIco = t.rejectReason === 'Дубль' ? '<span class="dup-flag">ДУБЛЬ</span>' : '';
-    var b = bucket(t);
-    var nameHref = 'kartochka-tendera.html?tender='+t.id+'&section='+encodeURIComponent(b);
-    return '<tr data-id="'+t.id+'">'
-      + '<td>'+(canEdit
-            ? '<button class="fav-star'+(t.fav?' is-fav':'')+'" data-id="'+t.id+'" aria-label="В избранное">'+(t.fav?'★':'☆')+'</button>'
-            : '<span class="fav-star'+(t.fav?' is-fav':'')+'" aria-hidden="true" style="cursor:default">'+(t.fav?'★':'☆')+'</span>')+'</td>'
-      + '<td>'+(canEdit
-            ? '<select class="cell-select" data-field="manager" data-id="'+t.id+'"><option value="">—</option>'+optionsHtml(MANAGERS, t.manager)+'</select>'
-            : esc(t.manager || '—'))+'</td>'
-      + '<td class="name-cell">'+riskIco+'<a class="'+titleClass+'" href="'+nameHref+'">'+esc(t.name)+'</a>'+dupIco+lotsBadge(t)+'</td>'
-      + '<td><span class="status-tag '+bucketClass(b)+'"><span class="dot"></span>'+b+'</span></td>'
-      + '<td class="col-customer" title="'+esc(t.customer)+'">'+esc(t.customer)+'</td>'
-      + '<td class="num">'+fmtNum(t.nmc)+'</td>'
-      + '<td class="num">'+fmtDate(t.pub)+'</td>'
-      + '<td><a class="link-ico" href="'+(t.sourceLink||'#')+'" target="_blank" rel="noopener">Тендерплан ↗</a></td>'
-      + '<td>'+(latestReport
-            ? '<span class="report-trigger"><button class="link-btn" data-action="open-report" data-id="'+t.id+'">Читать</button><button class="icon-btn-xs" data-action="download-report" data-id="'+t.id+'" title="Скачать отчёт" aria-label="Скачать отчёт">'+DOWNLOAD_SVG+'</button></span>'
-            : (t.aiReportUrl
-              ? '<a class="link-ico" href="'+esc(t.aiReportUrl)+'" target="_blank" rel="noopener">Открыть ↗</a>'
-              : '<span style="color:var(--ink-muted)">—</span>'))+'</td>'
-      + '<td>'+deadlineHtml(t.deadline)+'</td>'
-      + '<td>'+esc((t.depts && t.depts.length) ? t.depts.join(', ') : '—')+'</td>'
-      + '<td>'+(canEdit
-            ? '<select class="cell-select" data-field="decision" data-id="'+t.id+'"><option value="">—</option>'+optionsHtml(DECISIONS, t.decision)+'</select>'
-            : esc(t.decision || '—'))+'</td>'
-      + '<td>'+(canEdit
-            ? '<select class="cell-select" data-field="rejectReason" data-id="'+t.id+'"'+(t.decision!=='Отказ'?' disabled':'')+'><option value="">—</option>'+optionsHtml(REASONS, t.rejectReason)+'</select>'
-            : esc(t.rejectReason || '—'))+'</td>'
-      + '<td class="num">'+fmtDate(t.rowCreated)+'</td>'
-      + '</tr>';
-  }
-
   function render(){
-    var filtered = getSorted(getFiltered());
-    var total = filtered.length;
-    var pageSize = state.pageSize === 'all' ? Math.max(total,1) : state.pageSize;
-    var totalPages = Math.max(Math.ceil(total / pageSize), 1);
-    if(state.page > totalPages) state.page = totalPages;
-    var start = (state.page - 1) * pageSize;
-    var pageItems = filtered.slice(start, start + pageSize);
-
-    document.getElementById('tableBody').innerHTML = pageItems.map(rowHtml).join('') ||
-      '<tr><td colspan="14" style="text-align:center;color:var(--ink-muted);padding:24px">Ничего не найдено по этим фильтрам.</td></tr>';
-
-    document.getElementById('rangeInfo').textContent = total
-      ? 'Показано ' + (start+1) + '–' + Math.min(start+pageItems.length, total) + ' из ' + total
-      : 'Показано 0 из 0';
-    document.getElementById('pageInfo').textContent = 'Стр. ' + state.page + ' из ' + totalPages;
+    var list = getFiltered();
+    var size = state.pageSize === 'all' ? list.length || 1 : Number(state.pageSize);
+    var pages = Math.max(1, Math.ceil(list.length / size));
+    if(state.page > pages) state.page = pages;
+    var start = (state.page - 1) * size;
+    var pageItems = list.slice(start, start + size);
+    document.getElementById('tableBody').innerHTML = pageItems.length
+      ? pageItems.map(rowHtml).join('')
+      : '<tr><td colspan="5" style="text-align:center;color:var(--ink-muted);padding:24px">Писем нет.</td></tr>';
+    document.getElementById('rangeInfo').textContent = list.length ? 'Показано '+(start+1)+'–'+Math.min(start+pageItems.length, list.length)+' из '+list.length : 'Показано 0 из 0';
+    document.getElementById('pageInfo').textContent = 'Стр. '+state.page+' из '+pages;
     document.getElementById('prevPage').disabled = state.page <= 1;
-    document.getElementById('nextPage').disabled = state.page >= totalPages;
-
-    document.querySelectorAll('.cell-select').forEach(function(sel){
-      sel.addEventListener('change', function(){
-        var t = tenders.find(function(x){ return x.id === Number(sel.dataset.id); });
-        var field = sel.dataset.field, value = sel.value;
-        // ТЗ 5.7: в «Ожидают решения», «В работе», «Заявках» ответственного можно
-        // заменить, но не убрать; перенос туда — только с ответственным и направлением
-        if(field === 'manager' && !value && TenderReferences.assigneeRequiredSections.indexOf(bucket(t)) !== -1){
-          showToast('У тендера в разделе «'+bucket(t)+'» ответственного можно заменить, но не убрать.');
-          render();
-          return;
-        }
-        // решение, которое переносит тендер в другой раздел, — только после подтверждения
-        // (ТЗ 6.2, решение 02.10.2026)
-        if(field === 'decision' && (value === 'На рассмотрении' || value === 'Участвуем' || value === 'Отказ')){
-          var destination = TenderReferences.resolveSection(Object.assign({}, t, {decision:value}));
-          var fromSection = bucket(t);
-          if(destination === fromSection){ t[field] = value; saveTenders(tenders); refreshNavCounts(); render(); return; }
-          var snapshotBefore = JSON.parse(JSON.stringify(t));
-          // «Отказ»: причина обязательна, окно причины и есть подтверждение переноса в Архив
-          if(value === 'Отказ'){
-            TenderReferences.requireRejectReason(t, function(reason, comment){
-              var from = fromSection === 'Новый' ? 'Новые' : fromSection;
-              t.decision = 'Отказ';
-              t.lifecycleSection = 'Архив';
-              TenderReferences.markRefused(t);
-              t.rejectReason = reason;
-              t.rejectComment = comment;
-              t.events = Array.isArray(t.events) ? t.events : [];
-              t.events.push({date:new Date().toLocaleString('ru-RU'), text:'Отказ ('+from+'). Причина: '+reason+'. Тендер перенесён в раздел «Архив».', comment:comment, actor:current.name});
-              if(from === 'Новые') TenderReferences.notifyAuthorRefused(t, reason);
-              var canUndoRefusal = from === 'Новые' || from === 'Ожидают решения';
-              saveTenders(tenders);
-              refreshNavCounts();
-              render();
-              showToast('Перемещено в архив.');
-              if(canUndoRefusal){
-                TenderReferences.showUndoToast('Перемещено в архив.', function(){
-                  TenderReferences.undoRefusal(t, snapshotBefore, from);
-                  saveTenders(tenders);
-                  refreshNavCounts();
-                  render();
-                  showToast('Отказ отменён — тендер снова в «'+(from === 'Новые' ? 'Новых' : 'Ожидают решения')+'».');
-                });
-              }
-            }, function(){ render(); });
-            return;
-          }
-          TenderReferences.confirmDialog('Тендер будет перенесён в раздел «'+destination+'».', function(ok){
-            if(!ok){ render(); return; }
-            TenderReferences.requireAssignee(t, destination, function(depts, manager){
-              var movedToReview = value === 'На рассмотрении' && t.decision !== 'На рассмотрении';
-              t.depts = depts;
-              t.dept = depts[0] || '';
-              t.manager = manager;
-              t.decision = value;
-              // второе решение — задача «Изучить документы…» закрывается, ставится «Подать заявку» (ТЗ 9.2)
-              if(value === 'Участвуем'){ TenderReferences.closeReviewTask(t); TenderReferences.addSubmitTask(t); }
-              if(movedToReview) TenderReferences.addReviewTask(t, manager);
-              saveTenders(tenders);
-              refreshNavCounts();
-              render();
-              // «Отменить» 15 секунд после «Взять в работу» (ТЗ 5.4)
-              if(value === 'Участвуем' && fromSection === 'Ожидают решения'){
-                TenderReferences.showUndoToast('Тендер перенесён в раздел «В работе».', function(){
-                  TenderReferences.undoParticipation(t, snapshotBefore);
-                  saveTenders(tenders);
-                  refreshNavCounts();
-                  render();
-                  showToast('Решение «участвуем» отменено — тендер снова в «Ожидают решения».');
-                });
-              }
-              if(movedToReview && (fromSection === 'Новые' || fromSection === 'Новый')){
-                TenderReferences.showUndoToast('Тендер перенесён в раздел «Ожидают решения».', function(){
-                  TenderReferences.undoTakeInWork(t, snapshotBefore);
-                  saveTenders(tenders);
-                  refreshNavCounts();
-                  render();
-                  showToast('Взятие в работу отменено — тендер снова в «Новых».');
-                });
-              }
-            }, function(){ render(); });
-          }, {title:'Перенести тендер?', okLabel:'Перенести'});
-          return;
-        }
-        t[field] = value;
-        saveTenders(tenders);
-        refreshNavCounts();
-        render();
-      });
-      enhanceSelect(sel);
-    });
-    document.querySelectorAll('.fav-star').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var t = tenders.find(function(x){ return x.id === Number(btn.dataset.id); });
-        t.fav = !t.fav;
-        saveTenders(tenders);
-        render();
-      });
-    });
+    document.getElementById('nextPage').disabled = state.page >= pages;
     refreshNavCounts();
   }
-
-  var searchInput = document.getElementById('searchInput');
-  var searchClear = document.getElementById('searchClear');
-  searchInput.addEventListener('input', function(e){
-    state.search = e.target.value; state.page = 1;
-    searchClear.hidden = !e.target.value;
-    render();
-  });
-  searchClear.addEventListener('click', function(){
-    searchInput.value = ''; state.search = ''; state.page = 1;
-    searchClear.hidden = true; searchInput.focus();
-    render();
-  });
-  document.getElementById('fStatus').addEventListener('change', function(e){ state.status = e.target.value; state.page = 1; render(); });
-  document.getElementById('fDeadline').addEventListener('change', function(e){ state.deadline = e.target.value; state.page = 1; render(); });
-  document.getElementById('fSource').addEventListener('change', function(e){ state.source = e.target.value; state.page = 1; render(); });
-  document.getElementById('fManager').addEventListener('change', function(e){ state.manager = e.target.value; state.page = 1; render(); });
-  document.getElementById('fDept').addEventListener('change', function(e){ state.dept = e.target.value; state.page = 1; render(); });
-  document.getElementById('fFav').addEventListener('change', function(e){ state.fav = e.target.checked; state.page = 1; render(); });
-  document.getElementById('pageSize').addEventListener('change', function(e){
-    state.pageSize = e.target.value === 'all' ? 'all' : Number(e.target.value); state.page = 1; render();
-  });
+  function renderAll(){ mail = TenderReferences.loadMail(); render(); }
+  document.getElementById('fPlatform').addEventListener('change', function(){ state.platform = this.value; state.page = 1; render(); });
+  document.getElementById('fType').addEventListener('change', function(){ state.type = this.value; state.page = 1; render(); });
+  document.getElementById('fUnparsed').addEventListener('change', function(){ state.unparsed = this.checked; state.page = 1; render(); });
+  document.getElementById('searchInput').addEventListener('input', function(){ state.search = this.value.trim(); state.page = 1; render(); });
+  document.getElementById('pageSize').addEventListener('change', function(){ state.pageSize = this.value; state.page = 1; render(); });
   document.getElementById('prevPage').addEventListener('click', function(){ state.page--; render(); });
   document.getElementById('nextPage').addEventListener('click', function(){ state.page++; render(); });
+  document.querySelector('th[data-sort="date"]').addEventListener('click', function(){
+    state.sortDir = state.sortDir === 'desc' ? 'asc' : 'desc';
+    this.querySelector('.sort-arrow').textContent = state.sortDir === 'desc' ? '▼' : '▲';
+    render();
+  });
 
-  function exportCsv(){
-    var rows = getSorted(getFiltered());
-    var header = ['Ответственный','Название','Статус','Заказчик','НМЦ','Публикация','Источник','Отчёт',
-      'Окончание сбора','Отдел','Решение','Причина отказа','Создано'];
-    function csvCell(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }
-    var lines = [header.map(csvCell).join(';')];
-    rows.forEach(function(t){
-      lines.push([
-        t.manager, t.name, bucket(t), t.customer,
-        t.nmc===null ? '' : t.nmc, fmtDate(t.pub), 'Тендерплан', 'Отчёт ИИ',
-        fmtDate(t.deadline), (t.depts && t.depts.length) ? t.depts.join(', ') : '', t.decision || '', t.rejectReason || '', fmtDate(t.rowCreated)
-      ].map(csvCell).join(';'));
-    });
-    var csv = '﻿' + lines.join('\r\n');
-    var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'тендеры.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  // ---- письмо ----
+  var mailOverlay = document.getElementById('mailOverlay');
+  var openMailId = null;
+  function openMail(id){
+    var m = mail.find(function(x){ return x.id === id; });
+    if(!m) return;
+    openMailId = id;
+    document.getElementById('mailSubject').textContent = m.subject;
+    document.getElementById('mailMeta').textContent = m.platform+' · '+m.from+' · '+fmtDateTime(m.date)+' · '+m.type;
+    document.getElementById('mailBody').textContent = m.body;
+    document.getElementById('mailAttachments').innerHTML = (m.attachments || []).length
+      ? 'Вложения: '+m.attachments.map(function(a){ return '📎 '+esc(a); }).join(', ') : '';
+    var t = m.tenderId ? tenderById(m.tenderId) : null;
+    document.getElementById('mailTender').innerHTML = t
+      ? '<a class="link-ico" href="kartochka-tendera.html?tender='+t.id+'">'+esc(t.name)+' ↗</a>'
+        + '<div class="hint" style="margin:4px 0 0">Привязано: '+esc(m.linkedBy || '—')+'</div>'
+      : '<span style="color:var(--warning);font-weight:600">Не привязано</span>';
+    var box = document.getElementById('mailLinkBox');
+    box.hidden = !CAN_MANAGE_MAIL || Boolean(t);
+    document.getElementById('mailTenderSearch').value = '';
+    document.getElementById('mailTenderResults').innerHTML = '';
+    var actions = '';
+    if(CAN_MANAGE_MAIL && t) actions += '<button class="btn" type="button" data-mail-action="unlink">Отвязать</button>';
+    if(CAN_MANAGE_MAIL && !t && m.invite) actions += '<button class="btn btn-primary" type="button" data-mail-action="create">Создать тендер</button>';
+    actions += '<button class="btn" type="button" data-mail-action="close">Закрыть</button>';
+    document.getElementById('mailActions').innerHTML = actions;
+    mailOverlay.classList.add('is-open');
   }
-  document.getElementById('exportBtn').addEventListener('click', exportCsv);
+  function closeMail(){ mailOverlay.classList.remove('is-open'); openMailId = null; }
+  document.getElementById('tableBody').addEventListener('click', function(e){
+    if(e.target.closest('a')) return;
+    var row = e.target.closest('[data-mail-id]');
+    if(row) openMail(row.dataset.mailId);
+  });
+  document.getElementById('mailClose').addEventListener('click', closeMail);
+  mailOverlay.addEventListener('click', function(e){ if(e.target === mailOverlay) closeMail(); });
+  document.getElementById('mailTenderSearch').addEventListener('input', function(){
+    var q = this.value.trim().toLowerCase();
+    var box = document.getElementById('mailTenderResults');
+    if(q.length < 2){ box.innerHTML = ''; return; }
+    var found = tenders.filter(function(t){
+      return (String(t.name)+' '+String(t.customer || '')+' '+String(t.sourceLink || '')+' '+String(t.id)).toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 8);
+    box.innerHTML = found.length ? found.map(function(t){
+      return '<button type="button" class="btn btn-sm" data-link-tender="'+t.id+'" style="display:block;width:100%;text-align:left;margin-bottom:6px;white-space:normal;height:auto;padding:8px 10px;line-height:1.4">'
+        + esc(t.name)+'<span style="color:var(--ink-muted)"> · '+esc(t.customer || '')+' · '+esc(TenderReferences.displaySection(bucket(t)))+'</span></button>';
+    }).join('') : '<p class="hint">Ничего не найдено.</p>';
+  });
+  document.getElementById('mailTenderResults').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-link-tender]');
+    if(!btn || !openMailId || !CAN_MANAGE_MAIL) return;
+    TenderReferences.linkMail(openMailId, btn.dataset.linkTender);
+    tenders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    var id = openMailId;
+    renderAll(); openMail(id);
+    showToast('Письмо привязано к тендеру — оно появилось во вкладке «События».');
+  });
+  document.getElementById('mailActions').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-mail-action]');
+    if(!btn) return;
+    var action = btn.dataset.mailAction;
+    if(action === 'close'){ closeMail(); return; }
+    if(!CAN_MANAGE_MAIL) return;
+    if(action === 'unlink'){
+      TenderReferences.unlinkMail(openMailId);
+      tenders = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      var id = openMailId; renderAll(); openMail(id);
+      showToast('Письмо отвязано.');
+      return;
+    }
+    if(action === 'create'){
+      var m = mail.find(function(x){ return x.id === openMailId; });
+      var prefill = encodeURIComponent(JSON.stringify(m.invite));
+      location.href = 'novye-tendery.html?add=1&mail='+encodeURIComponent(m.id)+'&prefill='+prefill;
+    }
+  });
 
-  // ---- add tender modal ----
+  function showToast(text){
+    var toast = document.getElementById('saveToast');
+    document.getElementById('toastText').textContent = text;
+    toast.classList.add('is-open');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function(){ toast.classList.remove('is-open'); }, 10000);
+  }
+  document.getElementById('toastClose').addEventListener('click', function(){
+    document.getElementById('saveToast').classList.remove('is-open');
+  });
+
+  // ---- add tender modal (общая форма шапки, без изменений) ----
   var addOverlay = document.getElementById('addTenderOverlay');
   var addAssignee = TenderReferences.addTenderAssignee(addOverlay, function(){ return atSection.value || 'Новые'; });
   var atName = document.getElementById('atName');
@@ -1109,8 +889,6 @@
   var atSourceLink = document.getElementById('atSourceLink');
   var atDeadline = document.getElementById('atDeadline');
   var atSection = document.getElementById('atSection');
-  var toast = document.getElementById('addToast');
-  var toastTimer = null;
   var dupHint = document.getElementById('dupHint');
 
   function checkDuplicate(){
@@ -1141,8 +919,7 @@
     TenderReferences.setDirty('addTender', false);
   }
   function closeAddTender(){ addOverlay.classList.remove('is-open'); TenderReferences.setDirty('addTender', false); }
-  document.getElementById('addTenderBtn').hidden = !canEdit;
-  document.getElementById('addTenderBtn').addEventListener('click', function(){ if(canEdit) openAddTender(); });
+  document.getElementById('addTenderBtn').addEventListener('click', openAddTender);
   addOverlay.addEventListener('input', function(){ TenderReferences.setDirty('addTender', true); });
   addOverlay.addEventListener('change', function(){ TenderReferences.setDirty('addTender', true); });
   addOverlay.addEventListener('xchange', function(){ TenderReferences.setDirty('addTender', true); });
@@ -1151,19 +928,6 @@
   });
   addOverlay.addEventListener('click', function(e){
     if(e.target === addOverlay) TenderReferences.guardedClose('addTender', closeAddTender, function(){ document.getElementById('atSave').click(); });
-  });
-
-  function showToast(text, withLink){
-    document.getElementById('toastText').textContent = text;
-    // ссылка «Перейти в карточку» — только у сообщения о добавленном тендере
-    document.querySelector('#toast .toast-foot, .toast-foot').hidden = !withLink;
-    toast.classList.add('is-open');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ toast.classList.remove('is-open'); }, 10000);
-  }
-  document.getElementById('toastClose').addEventListener('click', function(){
-    toast.classList.remove('is-open');
-    clearTimeout(toastTimer);
   });
 
   document.getElementById('atSave').addEventListener('click', function(){
@@ -1187,20 +951,18 @@
     });
     if(assignee) TenderReferences.addReviewTask(tenders[0], assignee.manager);
     saveTenders(tenders);
-    refreshNavCounts();
-    render();
+    renderAll();
     closeAddTender();
-    document.getElementById('toastLink').href = 'kartochka-tendera.html?tender='+newId+'&section='+encodeURIComponent(addSection);
-    showToast(TenderReferences.manualAddMessage(tenders[0], addSection), true);
+    showToast(TenderReferences.manualAddMessage(tenders[0], addSection));
   });
 
   window.addEventListener('storage', function(e){
     if(e.key === TenderReferences.statusRulesKey || e.key === TenderReferences.key){
-      render();
+      renderAll();
       return;
     }
     if(e.key !== STORAGE_KEY || !e.newValue) return;
-    try{ tenders = JSON.parse(e.newValue); render(); }catch(err){}
+    try{ tenders = JSON.parse(e.newValue); renderAll(); }catch(err){}
   });
 
   function togglePopover(btn, pop, other){
@@ -1232,8 +994,8 @@
     document.querySelector('.app').classList.toggle('nav-collapsed');
   });
 
-  document.querySelector('th[data-sort="deadline"] .sort-arrow').textContent = '▲';
-  render();
+  document.querySelector('th[data-sort="date"] .sort-arrow').textContent = '▼';
+  renderAll();
 })();
 </script>
 <script>
@@ -1258,6 +1020,23 @@
   }
   window.addEventListener('storage', function(e){ if(e.key === NOTIFICATIONS_KEY) renderSyncedNotifications(); });
   renderSyncedNotifications();
+})();
+</script>
+<script>
+// крестик очистки поиска: очищает поле и заново применяет фильтры страницы (решение Оксаны 2026-09-18)
+(function(){
+  var input = document.getElementById('searchInput');
+  var clear = document.getElementById('searchClear');
+  if(!input || !clear) return;
+  function sync(){ clear.hidden = !input.value; }
+  input.addEventListener('input', sync);
+  clear.addEventListener('click', function(){
+    input.value = '';
+    input.dispatchEvent(new Event('input', {bubbles:true}));
+    sync();
+    input.focus();
+  });
+  sync();
 })();
 </script>
 </html>
